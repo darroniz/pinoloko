@@ -1,4 +1,4 @@
-# Pinoloko Vice
+# Pinoloko
 
 Mundo abierto en navegador ambientado en Sevilla: vista desde arriba, coches como juguetes,
 estética low-poly "cozy" y comedia costumbrista. Modo freestyle.

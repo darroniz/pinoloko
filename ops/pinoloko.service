@@ -1,13 +1,13 @@
 [Unit]
-Description=Pinoloko Vice — sesión nocturna autónoma de Claude Code
+Description=Pinoloko — sesión nocturna autónoma de Claude Code
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
 User=idarroniz
-WorkingDirectory=/home/idarroniz/pinoloko-vice
-ExecStart=/home/idarroniz/pinoloko-vice/scripts/noche.sh
+WorkingDirectory=/home/idarroniz/pinoloko
+ExecStart=/home/idarroniz/pinoloko/scripts/noche.sh
 
 # Corte duro: si una sesión se atasca, no se come la mañana.
 TimeoutStartSec=5h
@@ -23,7 +23,7 @@ MemoryMax=2400M
 Environment=NODE_OPTIONS=--max-old-space-size=1536
 Environment=CHROMIUM_PATH=/usr/bin/chromium
 Environment=PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-Environment=PINOVICE_MAX_TURNS=400
+Environment=PINOLOKO_MAX_TURNS=400
 Environment=PATH=/home/idarroniz/.local/bin:/usr/local/bin:/usr/bin:/bin
 
 [Install]

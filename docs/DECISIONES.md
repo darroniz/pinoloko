@@ -19,7 +19,7 @@ a ser público igualmente, así que el repo es público. Consecuencia: aquí no 
 nace ya con dominio: `public/CNAME` contiene `pinoloko.com` y `vite.config.ts` va con `base: '/'`.
 El fichero `CNAME` tiene que llegar a `dist/` en cada build (por eso vive en `public/`): si un
 build lo pierde, GitHub Pages se olvida del dominio. Mientras el DNS propaga, Pages sigue
-sirviendo en `darroniz.github.io/pinoloko-vice/`, y eso no debe hacer fallar la verificación.
+sirviendo en `darroniz.github.io/pinoloko/`, y eso no debe hacer fallar la verificación.
 
 **Máquina: `paretopi` (Raspberry Pi 4) y no un VPS aislado.** El prompt pedía máquina aislada
 porque la sesión corre con `--dangerously-skip-permissions`. Se ha optado por reutilizar la Pi
@@ -68,3 +68,27 @@ Chinatown Wars (2009), posterior a GTA IV, que teniendo motor 3D completo eligi�
 para pantalla pequeña. Se toma de ahí la **altura de cámara**, no la densidad de arte.
 
 La cámara baja queda reservada a la cinemática del 13 y a repeticiones cortas.
+
+## 2026-09-07 — El juego se llama Pinoloko, la scooter manda y se arranca por el Mercado
+
+**Nombre: `Pinoloko`, sin "Vice".** Decisión de Ismael. Repo renombrado a `darroniz/pinoloko`
+(GitHub mantiene la redirección del nombre viejo). El dominio ya era `pinoloko.com`.
+
+**Zona de arranque acotada al entorno del Mercado de Pino Montano**, caja de 500 x 500 m
+`37.42020,-5.96658,37.42470,-5.96092`, en vez de "un tramo de Pino Montano" sin definir.
+Elegida por Ismael porque es donde está la vida del barrio. Comprobado en OSM: 184 edificios,
+107 con `building:levels`.
+
+**La scooter sustituye al coche como vehículo protagonista.** El argumento de Ismael es que
+Pino Montano se cruza andando y no hay grandes vías, así que una persecución de coches no pega;
+lo que hay es paso a pie entre bloques. Los datos de OSM de la caja lo confirman: 52 vías
+`pedestrian` + 17 `footway` + 12 `cycleway` frente a 30 `residential` + 6 `tertiary`. Dos a uno
+a favor de lo peatonal. Los coches siguen existiendo (tráfico, aparcados, patrullas, robables),
+pero el juego se afina alrededor de la moto, y de ahí sale la mejor mecánica de persecución:
+la patrulla no cabe por los pasajes y tú sí.
+
+**El detalle va en los tejados, no en las fachadas.** Se descartó texturizar fachadas con
+imaginería tipo Street View: la licencia de Google lo prohíbe, metería rótulos y matrículas
+reales (contra la regla dura del brief), el pipeline de proyectar panorámicas sobre huellas es
+trabajo de investigación, y sobre todo la cámara alta enseña azoteas, no fachadas. En su lugar,
+detalle procedural de azotea y explotar las etiquetas que OSM ya trae.

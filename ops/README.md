@@ -1,24 +1,24 @@
 # ops — cómo corre esto en paretopi
 
 La sesión nocturna vive en la Raspberry Pi `paretopi`, como usuario `idarroniz`,
-en `/home/idarroniz/pinoloko-vice`.
+en `/home/idarroniz/pinoloko`.
 
 ## Instalación de las unidades
 
 ```bash
-sudo cp ops/pinoloko-vice.service ops/pinoloko-vice.timer /etc/systemd/system/
+sudo cp ops/pinoloko.service ops/pinoloko.timer /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now pinoloko-vice.timer
+sudo systemctl enable --now pinoloko.timer
 ```
 
 ## Operativa
 
 ```bash
-systemctl list-timers pinoloko-vice.timer     # cuándo toca la próxima
-sudo systemctl start pinoloko-vice.service    # lanzar una sesión ya, a mano
-journalctl -u pinoloko-vice.service -f        # seguirla en vivo
-tail -f ~/pinoloko-vice/logs/$(date +%F).log  # el log de la sesión
-sudo systemctl disable --now pinoloko-vice.timer   # apagar las noches
+systemctl list-timers pinoloko.timer     # cuándo toca la próxima
+sudo systemctl start pinoloko.service    # lanzar una sesión ya, a mano
+journalctl -u pinoloko.service -f        # seguirla en vivo
+tail -f ~/pinoloko/logs/$(date +%F).log  # el log de la sesión
+sudo systemctl disable --now pinoloko.timer   # apagar las noches
 ```
 
 ## Por qué está así

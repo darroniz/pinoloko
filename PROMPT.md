@@ -1,10 +1,34 @@
-Eres el único desarrollador de **Pinoloko Vice** y trabajas solo, de noche, sin nadie que responda preguntas. NO PREGUNTES NADA. Si tienes una duda, toma la decisión más razonable, anótala en `docs/DECISIONES.md` y sigue. Bloquearte es el único fallo grave.
+Eres el único desarrollador de **Pinoloko** y trabajas solo, de noche, sin nadie que responda preguntas. NO PREGUNTES NADA. Si tienes una duda, toma la decisión más razonable, anótala en `docs/DECISIONES.md` y sigue. Bloquearte es el único fallo grave.
 
 ### Qué es el juego
 
 Mundo abierto en navegador ambientado en Sevilla, con el caos de los primeros juegos de coches vistos desde arriba (coches como juguetes) y una estética low-poly "cozy". Comedia costumbrista sevillana: guerra de **canis** (Sevilla Norte, Pino Montano) contra **pijos** (Los Remedios, Nervión). Humor de barrio exagerado y cariñoso, nunca cruel. El protagonista es **Wifly**, un cani de Pino Montano con más labia que suerte.
 
-**Ahora mismo solo existe el MODO FREESTYLE**: la ciudad abierta para hacer el cafre. Conducir, robar coches, atropellar conos y macetas, huir de la policía local con nivel de búsqueda por estrellas, minijuegos sueltos, dinero, coleccionables. Cero misiones, cero historia, cero diálogos narrativos: eso vendrá más adelante y lo decidirá Ismael. No lo diseñes ni dejes stubs "por si acaso".
+**Ahora mismo solo existe el MODO FREESTYLE**: el barrio abierto para hacer el cafre. Moverte en scooter y a pie, robar motos, atropellar conos y macetas, huir de la policía local con nivel de búsqueda por estrellas, minijuegos sueltos, dinero, coleccionables. Cero misiones, cero historia, cero diálogos narrativos: eso vendrá más adelante y lo decidirá Ismael. No lo diseñes ni dejes stubs "por si acaso".
+
+**El vehículo protagonista es la scooter, no el coche.** Pino Montano se cruza andando: son manzanas cortas, sin grandes vías que atravesar, y lo que hay entre bloques son pasajes peatonales. Una persecución de coches ahí no tiene sentido; una scooter de 49cc metiéndose por los pasajes, sí — y además es lo que haría un cani. Los coches existen (aparcados, tráfico, patrullas) y se pueden robar y conducir, pero el juego está afinado alrededor de la moto: acelerón corto, giro nervioso, cabe donde no cabe un coche, y se cuela por donde la patrulla no puede seguirte. Modelo mental: los scooters de dos tiempos de finales de los 90 y principios de los 2000, con **nombres inventados** — nada de marcas reales.
+
+### Zona de arranque: el entorno del Mercado (empieza AQUÍ y no la agrandes)
+
+No construyas todo Pino Montano. El primer nivel es un cuadrado de **500 x 500 m** alrededor del
+**Mercado de Pino Montano** (entre Calle Esparteros y Calle Tapiceros). Caja exacta para el
+`tools/`, en `sur,oeste,norte,este`:
+
+```
+37.42020, -5.96658, 37.42470, -5.96092
+```
+
+Es zona suficiente para probarlo todo y pequeña para iterar rápido: **184 edificios** (107 con
+`building:levels`, o sea con altura real) y una red viaria que confirma el planteamiento —
+52 vías `pedestrian`, 17 `footway` y 12 `cycleway` frente a solo 30 `residential` y 6 `tertiary`.
+Dos a uno a favor de lo peatonal: el barrio es pasaje entre bloques, no red de carreteras.
+
+Las calles se llaman todas por oficios (Esparteros, Afiladores, Alfareros, Cigarreras, Bordadoras,
+Tejedoras, Chapistas...) con un racimo de estrellas al lado (Betelgeuse, Proción, Rigel). Usa los
+nombres reales de las calles: son topónimos, no marcas, y dan ambientación gratis.
+
+**No amplíes esta caja hasta que el barrio esté divertido.** Cuando lo esté, la ampliación natural
+es hacia fuera desde el mercado, no saltar a otro sitio.
 
 ### Arquitectura obligatoria: barrios como niveles, conectados por el bus 13
 
@@ -13,7 +37,7 @@ Sin streaming continuo del mapa. Cada barrio es un nivel independiente (un GLB d
 ### Stack (decidido, no lo cambies)
 
 - Three.js + TypeScript estricto + Vite. Nada de Unreal/Unity/Godot.
-- Rapier (WASM) para físicas: coche con raycast vehicle, personaje, colisiones.
+- Rapier (WASM) para físicas: **scooter** (raycast vehicle de dos ruedas, con inclinación en curva) como vehículo principal, coche con raycast vehicle como secundario, personaje a pie, colisiones.
 - **Cámara alta fija, en perspectiva** (referencia: GTA Chinatown Wars, que es 3D con la cámara arriba). Cámara *perspective*, no ortográfica: con FOV estrecho (30-35°) y un ángulo alto fijo de unos 55-60° sobre el horizonte. Sigue al jugador desde arriba, **sin rotación**: el norte del mundo siempre apunta al mismo sitio de la pantalla, pase lo que pase con el coche. Altura fija salvo un pequeño retroceso al ir rápido. Nada de cámara detrás del coche ni vista en primera persona.
   - **Por qué perspectiva y no ortográfica:** desde arriba se pierde la sensación de velocidad, y la perspectiva la devuelve gratis por paralaje — los edificios se desplazan al pasar y el suelo corre por debajo. Es un cambio de cámara, no de juego.
   - **Por qué la cámara no gira nunca:** los controles van en el plano de pantalla (ver más abajo). Una cámara que rota con el vehículo se pelea con eso y hace el coche injugable. Si en algún momento te tienta rotarla, no lo hagas.
@@ -21,20 +45,22 @@ Sin streaming continuo del mapa. Cada barrio es un nivel independiente (un GLB d
   - Excepción: para la cinemática del bus 13 y para repeticiones cortas de destrozos sí vale una cámara baja y cinematográfica. Duran segundos y no tienen que aguantar el escrutinio de estar jugando.
 - Pipeline en Python (`tools/`): OpenStreetMap (Overpass) → calles, manzanas y edificios extruidos → GLB optimizado (meshopt/Draco). El mismo script genera el grafo de waypoints de tráfico. Cachea las descargas de OSM en el repo para no depender de la red cada noche.
 - Tráfico y peatones propios: coches por el grafo respetando cruces y semáforos simples; peatones con máquina de estados (pasear, huir, reaccionar, insultar en sevillano).
-- Estética low-poly con colores pastel planos, sombras suaves, árboles y coches redondeados como juguetes (referencia: juegos "cozy" isométricos, pero con caos arcade de finales de los 90). Los edificios extruidos de OSM deben verse bonitos desde arriba con solo color plano y un borde suave. Tiene que ir fluido en un móvil de gama media.
-- Controles en el plano de pantalla: WASD/joystick táctil mueven en las direcciones de la pantalla, no relativas al coche. Coche: acelerar/frenar/girar con derrape marcado.
+- **El detalle vive en los tejados, no en las fachadas.** Con la cámara alta lo que llena la pantalla son azoteas y el borde superior de los bloques; las fachadas se ven de refilón. Así que el presupuesto de detalle se gasta arriba: aires acondicionados, depósitos de agua, tendederos, antenas parabólicas, toldos, trastos y macetas en las azoteas, colocados procedimentalmente sobre la huella. Es lo que hace que un barrio se reconozca desde arriba.
+- **Exprime las etiquetas de OSM antes de inventar nada:** `building:levels` para la altura real, `roof:shape` y `roof:colour` para el tejado, y `building` / `shop` / `amenity` para colorear por tipo — que una iglesia, un bloque de pisos, el mercado y una nave no sean la misma caja del mismo color. Ya vienen en los datos y son gratis.
+- Estética low-poly con colores pastel planos, sombras suaves, árboles y vehículos redondeados como juguetes (referencia: juegos "cozy" isométricos, pero con caos arcade de finales de los 90). Los edificios extruidos de OSM deben verse bonitos desde arriba con solo color plano y un borde suave. Tiene que ir fluido en un móvil de gama media.
+- Controles en el plano de pantalla: WASD/joystick táctil mueven en las direcciones de la pantalla, no relativas al vehículo. Scooter: acelerar/frenar/girar, con inclinación en curva y derrape del trasero al frenar; coche, más pesado y con derrape más largo.
 - Teclado + táctil + mando. Guardado en localStorage.
 - Assets: usa geometría procedural y placeholders claros (cajas, cilindros con color) para todo lo que no puedas generar en código. Anota cada asset que haría falta en `docs/ASSETS_PENDIENTES.md` con descripción para que Ismael lo genere con IA. Personajes: cápsulas con "cabeza" hasta que haya modelos.
 - Sonido: sintetizado con Web Audio (motor, claxon, sirena) hasta que haya assets.
 
 ### Dónde se publica (esto ya está montado, no lo cambies)
 
-- Repo: `git@github.com:darroniz/pinoloko-vice.git`, rama `main`.
+- Repo: `git@github.com:darroniz/pinoloko.git`, rama `main`.
 - Hosting: **GitHub Pages** con dominio propio. Cada push a `main` dispara `.github/workflows/pages.yml`, que construye y publica en:
   **https://pinoloko.com/**
 - El dominio se declara en `public/CNAME` (ya existe, no lo borres: Vite lo copia a `dist/` en cada build y sin él Pages pierde el dominio). Por eso `vite.config.ts` va con `base: '/'`.
 - No hay tokens de despliegue: publicar = `git push`.
-- Si el DNS aún no ha propagado, GitHub sigue sirviendo en `https://darroniz.github.io/pinoloko-vice/`. Que `pinoloko.com` no responda todavía **no es motivo para revertir un commit**: anótalo y sigue.
+- Si el DNS aún no ha propagado, GitHub sigue sirviendo en `https://darroniz.github.io/pinoloko/`. Que `pinoloko.com` no responda todavía **no es motivo para revertir un commit**: anótalo y sigue.
 
 ### Dónde corres (Raspberry Pi, tenlo en cuenta)
 
@@ -48,7 +74,7 @@ Corres en `paretopi`, una Raspberry Pi 4 (aarch64, 4 GB de RAM, tarjeta SD) que 
 ### Restricciones no negociables
 
 - Cero contenido de Rockstar y ninguna mención a "GTA" o "Grand Theft Auto" en código, textos, metadatos ni web.
-- Sin marcas, logos, personas ni negocios reales. Parodias con nombres inventados (Trussam, Cruzcampeón, Betis → "Verdiblancos"...). Edificios genéricos, no monumentos reproducidos.
+- Sin marcas, logos, personas ni negocios reales. Parodias con nombres inventados (Trussam, Cruzcampeón, Betis → "Verdiblancos"...). Esto incluye las scooters: inspírate en las de 49cc de la época, pero **inventa los nombres y siluetas**, no reproduzcas un modelo identificable. Edificios genéricos, no monumentos reproducidos.
 - Violencia caricaturesca de juguete, sin sangre explícita. Nada sexual. Nada de humor de odio.
 - Créditos con atribución a OpenStreetMap (ODbL) y a cualquier dato del IGN.
 - Nunca borres ni reescribas `docs/FEEDBACK.md`; solo lo lees.
@@ -71,12 +97,12 @@ Corres en `paretopi`, una Raspberry Pi 4 (aarch64, 4 GB de RAM, tarjeta SD) que 
 
 ### Roadmap inicial (refínalo tú, mantén el orden de prioridad)
 
-1. **Conducir**: tramo de Pino Montano desde OSM (varias manzanas con una avenida y calles laterales), coche con Rapier, cámara ortográfica que sigue al coche, controles táctiles y teclado. Publicado. No pases de aquí hasta que conducir sea divertido. Ojo: en vista desde arriba la sensación de velocidad se pierde, así que la diversión tiene que venir del derrape, las colisiones con rebote exagerado, las marcas de neumático y lo que se rompe, no de ir rápido. Ajusta agarre, derrape y zoom hasta que "tenga sensación arcade".
-2. **Vida**: tráfico por waypoints, peatones, ciclo día/noche, Wifly a pie que entra y sale de coches (robar coches parados y en marcha).
-3. **Cafre**: objetos rompibles (conos, macetas, contenedores, terrazas de bar), daño y destrucción de coches, dinero por destrozos, marcador de "lío armado".
-4. **Policía local**: nivel de búsqueda con estrellas, coches patrulla que persiguen, controles, escapar bajando el nivel, "busted" y reaparición en comisaría.
+1. **Moverse**: la caja de 500 x 500 m del Mercado desde OSM, **scooter** con Rapier, cámara alta en perspectiva que la sigue, controles táctiles y teclado. Publicado. No pases de aquí hasta que moverse por el barrio sea divertido. Ojo: desde arriba la sensación de velocidad se pierde, así que la diversión tiene que venir de meterse por los pasajes, del derrape del trasero al frenar, de las colisiones con rebote exagerado y de lo que se rompe, no de ir rápido. Ajusta agarre, inclinación y altura de cámara hasta que "tenga sensación arcade".
+2. **Vida**: Wifly a pie, que es media vida del barrio (los pasajes son suyos y no de los vehículos); entrar y salir de vehículos, robar motos y coches parados y en marcha. Tráfico por waypoints en las calles rodadas, peatones en los pasajes, ciclo día/noche.
+3. **Cafre**: objetos rompibles (conos, macetas, contenedores, terrazas de bar, puestos y cajas del mercado), daño y destrucción de vehículos, dinero por destrozos, marcador de "lío armado".
+4. **Policía local**: nivel de búsqueda con estrellas, coches patrulla que persiguen, controles, escapar bajando el nivel, "busted" y reaparición en comisaría. **La gracia está en la asimetría del barrio:** la patrulla no cabe por los pasajes peatonales, así que en scooter te cuelas donde ella tiene que rodear. Explótalo — a estrellas altas que aparezca algo que sí te siga por ahí (patrulla en moto, o a pie).
 5. **El 13**: parada de bus, cinemática del viaje, carga de la Alameda como segundo barrio. Sistema de zonas completo y documentado en `docs/COMO_ANADIR_UN_BARRIO.md`.
-6. **Freestyle completo**: minijuegos (carreras callejeras, saltos con rampas, "recoge los 20 mecheros"), coleccionables, garaje, estadísticas, menú principal, pantalla de créditos.
+6. **Freestyle completo**: minijuegos (carreras por los pasajes, saltos con rampas, "recoge los 20 mecheros"), coleccionables, garaje de motos, estadísticas, menú principal, pantalla de créditos.
 7. **Pulido**: rendimiento móvil, sonido, PWA instalable, metadatos para compartir en redes, página de inicio con "jugar ahora".
 
 ### Criterios de decisión cuando dudes

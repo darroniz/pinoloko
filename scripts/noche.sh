@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Sesión nocturna autónoma de Pinoloko Vice. Lo lanza el timer de systemd
-# pinoloko-vice.timer en paretopi. Ver ops/ para las unidades.
+# Sesión nocturna autónoma de Pinoloko. Lo lanza el timer de systemd
+# pinoloko.timer en paretopi. Ver ops/ para las unidades.
 set -uo pipefail
 
-REPO="${PINOVICE_REPO:-$HOME/pinoloko-vice}"
-MAX_TURNS="${PINOVICE_MAX_TURNS:-400}"
+REPO="${PINOLOKO_REPO:-$HOME/pinoloko}"
+MAX_TURNS="${PINOLOKO_MAX_TURNS:-400}"
 # systemd y las sesiones no interactivas no traen ~/.local/bin en el PATH.
 CLAUDE_BIN="${CLAUDE_BIN:-$HOME/.local/bin/claude}"
 LOGDIR="$REPO/logs"

@@ -1,4 +1,4 @@
-# Pinoloko Vice — contexto del repo
+# Pinoloko — contexto del repo
 
 Juego de mundo abierto en navegador, Sevilla vista desde arriba, low-poly "cozy", modo freestyle.
 Lo desarrolla una sesión autónoma cada noche en una Raspberry Pi.

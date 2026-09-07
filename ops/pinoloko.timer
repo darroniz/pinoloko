@@ -1,11 +1,11 @@
 [Unit]
-Description=Lanza la sesión nocturna de Pinoloko Vice a las 00:30
+Description=Lanza la sesión nocturna de Pinoloko a las 00:30
 
 [Timer]
 OnCalendar=*-*-* 00:30:00
 RandomizedDelaySec=5min
 Persistent=false
-Unit=pinoloko-vice.service
+Unit=pinoloko.service
 
 [Install]
 WantedBy=timers.target

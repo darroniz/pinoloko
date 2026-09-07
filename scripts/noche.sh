@@ -15,13 +15,20 @@ LOGDIR="$REPO/logs"
 
 # Lee el consumo que dejó cacheado la última sesión. Solo sirve de freno grueso:
 # la cifra es de la última vez que la CLI la refrescó, no de ahora mismo.
+# Devuelve el MÁS ALTO de los cupos semanales. Hay varios y no basta con mirar el
+# general: el modelo con el que se trabaja tiene además su propio cupo semanal, y
+# como todas las noches van con el mismo modelo, ese es el que sube deprisa.
 uso_semanal() {
   python3 - <<'PYEOF' 2>/dev/null || echo ""
 import json, os
 try:
     u = json.load(open(os.path.expanduser("~/.claude.json")))["cachedUsageUtilization"]["utilization"]
-    v = u.get("seven_day") or {}
-    print(v.get("utilization", ""))
+    vals = [
+        v["utilization"]
+        for k, v in u.items()
+        if k.startswith("seven_day") and isinstance(v, dict) and v.get("utilization") is not None
+    ]
+    print(max(vals) if vals else "")
 except Exception:
     print("")
 PYEOF
@@ -37,9 +44,9 @@ LOG="$LOGDIR/$(date +%F).log"
   echo "===================================================================="
 
   USO=$(uso_semanal)
-  echo "== Consumo semanal en la última lectura: ${USO:-desconocido}% (tope: $TOPE_SEMANAL%)"
+  echo "== Cupo semanal más alto en la última lectura: ${USO:-desconocido}% (tope: $TOPE_SEMANAL%)"
   if [ -n "$USO" ] && [ "$USO" -ge "$TOPE_SEMANAL" ] 2>/dev/null; then
-    echo "== La cuota semanal va al $USO%. Esta noche no se trabaja: la reserva es para Ismael."
+    echo "== Un cupo semanal va al $USO%. Esta noche no se trabaja: la reserva es para Ismael."
     exit 0
   fi
 
@@ -55,7 +62,7 @@ LOG="$LOGDIR/$(date +%F).log"
     --max-turns "$MAX_TURNS"
 
   echo "== Fin $(date '+%F %T') (salida: $?)"
-  echo "== Consumo semanal tras la sesión: $(uso_semanal)%"
+  echo "== Cupo semanal más alto tras la sesión: $(uso_semanal)%"
 } >> "$LOG" 2>&1
 
 # Los logs no van al repo, y no dejamos que crezcan sin fin.

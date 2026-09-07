@@ -30,12 +30,17 @@ sudo systemctl disable --now pinoloko.timer   # apagar las noches
   sesión más larga que eso abre una segunda ventana que se solapa con la mañana y deja a Ismael
   la cuota mordida. Por eso la noche entera (00:15 → 05:05) cabe dentro de una sola ventana, y a
   las 09:00 esa ventana ya ha expirado: mañana limpia.
-- **Freno semanal:** el límite `seven_day` es el que de verdad duele, porque se acumula noche a
-  noche y se reinicia una vez por semana a hora fija. `noche.sh` lee el consumo que dejó cacheado
-  la sesión anterior y **no arranca** si va por encima de `PINOLOKO_TOPE_SEMANAL` (70% por
-  defecto). Es un freno grueso — la cifra es de la última lectura, no de ahora mismo — pero evita
-  que el juego se coma la semana de trabajo. Para verlo en vivo: `/usage` en una sesión
-  interactiva.
+- **Freno semanal:** los cupos de 7 días son los que de verdad duelen, porque se acumulan noche a
+  noche y solo se reinician una vez por semana — **los martes a las 12:00 (Europe/Madrid)**,
+  comprobado el 07-sep-2026. Y no hay uno solo: existe el general ("all models") y **uno propio
+  por modelo**. Como todas las noches van con el mismo modelo, el suyo sube mucho más rápido que
+  el general. Por eso `noche.sh` lee **el más alto de todos** los `seven_day*` que la CLI dejó
+  cacheados y **no arranca** si supera `PINOLOKO_TOPE_SEMANAL` (70% por defecto). Es un freno
+  grueso: la cifra es de la última lectura, no de ese instante. Para verlo en vivo, `/usage` en
+  una sesión interactiva.
+- **Ojo con el día de la semana.** Como el cupo se reinicia el martes al mediodía, las noches de
+  domingo y lunes son las que más cerca están del corte: si alguna semana el freno salta, será
+  ahí. Las noches de martes a jueves van sobradas.
 - **Modelo:** Fable 5.1 (`claude-fable-5-1`), fijado en `PINOLOKO_MODEL` en la unidad.
 - **`Persistent=false`:** si la Pi estaba apagada a las 00:30, no se dispara una sesión al
   encenderla a media mañana.

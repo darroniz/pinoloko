@@ -141,3 +141,21 @@ Además, `noche.sh` no arranca si el consumo **semanal** cacheado supera el 70%
 noche y solo se reinicia una vez por semana. Es un freno grueso, porque la cifra que lee es la de
 la última lectura de la CLI y no la de ese instante, pero basta para que el juego no se coma la
 semana.
+
+## 2026-09-07 — Cifras reales de cuota (medidas, no supuestas)
+
+Leído con `/usage` en el portátil de Ismael:
+
+- **Sesión:** ventana rodante de 5 h. Marcaba reset a las 17:30 con la ventana abierta desde las
+  12:30 — hora rota, que confirma que rueda con la primera petición y no va a hora fija.
+- **Semana (todos los modelos):** reinicia los **martes a las 12:00 (Europe/Madrid)**.
+- **Semana (por modelo):** existe un cupo semanal **separado** para el modelo con el que se
+  trabaja, con el mismo reset. Este es el que importa aquí: como todas las noches van con el
+  mismo modelo, sube mucho más rápido que el general.
+
+Por eso el freno de `noche.sh` mira **el máximo de todos los cupos semanales**, no solo el
+general: mirando únicamente "all models" se pasaría por alto justo el que la sesión nocturna
+agota primero.
+
+Nota de calendario: el reset semanal cae en martes a mediodía, así que las noches de domingo y
+lunes son las que llegan con el cupo más gastado.

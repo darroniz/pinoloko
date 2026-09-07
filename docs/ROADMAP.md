@@ -4,21 +4,21 @@ Orden de prioridad. Cada tarea debe caber en una sesión nocturna y dejar el jue
 Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 
 ## 0. Arranque
-- [ ] Proyecto Vite + TypeScript estricto + Three.js + Rapier, lint y tests configurados.
-- [ ] `CLAUDE.md` del repo con el brief resumido.
-- [ ] Script de verificación del paso 5 (servir `dist/`, Playwright headless, los tres checks).
+- [x] Proyecto Vite + TypeScript estricto + Three.js + Rapier, lint y tests configurados.
+- [x] `CLAUDE.md` del repo con el brief resumido.
+- [x] Script de verificación del paso 5 (servir `dist/`, Playwright headless, los tres checks).
 
 ## 1. Moverse
-- [ ] `tools/` en Python: descarga de OSM de la caja del Mercado
+- [x] `tools/` en Python: descarga de OSM de la caja del Mercado
       (`37.42020,-5.96658,37.42470,-5.96092`), cacheada en el repo.
-- [ ] Extrusión de manzanas y edificios → GLB optimizado, con altura de `building:levels`.
-- [ ] Coloreado por tipo (`building`/`shop`/`amenity`) y tejados con `roof:shape`/`roof:colour`.
-- [ ] Detalle procedural de azotea: aires, depósitos, tendederos, parabólicas, macetas.
-- [ ] Grafo de waypoints generado por el mismo script, separando rodado de peatonal.
-- [ ] Scooter con Rapier: inclinación en curva, derrape del trasero al frenar, rebote exagerado.
-- [ ] Cámara alta en perspectiva (FOV estrecho, 55-60°, sin rotación), con retroceso leve a
+- [x] Extrusión de manzanas y edificios (nivel JSON + geometría en cliente; GLB si hace falta), con altura de `building:levels`.
+- [x] Coloreado por tipo (`building`/`shop`/`amenity`) y tejados con `roof:shape`/`roof:colour`.
+- [x] Detalle procedural de azotea: aires, depósitos, tendederos, parabólicas, macetas.
+- [x] Grafo de waypoints generado por el mismo script, separando rodado de peatonal.
+- [x] Scooter con Rapier: inclinación en curva, derrape del trasero al frenar, rebote exagerado.
+- [x] Cámara alta en perspectiva (FOV estrecho, 55-60°, sin rotación), con retroceso leve a
       velocidad alta.
-- [ ] Controles: teclado, joystick táctil y mando, en el plano de pantalla.
+- [x] Controles: teclado, joystick táctil y mando, en el plano de pantalla.
 - [ ] Marcas de neumático y feedback de choque.
 - [ ] **Gate: moverse por el barrio tiene que ser divertido antes de pasar de aquí.**
 

@@ -177,3 +177,39 @@ el arranque: empezar a las 23:00 sería peor, no mejor, porque si Ismael ha esta
 tarde su ventana de 5 h sigue abierta y la sesión nocturna se metería dentro, con lo que la
 siguiente ventana se abriría de madrugada y alcanzaría su mañana. Arrancar tarde es lo que
 garantiza que la Pi estrena ventana.
+
+## 2026-09-08 — Primera sesión: nivel en JSON, scooter arcade sobre una bola, losetas
+
+**El nivel es JSON, no GLB (de momento).** En la Pi no hay `pip` ni `numpy`, así que el pipeline
+de `tools/` va en Python de stdlib puro: descarga Overpass cacheada en `tools/cache-osm/` y un
+`nivel.json` de ~110 KB con huellas en metros locales, alturas, tipo, color, vías, grafo, POIs y
+zonas. La geometría (extrusión, cintas de calle, azoteas) la construye Three.js al cargar, en
+menos de medio segundo para 186 edificios. Ventajas: pesa menos que un GLB, y el detalle de
+azotea se puede iterar en TypeScript sin regenerar nada. Si algún barrio crece hasta que la
+construcción en cliente tarde, se pasa a GLB entonces; el formato intermedio ya está.
+
+**Sin árboles en OSM: se plantan solos.** La caja no trae ni un `natural=tree`, así que los
+árboles se reparten procedimentalmente por los pasajes (cada 11 m, a un lado) y por los jardines,
+evitando edificios y asfalto, con semilla fija para que el barrio sea siempre el mismo.
+
+**La scooter es arcade, no un raycast vehicle.** Físicamente es una bola de Rapier con rotaciones
+bloqueadas y fricción cero; el rumbo, el agarre lateral, el frenado y el derrape se calculan a
+mano cada paso y se escriben como velocidad. Un raycast vehicle de dos ruedas sobre suelo plano
+no aporta nada y quita control sobre la sensación. La inclinación en curva y el cruce del trasero
+son visuales, sobre la malla. Un detalle que costó media hora: con fricción "media" entre bola y
+suelo la deceleración por rozamiento era de 11 m/s² y anulaba exactamente el motor.
+
+**Losetas de 64 m con recorte de frustum.** Con todo el barrio en una malla y las instancias sin
+recorte, cada frame dibujaba 204.000 triángulos aunque en pantalla cupiese un 5%. Partido en
+losetas (una malla por loseta, un InstancedMesh por loseta y tipo de trasto) baja a ~11.000.
+En SwiftShader pasa de 1 fps a 10-13; en un móvil real es la diferencia entre ir fluido o no.
+
+**Calidad automática.** Si el renderizador es por software (SwiftShader, llvmpipe) o se pide
+`?calidad=baja`, se apagan las sombras, el antialias y se dibuja a DPR 1. Es lo que permite que
+la verificación en la Pi tenga sentido, y de paso sirve para móviles flojos.
+
+**La moto se dibuja a escala 1,6.** Desde 66 m de altura una scooter real de 1,7 m es un píxel
+en el móvil. Los edificios van a escala real; la moto, de juguete. La física sigue a 1:1.
+
+**Arranque en la calle rodada más cercana al Mercado**, mirando a lo largo de ella, en vez de en
+el origen de coordenadas (que cae encima de la azotea del Mercado).

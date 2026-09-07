@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#f6c58f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Pinoloko: Sevilla desde arriba, en scooter y haciendo el cafre por Pino Montano." />
+    <meta property="og:title" content="Pinoloko" />
+    <meta property="og:description" content="Sevilla desde arriba, en scooter, haciendo el cafre por Pino Montano." />
+    <meta property="og:image" content="https://pinoloko.com/marca/logo.png" />
+    <meta property="og:url" content="https://pinoloko.com/" />
+    <link rel="icon" href="/marca/icono.png" />
+    <link rel="apple-touch-icon" href="/marca/icono.png" />
+    <title>Pinoloko</title>
+    <link rel="stylesheet" href="/src/estilo.css" />
+  </head>
+  <body>
+    <canvas id="lienzo"></canvas>
+    <div id="hud">
+      <div id="hud-calle"></div>
+      <div id="hud-velocidad"><span id="hud-kmh">0</span><small>km/h</small></div>
+      <div id="hud-dinero">0 €</div>
+    </div>
+    <div id="joystick"><div id="joystick-bola"></div></div>
+    <button id="boton-freno" type="button" aria-label="Freno">FRENO</button>
+    <div id="portada">
+      <img src="/marca/logo.png" alt="Pinoloko" />
+      <p>Pino Montano desde arriba. Coge la Jog RR y haz el cafre.</p>
+      <button id="boton-jugar" type="button">JUGAR</button>
+      <p class="ayuda">Teclado: WASD / flechas para ir, ESPACIO para frenar y derrapar.<br />Móvil: joystick y botón de freno.</p>
+      <p class="creditos">Mapa: © colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL)</p>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -6,31 +6,43 @@ set -uo pipefail
 REPO="${PINOLOKO_REPO:-$HOME/pinoloko}"
 MAX_TURNS="${PINOLOKO_MAX_TURNS:-1500}"
 MODEL="${PINOLOKO_MODEL:-claude-fable-5-1}"
-# Si el consumo semanal ya va alto, esta noche no sale: la cuota es la misma que
-# usa Ismael para trabajar, y su trabajo va primero.
-TOPE_SEMANAL="${PINOLOKO_TOPE_SEMANAL:-70}"
+# Dos topes, porque no todos los cupos semanales son iguales:
+#  - COMPARTIDO: el cupo "all models", que es el mismo del que tira Ismael cuando
+#    trabaja (él va en Opus). Aquí mano dura: lo suyo va primero.
+#  - PROPIO: el cupo semanal del modelo de la sesión nocturna. Ese no se lo quita
+#    a nadie, así que se puede apurar casi entero.
+TOPE_COMPARTIDO="${PINOLOKO_TOPE_COMPARTIDO:-60}"
+TOPE_PROPIO="${PINOLOKO_TOPE_PROPIO:-92}"
 # systemd y las sesiones no interactivas no traen ~/.local/bin en el PATH.
 CLAUDE_BIN="${CLAUDE_BIN:-$HOME/.local/bin/claude}"
 LOGDIR="$REPO/logs"
 
 # Lee el consumo que dejó cacheado la última sesión. Solo sirve de freno grueso:
 # la cifra es de la última vez que la CLI la refrescó, no de ahora mismo.
-# Devuelve el MÁS ALTO de los cupos semanales. Hay varios y no basta con mirar el
-# general: el modelo con el que se trabaja tiene además su propio cupo semanal, y
-# como todas las noches van con el mismo modelo, ese es el que sube deprisa.
-uso_semanal() {
-  python3 - <<'PYEOF' 2>/dev/null || echo ""
+# Imprime dos números: el cupo semanal COMPARTIDO ("all models") y el más alto de
+# los cupos semanales propios de un modelo. Se miran por separado porque solo el
+# primero le resta a Ismael.
+cupos_semanales() {
+  python3 - <<'PYEOF' 2>/dev/null || echo " "
 import json, os
+compartido, propio = "", ""
 try:
     u = json.load(open(os.path.expanduser("~/.claude.json")))["cachedUsageUtilization"]["utilization"]
-    vals = [
-        v["utilization"]
-        for k, v in u.items()
-        if k.startswith("seven_day") and isinstance(v, dict) and v.get("utilization") is not None
+    v = u.get("seven_day")
+    if isinstance(v, dict) and v.get("utilization") is not None:
+        compartido = v["utilization"]
+    otros = [
+        x["utilization"]
+        for k, x in u.items()
+        if k != "seven_day" and isinstance(x, dict) and x.get("utilization") is not None
+        and (k.startswith("seven_day") or u.get("seven_day") is not None)
+        and k not in ("extra_usage", "five_hour")
     ]
-    print(max(vals) if vals else "")
+    if otros:
+        propio = max(otros)
 except Exception:
-    print("")
+    pass
+print(compartido, propio)
 PYEOF
 }
 
@@ -43,10 +55,14 @@ LOG="$LOGDIR/$(date +%F).log"
   echo "== Sesión $(date '+%F %T') — modelo=$MODEL, max-turns=$MAX_TURNS"
   echo "===================================================================="
 
-  USO=$(uso_semanal)
-  echo "== Cupo semanal más alto en la última lectura: ${USO:-desconocido}% (tope: $TOPE_SEMANAL%)"
-  if [ -n "$USO" ] && [ "$USO" -ge "$TOPE_SEMANAL" ] 2>/dev/null; then
-    echo "== Un cupo semanal va al $USO%. Esta noche no se trabaja: la reserva es para Ismael."
+  read -r COMPARTIDO PROPIO <<<"$(cupos_semanales)"
+  echo "== Cupo semanal compartido: ${COMPARTIDO:-?}% (tope $TOPE_COMPARTIDO%) · propio del modelo: ${PROPIO:-?}% (tope $TOPE_PROPIO%)"
+  if [ -n "$COMPARTIDO" ] && [ "$COMPARTIDO" -ge "$TOPE_COMPARTIDO" ] 2>/dev/null; then
+    echo "== El cupo COMPARTIDO va al $COMPARTIDO%. Esta noche no se trabaja: lo que queda es para Ismael."
+    exit 0
+  fi
+  if [ -n "$PROPIO" ] && [ "$PROPIO" -ge "$TOPE_PROPIO" ] 2>/dev/null; then
+    echo "== El cupo propio del modelo va al $PROPIO%. Queda muy poco margen; se para."
     exit 0
   fi
 
@@ -62,7 +78,7 @@ LOG="$LOGDIR/$(date +%F).log"
     --max-turns "$MAX_TURNS"
 
   echo "== Fin $(date '+%F %T') (salida: $?)"
-  echo "== Cupo semanal más alto tras la sesión: $(uso_semanal)%"
+  read -r C P <<<"$(cupos_semanales)"; echo "== Al terminar — compartido: ${C:-?}% · propio: ${P:-?}%"
 } >> "$LOG" 2>&1
 
 # Los logs no van al repo, y no dejamos que crezcan sin fin.

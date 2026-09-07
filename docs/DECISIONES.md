@@ -159,3 +159,21 @@ agota primero.
 
 Nota de calendario: el reset semanal cae en martes a mediodía, así que las noches de domingo y
 lunes son las que llegan con el cupo más gastado.
+
+## 2026-09-07 — Más caña al modelo propio, mano dura con el cupo compartido
+
+Ismael trabaja casi siempre en Opus, así que el cupo semanal del modelo de la sesión nocturna
+(Fable) es prácticamente suyo para gastar. El freno pasa a tener **dos umbrales** en vez de uno:
+
+- cupo **compartido** ("all models"): tope al **60%**. De ahí también tira Ismael, y su trabajo
+  va primero.
+- cupo **propio del modelo**: tope al **92%**. Ese no se lo quita a nadie, así que se apura.
+
+`--max-turns` sube de 1500 a 2500 por la misma razón: que el límite de la noche sea el reloj.
+
+Lo que **no** se ha tocado, y conviene saber por qué: la ventana de sesión de 5 h **sí es
+compartida** entre modelos, así que el horario 00:15 → 04:45 se queda como está. Y no se adelanta
+el arranque: empezar a las 23:00 sería peor, no mejor, porque si Ismael ha estado trabajando esa
+tarde su ventana de 5 h sigue abierta y la sesión nocturna se metería dentro, con lo que la
+siguiente ventana se abriría de madrugada y alcanzaría su mañana. Arrancar tarde es lo que
+garantiza que la Pi estrena ventana.

@@ -25,8 +25,12 @@ MemoryMax=2400M
 Environment=NODE_OPTIONS=--max-old-space-size=1536
 Environment=CHROMIUM_PATH=/usr/bin/chromium
 Environment=PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-Environment=PINOLOKO_MAX_TURNS=1500
+Environment=PINOLOKO_MAX_TURNS=2500
 Environment=PINOLOKO_MODEL=claude-fable-5-1
+# Ismael trabaja en Opus: el cupo semanal de Fable es casi todo para la sesión
+# nocturna, pero el cupo "all models" sí es compartido y se guarda con más celo.
+Environment=PINOLOKO_TOPE_COMPARTIDO=60
+Environment=PINOLOKO_TOPE_PROPIO=92
 Environment=PATH=/home/idarroniz/.local/bin:/usr/local/bin:/usr/bin:/bin
 
 [Install]

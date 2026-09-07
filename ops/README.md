@@ -30,14 +30,16 @@ sudo systemctl disable --now pinoloko.timer   # apagar las noches
   sesión más larga que eso abre una segunda ventana que se solapa con la mañana y deja a Ismael
   la cuota mordida. Por eso la noche entera (00:15 → 05:05) cabe dentro de una sola ventana, y a
   las 09:00 esa ventana ya ha expirado: mañana limpia.
-- **Freno semanal:** los cupos de 7 días son los que de verdad duelen, porque se acumulan noche a
-  noche y solo se reinician una vez por semana — **los martes a las 12:00 (Europe/Madrid)**,
-  comprobado el 07-sep-2026. Y no hay uno solo: existe el general ("all models") y **uno propio
-  por modelo**. Como todas las noches van con el mismo modelo, el suyo sube mucho más rápido que
-  el general. Por eso `noche.sh` lee **el más alto de todos** los `seven_day*` que la CLI dejó
-  cacheados y **no arranca** si supera `PINOLOKO_TOPE_SEMANAL` (70% por defecto). Es un freno
-  grueso: la cifra es de la última lectura, no de ese instante. Para verlo en vivo, `/usage` en
-  una sesión interactiva.
+- **Freno semanal, con dos varas de medir.** Los cupos de 7 días se acumulan noche a noche y solo
+  se reinician **los martes a las 12:00 (Europe/Madrid)** (comprobado el 07-sep-2026). Hay dos
+  tipos y no valen lo mismo:
+  - el **compartido** (`seven_day`, "all models") es del que también tira Ismael cuando trabaja,
+    así que se protege: `PINOLOKO_TOPE_COMPARTIDO`, 60% por defecto;
+  - el **propio del modelo** de la sesión nocturna no se lo quita a nadie —Ismael trabaja en
+    Opus— así que se apura casi entero: `PINOLOKO_TOPE_PROPIO`, 92%.
+
+  `noche.sh` lee los dos del cache de la CLI y no arranca si cualquiera pasa su tope. Es un freno
+  grueso: la cifra es de la última lectura, no de ese instante. En vivo, `/usage`.
 - **Ojo con el día de la semana.** Como el cupo se reinicia el martes al mediodía, las noches de
   domingo y lunes son las que más cerca están del corte: si alguna semana el freno salta, será
   ahí. Las noches de martes a jueves van sobradas.

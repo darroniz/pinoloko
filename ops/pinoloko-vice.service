@@ -1,0 +1,29 @@
+[Unit]
+Description=Pinoloko Vice — sesión nocturna autónoma de Claude Code
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=idarroniz
+WorkingDirectory=/home/idarroniz/pinoloko-vice
+ExecStart=/home/idarroniz/pinoloko-vice/scripts/noche.sh
+
+# Corte duro: si una sesión se atasca, no se come la mañana.
+TimeoutStartSec=5h
+
+# La Pi comparte sitio con Immich y el stack de Velltec: la sesión nocturna
+# cede CPU y disco, y tiene techo de memoria.
+Nice=10
+IOSchedulingClass=idle
+CPUWeight=30
+MemoryHigh=1800M
+MemoryMax=2400M
+
+Environment=NODE_OPTIONS=--max-old-space-size=1536
+Environment=CHROMIUM_PATH=/usr/bin/chromium
+Environment=PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+Environment=PINOVICE_MAX_TURNS=400
+
+[Install]
+WantedBy=multi-user.target

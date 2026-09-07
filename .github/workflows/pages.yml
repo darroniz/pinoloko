@@ -32,6 +32,7 @@ jobs:
           else
             echo "Todavía no hay proyecto: publico la portada provisional."
             mkdir -p dist
+            cp -r public/. dist/
             cp ops/portada-provisional.html dist/index.html
           fi
           # El dominio propio depende de que CNAME llegue al sitio publicado.

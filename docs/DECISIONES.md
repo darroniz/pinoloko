@@ -49,3 +49,22 @@ vive en la configuración del repo (`PUT /repos/:owner/:repo/pages`, campo `cnam
 `pinoloko.com`. Se mantiene `public/CNAME` de todas formas como red de seguridad y como pista
 para quien lea el repo. Si algún día el dominio "se cae" del sitio, el sitio a mirar es Settings
 → Pages, no el fichero.
+
+## 2026-09-07 — Cámara: perspectiva alta en vez de ortográfica
+
+El brief original pedía cámara **ortográfica** a 45°. Se cambia a **perspectiva** con FOV
+estrecho y ángulo alto fijo (55-60°), sin rotación. Decidido con Ismael el mismo día del
+montaje, antes de la primera sesión.
+
+Motivo: el propio brief ya señalaba que desde arriba se pierde la sensación de velocidad y
+pedía compensarlo con derrape y colisiones. La perspectiva devuelve parte de esa sensación
+por paralaje, sin coste de producción y sin tocar el diseño.
+
+Se descartó el 3D a ras de calle (tipo GTA III) por el arte, no por el motor: los edificios
+son extrusiones de huellas de OpenStreetMap con color plano y desde abajo son cajas grises.
+Bajar la cámara obligaría a fachadas, LODs, oclusión y niebla de distancia — justo el trabajo
+que la arquitectura de barrios-como-niveles evita a propósito. Referencia asumida: GTA
+Chinatown Wars (2009), posterior a GTA IV, que teniendo motor 3D completo eligió cámara alta
+para pantalla pequeña. Se toma de ahí la **altura de cámara**, no la densidad de arte.
+
+La cámara baja queda reservada a la cinemática del 13 y a repeticiones cortas.

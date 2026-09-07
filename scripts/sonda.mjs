@@ -26,6 +26,6 @@ await p.keyboard.down('d');
 await new Promise((r) => setTimeout(r, 2500));
 await p.keyboard.up('w'); await p.keyboard.up('d');
 const f1 = await p.evaluate(() => window.__pv_frames);
-console.log('frames/5s', f1 - f0);
+console.log('frames/5s', f1 - f0, 'update mediana', await p.evaluate(() => { const m = performance.getEntriesByName('update').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'render mediana', await p.evaluate(() => { const m = performance.getEntriesByName('render').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'objetos', await p.evaluate(() => { let n = 0; window.__pv_escena?.traverse(() => n++); return n; }));
 console.log(JSON.stringify(await p.evaluate(() => window.__pv_info())));
 await b.close(); srv.close();

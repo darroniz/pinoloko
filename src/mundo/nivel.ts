@@ -132,7 +132,7 @@ function geometriaEdificio(e: Edificio): THREE.BufferGeometry {
   return g;
 }
 
-export function construirBarrio(nivel: Nivel): BarrioConstruido {
+export function construirBarrio(nivel: Nivel, opciones: { bordes?: boolean; ligero?: boolean } = {}): BarrioConstruido {
   const grupo = new THREE.Group();
   grupo.name = 'barrio';
   const materialSuelo = new THREE.MeshLambertMaterial({ vertexColors: true });
@@ -168,9 +168,10 @@ export function construirBarrio(nivel: Nivel): BarrioConstruido {
   const cPasaje = new THREE.Color(COLORES.pasaje), cCarril = new THREE.Color(COLORES.carril), cLinea = new THREE.Color(COLORES.lineaVia);
   for (const via of nivel.vias) {
     if (via.clase === 'rodada') {
-      aceras.push(...geometriaVia(via, 0.02, cAcera, 2.2));
+      // En calidad baja se ahorran las capas de acera y línea central (menos relleno de píxeles).
+      if (!opciones.ligero) aceras.push(...geometriaVia(via, 0.02, cAcera, 2.2));
       asfalto.push(...geometriaVia(via, 0.03, cAsfalto));
-      lineas.push(...geometriaLineaCentral(via, 0.04, cLinea));
+      if (!opciones.ligero) lineas.push(...geometriaLineaCentral(via, 0.04, cLinea));
     } else {
       pasajes.push(...geometriaVia(via, 0.025, via.tipo === 'cycleway' ? cCarril : cPasaje));
     }
@@ -193,7 +194,7 @@ export function construirBarrio(nivel: Nivel): BarrioConstruido {
   geoColision.dispose();
   grupo.add(mallasPorLoseta(cuerpos, new THREE.MeshLambertMaterial({ vertexColors: true }), {
     nombre: 'edificios', sombra: true, recibeSombra: true,
-    bordes: new THREE.LineBasicMaterial({ color: '#5a4a3f', transparent: true, opacity: 0.35 }),
+    ...(opciones.bordes === false ? {} : { bordes: new THREE.LineBasicMaterial({ color: '#5a4a3f', transparent: true, opacity: 0.35 }) }),
   }));
 
   return { grupo, colisionEdificios: { vertices, indices } };

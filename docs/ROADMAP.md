@@ -19,7 +19,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Cámara alta en perspectiva (FOV estrecho, 55-60°, sin rotación), con retroceso leve a
       velocidad alta.
 - [x] Controles: teclado, joystick táctil y mando, en el plano de pantalla.
-- [ ] Marcas de neumático y feedback de choque.
+- [x] Marcas de neumático y feedback de choque (sacudida, chispas, sonido).
 - [ ] **Gate: moverse por el barrio tiene que ser divertido antes de pasar de aquí.**
 
 ## 2. Vida
@@ -30,9 +30,10 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] Ciclo día/noche.
 
 ## 3. Cafre
-- [ ] Objetos rompibles: conos, macetas, contenedores, terrazas de bar, puestos del mercado.
+- [x] Objetos derribables: conos, macetas, contenedores, papeleras, vallas, terrazas de bar, cajas del mercado.
+- [ ] Objetos que se rompen de verdad (macetas en trozos, cristales) en vez de solo volcar.
 - [ ] Daño y destrucción de vehículos.
-- [ ] Dinero por destrozos y marcador de "lío armado".
+- [x] Dinero por destrozos y racha de "lío armado" con multiplicador.
 
 ## 4. Policía local
 - [ ] Nivel de búsqueda por estrellas.

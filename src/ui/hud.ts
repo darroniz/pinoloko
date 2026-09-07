@@ -6,11 +6,15 @@ export class Hud {
   private aviso: HTMLElement;
   private temporizadorAviso = 0;
   private ultimaCalle = '';
+  private racha: HTMLElement;
 
   constructor() {
     this.calle = document.getElementById('hud-calle')!;
     this.kmh = document.getElementById('hud-kmh')!;
     this.dinero = document.getElementById('hud-dinero')!;
+    this.racha = document.createElement('div');
+    this.racha.id = 'racha';
+    document.body.appendChild(this.racha);
     this.aviso = document.createElement('div');
     this.aviso.id = 'aviso';
     document.body.appendChild(this.aviso);
@@ -28,6 +32,11 @@ export class Hud {
 
   ponerDinero(cantidad: number): void {
     this.dinero.textContent = `${cantidad} €`;
+  }
+
+  ponerRacha(n: number): void {
+    this.racha.textContent = n >= 2 ? `×${n} lío` : '';
+    this.racha.classList.toggle('visible', n >= 2);
   }
 
   avisar(texto: string, segundos = 2): void {

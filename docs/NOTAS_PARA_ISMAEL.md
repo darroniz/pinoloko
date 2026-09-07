@@ -14,7 +14,7 @@ Objetivo: **hito 1 entero** (Moverse) publicado y jugable en el móvil.
       Overpass cacheada, nivel del Mercado en JSON local (edificios con altura y color por tipo,
       calles rodadas y pasajes, POIs con nombre, grafo de waypoints). Cargador en Three.js con
       cámara alta en perspectiva. Primer push: se ve el barrio.
-- [ ] **Bloque 2 (01:40-02:40)** — Scooter con Rapier: controles en plano de pantalla (teclado,
+- [x] **Bloque 2 (01:40-02:40, hecho a la 01:05)** — Scooter con Rapier: controles en plano de pantalla (teclado,
       joystick táctil, mando), inclinación en curva, derrape al frenar, rebote en choques.
       Cámara que sigue con retroceso a velocidad. Push: se conduce.
 - [ ] **Bloque 3 (02:40-03:30)** — Vida en la azotea y en la calle: aires, depósitos,

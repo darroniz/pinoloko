@@ -11,6 +11,9 @@ import type { Nivel } from './mundo/tipos';
 import { Hud } from './ui/hud';
 import { AudioJuego } from './audio/motor';
 import { cargarPartida, guardarPartida } from './guardado';
+import { FRASES, Trastos } from './mundo/trastos';
+import { MarcasNeumatico } from './efectos/marcas';
+import { Particulas } from './efectos/particulas';
 
 declare global {
   interface Window {
@@ -18,6 +21,7 @@ declare global {
     __pv_listo: boolean;
     __pv_jugando: boolean;
     __pv_info: () => unknown;
+    __pv_escena: THREE.Scene;
   }
 }
 
@@ -54,13 +58,20 @@ export class Juego {
   private tiempoGuardado = 0;
   private tiempoCalle = 0;
   private lienzo: HTMLCanvasElement;
+  private trastos!: Trastos;
+  private marcas = new MarcasNeumatico();
+  private particulas = new Particulas();
+  private racha = 0;
+  private tiempoRacha = 0;
+  private colorChispa = new THREE.Color('#ffd166');
+  private colorPolvo = new THREE.Color('#d8c9a8');
   readonly calidad: Calidad;
 
   constructor() {
     this.lienzo = document.getElementById('lienzo') as HTMLCanvasElement;
     this.calidad = detectarCalidad();
     this.renderer = new THREE.WebGLRenderer({ canvas: this.lienzo, antialias: this.calidad === 'alta', powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(this.calidad === 'baja' ? 1 : Math.min(window.devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(this.calidad === 'baja' ? 0.5 : Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = this.calidad !== 'baja';
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -84,7 +95,7 @@ export class Juego {
     this.fisica = fisica;
     this.grafo = new GrafoBarrio(nivel.grafo);
 
-    const barrio = construirBarrio(nivel);
+    const barrio = construirBarrio(nivel, { bordes: this.calidad === 'alta', ligero: this.calidad === 'baja' });
     this.escena.add(barrio.grupo);
     this.escena.add(construirAzoteas(nivel));
     const arboles = construirArboles(nivel);
@@ -92,6 +103,11 @@ export class Juego {
 
     fisica.crearSueloYLimites(nivel.tamano[0], nivel.tamano[1]);
     fisica.crearEdificios(barrio.colisionEdificios.vertices, barrio.colisionEdificios.indices);
+
+    this.trastos = new Trastos(fisica);
+    this.trastos.poblar(nivel, arboles.posiciones);
+
+    this.escena.add(this.trastos.grupo, this.marcas.malla, this.particulas.puntos);
 
     // Luz: hemisferio cálido y un sol con sombras suaves que sigue al jugador.
     this.escena.add(new THREE.HemisphereLight('#ffffff', '#c9b69a', 0.85));
@@ -120,13 +136,15 @@ export class Juego {
     this.dinero = partida?.dinero ?? 0;
     this.scooter = new Scooter(fisica, inicio.x, inicio.z, inicio.rumbo);
     this.escena.add(this.scooter.malla);
+    this.trastos.gestionarRadio(inicio.x, inicio.z);
     this.camara.colocar(inicio.x, inicio.z);
     this.hud.ponerDinero(this.dinero);
     this.hud.ponerCalle(nivel.nombre);
 
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.guardar(); });
     window.__pv_listo = true;
-    window.__pv_info = () => ({ calidad: this.calidad, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje } });
+    window.__pv_escena = this.escena;
+    window.__pv_info = () => ({ calidad: this.calidad, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len() });
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
@@ -155,7 +173,10 @@ export class Juego {
     this.actualizar(dt);
     performance.mark('update-fin');
     performance.measure('update', 'update-inicio', 'update-fin');
+    performance.mark('render-inicio');
     this.renderer.render(this.escena, this.camara.camara);
+    performance.mark('render-fin');
+    performance.measure('render', 'render-inicio', 'render-fin');
     window.__pv_frames++;
   }
 
@@ -164,19 +185,54 @@ export class Juego {
     if (this.jugando) {
       this.acumulador += dt;
       let pasos = 0;
-      while (this.acumulador >= PASO_FISICA && pasos < 4) {
+      while (this.acumulador >= PASO_FISICA && pasos < 3) {
         this.scooter.actualizar(this.controles, PASO_FISICA);
         this.fisica.paso();
         this.scooter.despuesDelPaso();
         this.acumulador -= PASO_FISICA;
         pasos++;
       }
-      if (pasos === 4) this.acumulador = 0;
-      if (this.scooter.estado.golpe > 0) {
-        const fuerza = this.scooter.estado.golpe;
-        this.camara.sacudir(fuerza * 0.06);
-        this.audio.golpe(fuerza);
+      if (pasos === 3) this.acumulador = 0;
+      const e = this.scooter.estado;
+      if (e.golpe > 0) {
+        this.camara.sacudir(e.golpe * 0.06);
+        this.audio.golpe(e.golpe);
+        this.particulas.emitir(e.x, 0.6, e.z, Math.min(30, Math.round(e.golpe * 2)), this.colorChispa, Math.min(9, e.golpe * 0.8));
       }
+      // Marcas y polvo del derrape o de la frenada fuerte.
+      const frenando = this.controles.freno && Math.abs(e.velocidad) > 4;
+      if (e.derrapando || frenando) {
+        const atras = this.scooter.direccion.multiplyScalar(-0.6);
+        this.marcas.pintar(e.x + atras.x, e.z + atras.z, e.derrapando ? 1 : 0.55);
+        if (e.derrapando && Math.random() < 0.5) this.particulas.emitir(e.x + atras.x, 0.2, e.z + atras.z, 1, this.colorPolvo, 2);
+      } else this.marcas.cortar();
+
+      // Trastos derribados: dinero, racha y frase de barrio.
+      const derribados = this.trastos.actualizar(e.x, e.z);
+      if (derribados.length) {
+        this.tiempoRacha = 3;
+        for (const t of derribados) {
+          this.racha++;
+          const multiplicador = Math.min(5, 1 + Math.floor(this.racha / 3));
+          this.dinero += t.valor * multiplicador;
+          const frases = FRASES[t.tipo];
+          const frase = frases[Math.floor(Math.random() * frases.length)]!;
+          this.hud.avisar(multiplicador > 1 ? `${frase}  ×${multiplicador}` : frase, 1.6);
+          const p = t.malla.position;
+          this.particulas.emitir(p.x, p.y + 0.3, p.z, 8, this.colorPolvo, 3);
+        }
+        this.hud.ponerDinero(this.dinero);
+        this.hud.ponerRacha(this.racha);
+      }
+      if (this.tiempoRacha > 0) {
+        this.tiempoRacha -= dt;
+        if (this.tiempoRacha <= 0 && this.racha > 0) {
+          if (this.racha >= 6) this.hud.avisar(`Lío armado: ${this.racha} trastos`, 2.2);
+          this.racha = 0;
+          this.hud.ponerRacha(0);
+        }
+      }
+      this.particulas.actualizar(dt);
     }
 
     const pos = this.scooter.posicion;
@@ -189,6 +245,7 @@ export class Juego {
     this.tiempoCalle += dt;
     if (this.tiempoCalle > 0.3) {
       this.tiempoCalle = 0;
+      this.trastos.gestionarRadio(pos.x, pos.z);
       const via = viaMasCercana(this.nivel, pos.x, pos.z);
       this.hud.ponerCalle(via?.nombre || (via ? 'Pasaje' : this.nivel.nombre));
     }

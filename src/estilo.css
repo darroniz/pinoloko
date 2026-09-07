@@ -24,3 +24,5 @@ body.tactil #joystick, body.tactil #boton-freno { display: block; }
 #portada.oculta { display: none; }
 #aviso { position: fixed; left: 50%; bottom: 18%; transform: translateX(-50%); background: rgba(43,35,32,0.85); color: #fff; padding: 8px 16px; border-radius: 10px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
 #aviso.visible { opacity: 1; }
+#racha { position: fixed; left: 50%; top: 18%; transform: translateX(-50%) rotate(-6deg); font-size: 34px; font-weight: 900; color: #e9553f; text-shadow: 3px 3px 0 #fff5e6; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; }
+#racha.visible { opacity: 1; transform: translateX(-50%) rotate(-6deg) scale(1.1); }

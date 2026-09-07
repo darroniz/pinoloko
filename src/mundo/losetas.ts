@@ -6,8 +6,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 export const TAMANO_LOSETA = 64;
 
-export function claveLoseta(x: number, z: number): string {
-  return `${Math.floor(x / TAMANO_LOSETA)},${Math.floor(z / TAMANO_LOSETA)}`;
+export function claveLoseta(x: number, z: number, tamano = TAMANO_LOSETA): string {
+  return `${Math.floor(x / tamano)},${Math.floor(z / tamano)}`;
 }
 
 /** Agrupa geometrías por loseta (según un punto representativo) y devuelve una malla por loseta. */
@@ -57,6 +57,8 @@ export class Instanciador {
     readonly geometria: THREE.BufferGeometry,
     readonly material: THREE.Material,
     private readonly sombra = true,
+    /** Las instancias usan losetas más grandes: menos objetos que recorrer por frame. */
+    private readonly tamano = TAMANO_LOSETA * 2,
   ) {}
 
   poner(x: number, y: number, z: number, giro: number, escala = 1, escalaY = escala): void {
@@ -67,7 +69,7 @@ export class Instanciador {
   }
 
   ponerMatriz(m: THREE.Matrix4, x: number, z: number): void {
-    const k = claveLoseta(x, z);
+    const k = claveLoseta(x, z, this.tamano);
     let lista = this.porLoseta.get(k);
     if (!lista) { lista = []; this.porLoseta.set(k, lista); }
     lista.push(m.clone());

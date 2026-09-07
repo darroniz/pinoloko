@@ -213,3 +213,25 @@ en el móvil. Los edificios van a escala real; la moto, de juguete. La física s
 
 **Arranque en la calle rodada más cercana al Mercado**, mirando a lo largo de ella, en vez de en
 el origen de coordenadas (que cae encima de la azotea del Mercado).
+
+## 2026-09-08 — Trastos con activación por radio y el gate de frames en régimen estable
+
+**Los trastos (conos, macetas, contenedores, terrazas, cajas) solo tienen cuerpo físico cerca de
+la moto.** Hay 500 repartidos por el barrio; con todos como cuerpos de Rapier, aunque dormidos,
+el paso de física costaba 6 ms en la Pi y despiertos 119 ms. Ahora la pose vive en la malla y el
+cuerpo se crea al entrar en un radio de 45 m y se destruye (si está dormido) al salir de 60 m.
+Es también la base para tráfico y peatones: nada que esté lejos se simula.
+
+**Cada trasto es una sola malla con colores por vértice.** Como grupo de 3-7 mallas eran ~3.000
+objetos que Three recorría cada frame; fundidos, 500.
+
+**El gate de frames mide régimen estable y se queda con la mejor de dos ventanas.** Dos pasadas
+idénticas daban 61 y 131 frames: la Pi comparte CPU con Immich y otros servicios, y la sesión
+corre con `nice 10`, así que cualquier tarea ajena se le cuela por delante. La verificación ahora
+espera 3 s (SwiftShader compila los shaders en los primeros frames) y mide dos ventanas de 10 s.
+Sigue siendo un gate de regresión, no una medida de rendimiento: la cifra que importa es la del
+móvil de Ismael.
+
+**En calidad baja se sacrifica lo que solo se nota de cerca:** DPR 0,5, sin sombras, sin
+antialias, sin líneas de borde en los edificios y sin la capa de acera de las calles rodadas.
+Los móviles con GPU van en calidad alta con todo.

@@ -88,7 +88,25 @@ pero el juego se afina alrededor de la moto, y de ahí sale la mejor mecánica d
 la patrulla no cabe por los pasajes y tú sí.
 
 **El detalle va en los tejados, no en las fachadas.** Se descartó texturizar fachadas con
-imaginería tipo Street View: la licencia de Google lo prohíbe, metería rótulos y matrículas
-reales (contra la regla dura del brief), el pipeline de proyectar panorámicas sobre huellas es
-trabajo de investigación, y sobre todo la cámara alta enseña azoteas, no fachadas. En su lugar,
+imaginería tipo Street View por tres motivos que siguen en pie: la licencia de Google prohíbe
+descargar y almacenar esa imaginería fuera de un mapa suyo, el pipeline de proyectar panorámicas
+esféricas sobre huellas de edificio (corregir perspectiva, quitar coches y árboles, casar
+iluminaciones) es trabajo de investigación, y sobre todo **la cámara alta enseña azoteas, no
+fachadas**: montarías todo eso para texturizar la superficie que menos se ve. En su lugar,
 detalle procedural de azotea y explotar las etiquetas que OSM ya trae.
+
+## 2026-09-07 — Fuera la autocensura de marcas
+
+Ismael lo pidió explícitamente: el juego es personal, no se monetiza, y el objetivo es que sea
+divertido. Los nombres reales van dentro — motos (Jog RR, Zip SP, Sonic), el autobús de Tussam,
+los comercios con el `name` que traen las etiquetas de OSM. Cuanto más se reconozca el barrio,
+mejor funciona el chiste.
+
+Si algún día el juego sale del ámbito personal, se hace **entonces** una pasada de
+despersonalización: es sustituir cadenas de texto y un par de siluetas, una tarde de trabajo.
+Bloquear el diseño hoy por un escenario que puede no llegar nunca no compensa.
+
+Lo que **no** se ha tocado, porque no eran remilgos de marca:
+- el tono (violencia de juguete, nada sexual, nada de humor de odio);
+- la atribución a OpenStreetMap, que es la licencia de los datos del mapa;
+- no meter en el repo ficheros (modelos, texturas, audio) sacados de otro juego.

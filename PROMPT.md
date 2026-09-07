@@ -2,11 +2,11 @@ Eres el único desarrollador de **Pinoloko** y trabajas solo, de noche, sin nadi
 
 ### Qué es el juego
 
-Mundo abierto en navegador ambientado en Sevilla, con el caos de los primeros juegos de coches vistos desde arriba (coches como juguetes) y una estética low-poly "cozy". Comedia costumbrista sevillana: guerra de **canis** (Sevilla Norte, Pino Montano) contra **pijos** (Los Remedios, Nervión). Humor de barrio exagerado y cariñoso, nunca cruel. El protagonista es **Wifly**, un cani de Pino Montano con más labia que suerte.
+Mundo abierto en navegador ambientado en Sevilla, con el caos de los primeros GTA vistos desde arriba (coches como juguetes) y una estética low-poly "cozy". Comedia costumbrista sevillana: guerra de **canis** (Sevilla Norte, Pino Montano) contra **pijos** (Los Remedios, Nervión). Humor de barrio exagerado y cariñoso, nunca cruel. El protagonista es **Wifly**, un cani de Pino Montano con más labia que suerte.
 
 **Ahora mismo solo existe el MODO FREESTYLE**: el barrio abierto para hacer el cafre. Moverte en scooter y a pie, robar motos, atropellar conos y macetas, huir de la policía local con nivel de búsqueda por estrellas, minijuegos sueltos, dinero, coleccionables. Cero misiones, cero historia, cero diálogos narrativos: eso vendrá más adelante y lo decidirá Ismael. No lo diseñes ni dejes stubs "por si acaso".
 
-**El vehículo protagonista es la scooter, no el coche.** Pino Montano se cruza andando: son manzanas cortas, sin grandes vías que atravesar, y lo que hay entre bloques son pasajes peatonales. Una persecución de coches ahí no tiene sentido; una scooter de 49cc metiéndose por los pasajes, sí — y además es lo que haría un cani. Los coches existen (aparcados, tráfico, patrullas) y se pueden robar y conducir, pero el juego está afinado alrededor de la moto: acelerón corto, giro nervioso, cabe donde no cabe un coche, y se cuela por donde la patrulla no puede seguirte. Modelo mental: los scooters de dos tiempos de finales de los 90 y principios de los 2000, con **nombres inventados** — nada de marcas reales.
+**El vehículo protagonista es la scooter, no el coche.** Pino Montano se cruza andando: son manzanas cortas, sin grandes vías que atravesar, y lo que hay entre bloques son pasajes peatonales. Una persecución de coches ahí no tiene sentido; una scooter de 49cc metiéndose por los pasajes, sí — y además es lo que haría un cani. Los coches existen (aparcados, tráfico, patrullas) y se pueden robar y conducir, pero el juego está afinado alrededor de la moto: acelerón corto, giro nervioso, cabe donde no cabe un coche, y se cuela por donde la patrulla no puede seguirte. Modelo mental: los scooters de dos tiempos de finales de los 90 y principios de los 2000 — Jog RR, Zip SP, Sonic y compañía. Usa esos nombres y esas siluetas: es exactamente la textura que hace que el barrio suene a verdad.
 
 ### Zona de arranque: el entorno del Mercado (empieza AQUÍ y no la agrandes)
 
@@ -25,14 +25,14 @@ Dos a uno a favor de lo peatonal: el barrio es pasaje entre bloques, no red de c
 
 Las calles se llaman todas por oficios (Esparteros, Afiladores, Alfareros, Cigarreras, Bordadoras,
 Tejedoras, Chapistas...) con un racimo de estrellas al lado (Betelgeuse, Proción, Rigel). Usa los
-nombres reales de las calles: son topónimos, no marcas, y dan ambientación gratis.
+nombres reales de las calles: dan ambientación gratis.
 
 **No amplíes esta caja hasta que el barrio esté divertido.** Cuando lo esté, la ampliación natural
 es hacia fuera desde el mercado, no saltar a otro sitio.
 
 ### Arquitectura obligatoria: barrios como niveles, conectados por el bus 13
 
-Sin streaming continuo del mapa. Cada barrio es un nivel independiente (un GLB de pocos MB). Para cambiar de barrio, Wifly sube al autobús de la línea 13 ("Trussam", parodia de Tussam): cinemática corta del viaje y aparece en el otro barrio. Añadir un barrio = añadir una carpeta con su GLB, su grafo de tráfico y su config. Barrio inicial: **Pino Montano**. Segundo: **la Alameda**. Después: Triana, Los Remedios, Nervión, Centro.
+Sin streaming continuo del mapa. Cada barrio es un nivel independiente (un GLB de pocos MB). Para cambiar de barrio, Wifly sube al autobús de la línea 13 de Tussam: cinemática corta del viaje y aparece en el otro barrio. Añadir un barrio = añadir una carpeta con su GLB, su grafo de tráfico y su config. Barrio inicial: **Pino Montano**. Segundo: **la Alameda**. Después: Triana, Los Remedios, Nervión, Centro.
 
 ### Stack (decidido, no lo cambies)
 
@@ -47,7 +47,7 @@ Sin streaming continuo del mapa. Cada barrio es un nivel independiente (un GLB d
 - Tráfico y peatones propios: coches por el grafo respetando cruces y semáforos simples; peatones con máquina de estados (pasear, huir, reaccionar, insultar en sevillano).
 - **El detalle vive en los tejados, no en las fachadas.** Con la cámara alta lo que llena la pantalla son azoteas y el borde superior de los bloques; las fachadas se ven de refilón. Así que el presupuesto de detalle se gasta arriba: aires acondicionados, depósitos de agua, tendederos, antenas parabólicas, toldos, trastos y macetas en las azoteas, colocados procedimentalmente sobre la huella. Es lo que hace que un barrio se reconozca desde arriba.
 - **Exprime las etiquetas de OSM antes de inventar nada:** `building:levels` para la altura real, `roof:shape` y `roof:colour` para el tejado, y `building` / `shop` / `amenity` para colorear por tipo — que una iglesia, un bloque de pisos, el mercado y una nave no sean la misma caja del mismo color. Ya vienen en los datos y son gratis.
-- Estética low-poly con colores pastel planos, sombras suaves, árboles y vehículos redondeados como juguetes (referencia: juegos "cozy" isométricos, pero con caos arcade de finales de los 90). Los edificios extruidos de OSM deben verse bonitos desde arriba con solo color plano y un borde suave. Tiene que ir fluido en un móvil de gama media.
+- Estética low-poly con colores pastel planos, sombras suaves, árboles y vehículos redondeados como juguetes (referencia: juegos "cozy" isométricos, pero con el caos de un GTA de 1999). Los edificios extruidos de OSM deben verse bonitos desde arriba con solo color plano y un borde suave. Tiene que ir fluido en un móvil de gama media.
 - Controles en el plano de pantalla: WASD/joystick táctil mueven en las direcciones de la pantalla, no relativas al vehículo. Scooter: acelerar/frenar/girar, con inclinación en curva y derrape del trasero al frenar; coche, más pesado y con derrape más largo.
 - Teclado + táctil + mando. Guardado en localStorage.
 - Assets: usa geometría procedural y placeholders claros (cajas, cilindros con color) para todo lo que no puedas generar en código. Anota cada asset que haría falta en `docs/ASSETS_PENDIENTES.md` con descripción para que Ismael lo genere con IA. Personajes: cápsulas con "cabeza" hasta que haya modelos.
@@ -71,12 +71,25 @@ Corres en `paretopi`, una Raspberry Pi 4 (aarch64, 4 GB de RAM, tarjeta SD) que 
 - **En headless aquí el WebGL es software (SwiftShader), no hay GPU.** Medir FPS reales es imposible y no significa nada. El gate de rendimiento de esta máquina es el del paso 5; el FPS de verdad lo comprueba Ismael en su móvil y te lo cuenta en `docs/FEEDBACK.md`.
 - Memoria justa: no lances builds y navegador a la vez, y no subas `--max-old-space-size` por encima de 1536.
 
-### Restricciones no negociables
+### Límites
 
-- Cero contenido de Rockstar y ninguna mención a "GTA" o "Grand Theft Auto" en código, textos, metadatos ni web.
-- Sin marcas, logos, personas ni negocios reales. Parodias con nombres inventados (Trussam, Cruzcampeón, Betis → "Verdiblancos"...). Esto incluye las scooters: inspírate en las de 49cc de la época, pero **inventa los nombres y siluetas**, no reproduzcas un modelo identificable. Edificios genéricos, no monumentos reproducidos.
-- Violencia caricaturesca de juguete, sin sangre explícita. Nada sexual. Nada de humor de odio.
-- Créditos con atribución a OpenStreetMap (ODbL) y a cualquier dato del IGN.
+Esto es un juego personal que no se vende ni se monetiza. **No te autocensures con los nombres:**
+usa los reales — la scooter es una Jog RR o una Zip SP, el autobús es Tussam, el bar de la esquina
+se llama como se llame en OSM, la cerveza es la que es. Si algún día hay que darle una pasada para
+despersonalizarlo, se hará entonces, y será una tarde de trabajo. Mientras tanto, cuanto más se
+parezca al barrio de verdad, mejor.
+
+Aprovéchalo de hecho: OSM trae etiquetas `name` en comercios y bares de la zona. Úsalas. Que el
+sitio se reconozca es media gracia del juego.
+
+Lo que sí se mantiene, que no son remilgos:
+
+- **Tono.** Violencia caricaturesca de juguete, sin sangre explícita. Nada sexual. Nada de humor
+  de odio: el chiste es de barrio y es cariñoso, nunca a costa de nadie.
+- **Atribución a OpenStreetMap (ODbL)** en los créditos, y a cualquier dato del IGN. No es una
+  precaución, es la licencia de los datos con los que está hecho el mapa, y cumplirla es gratis.
+- **No copies ficheros ajenos.** Inspirarte en un juego es libre; meter en el repo modelos,
+  texturas o audio sacados de otro juego, no — además de que no los tienes.
 - Nunca borres ni reescribas `docs/FEEDBACK.md`; solo lo lees.
 - El repo es **público**. No metas nunca claves, tokens ni rutas de la Pi con credenciales.
 

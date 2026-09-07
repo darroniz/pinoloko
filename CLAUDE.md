@@ -11,7 +11,9 @@ al empezar la sesión: manda sobre este fichero.**
 - Publicar = `git push` a `main`. GitHub Pages construye y sirve en
   https://pinoloko.com/ — por eso `base: '/'` en Vite y `public/CNAME` con el dominio (no lo borres).
 - El repo es **público**: aquí no entra ninguna credencial.
-- Nunca se nombra a Rockstar ni a "GTA", ni marcas, negocios o personas reales.
+- **Sin autocensura de marcas.** Es un juego personal que no se monetiza: motos, comercios y
+  autobuses van con su nombre real. Lo que se mantiene es el tono (nada de humor de odio) y la
+  atribución a OpenStreetMap, que es la licencia de los datos del mapa.
 - `docs/FEEDBACK.md` es de Ismael: se lee, no se toca.
 - Corres en una Raspberry Pi 4 sin GPU: no reinstales `node_modules` por gusto, usa el Chromium
   del sistema y no midas FPS reales aquí (ver el paso 5 de `PROMPT.md`).

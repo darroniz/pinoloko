@@ -50,6 +50,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] Carreras por los pasajes, saltos con rampas, "recoge los 20 mecheros".
 - [ ] Coleccionables, garaje de motos, estadísticas.
 - [ ] Menú principal y pantalla de créditos (con atribución a OpenStreetMap).
+- [ ] Comercios y bares del barrio con el `name` real de las etiquetas de OSM.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media.

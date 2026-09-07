@@ -5,6 +5,8 @@ set -uo pipefail
 
 REPO="${PINOVICE_REPO:-$HOME/pinoloko-vice}"
 MAX_TURNS="${PINOVICE_MAX_TURNS:-400}"
+# systemd y las sesiones no interactivas no traen ~/.local/bin en el PATH.
+CLAUDE_BIN="${CLAUDE_BIN:-$HOME/.local/bin/claude}"
 LOGDIR="$REPO/logs"
 
 cd "$REPO" || { echo "No existe $REPO"; exit 1; }
@@ -20,7 +22,7 @@ LOG="$LOGDIR/$(date +%F).log"
 
   # Sin MCPs: la sesión solo necesita el repo, y así no arrastra los servidores
   # del entorno personal de la Pi.
-  claude -p "$(cat PROMPT.md)" \
+  "$CLAUDE_BIN" -p "$(cat PROMPT.md)" \
     --dangerously-skip-permissions \
     --strict-mcp-config \
     --mcp-config '{"mcpServers":{}}' \

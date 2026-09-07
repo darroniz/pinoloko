@@ -24,6 +24,7 @@ Environment=NODE_OPTIONS=--max-old-space-size=1536
 Environment=CHROMIUM_PATH=/usr/bin/chromium
 Environment=PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 Environment=PINOVICE_MAX_TURNS=400
+Environment=PATH=/home/idarroniz/.local/bin:/usr/local/bin:/usr/bin:/bin
 
 [Install]
 WantedBy=multi-user.target

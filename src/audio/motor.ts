@@ -76,6 +76,30 @@ export class AudioJuego {
   }
 
   private silenciado = false;
+  private sirena: OscillatorNode | null = null;
+  private sirenaGanancia: GainNode | null = null;
+  private sirenaFase = 0;
+
+  /** Sirena de la Policía Local: dos tonos alternos, más fuerte cuanto más cerca. */
+  actualizarSirena(activa: boolean, cercania: number, dt: number): void {
+    if (!this.ctx || !this.maestro) return;
+    if (!this.sirena) {
+      this.sirena = this.ctx.createOscillator();
+      this.sirena.type = 'square';
+      this.sirenaGanancia = this.ctx.createGain();
+      this.sirenaGanancia.gain.value = 0;
+      const filtro = this.ctx.createBiquadFilter();
+      filtro.type = 'lowpass';
+      filtro.frequency.value = 1200;
+      this.sirena.connect(filtro).connect(this.sirenaGanancia).connect(this.maestro);
+      this.sirena.start();
+    }
+    const t = this.ctx.currentTime;
+    this.sirenaFase += dt;
+    const alto = Math.floor(this.sirenaFase * 1.6) % 2 === 0;
+    this.sirena.frequency.setTargetAtTime(alto ? 740 : 560, t, 0.03);
+    this.sirenaGanancia!.gain.setTargetAtTime(activa ? 0.05 + cercania * 0.09 : 0, t, 0.15);
+  }
 
   /** A pie no hay motor que oír. */
   silenciarMotor(si: boolean): void {

@@ -38,11 +38,12 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Dinero por destrozos y racha de "lío armado" con multiplicador.
 
 ## 4. Policía local
-- [ ] Nivel de búsqueda por estrellas.
-- [ ] Coches patrulla que persiguen; controles policiales.
-- [ ] Asimetría del barrio: la patrulla no entra en los pasajes; a estrellas altas, algo que sí
-      (patrulla en moto o a pie).
-- [ ] Escapar bajando el nivel; "busted" y reaparición en comisaría.
+- [x] Nivel de búsqueda por estrellas (calor que sube con fechorías y baja fuera de la vista).
+- [x] Coches patrulla que persiguen por el grafo y a tiro en línea recta.
+- [ ] Controles policiales (patrulla parada cortando una calle).
+- [x] Asimetría del barrio: la patrulla no entra en los pasajes; a partir de tres estrellas,
+      motos de la Local que sí.
+- [x] Escapar bajando el nivel; "¡Trincao!" y reaparición en el Mercado (no hay comisaría en la caja).
 
 ## 5. El 13
 - [ ] Parada de bus y cinemática del viaje.
@@ -57,5 +58,6 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media.
-- [ ] Sonido sintetizado (motor, claxon, sirena).
-- [ ] PWA instalable, metadatos para compartir, portada con "jugar ahora".
+- [x] Sonido sintetizado (motor de dos tiempos y de coche, derrape, golpes, sirena).
+- [x] Manifest PWA, metadatos Open Graph y portada con JUGAR.
+- [ ] Service worker para jugar sin conexión.

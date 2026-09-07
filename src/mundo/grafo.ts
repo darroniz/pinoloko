@@ -12,16 +12,21 @@ export interface Vecino {
 export class GrafoBarrio {
   readonly nodos: Punto[];
   private readonly adyacencia: Vecino[][];
+  /** Como `adyacencia` pero con los sentidos únicos en ambos sentidos (para quien va a contramano). */
+  private readonly adyacenciaLibre: Vecino[][];
 
   constructor(grafo: Grafo) {
     this.nodos = grafo.nodos;
     this.adyacencia = grafo.nodos.map(() => []);
+    this.adyacenciaLibre = grafo.nodos.map(() => []);
     for (const arista of grafo.aristas) {
       const [a, b, clase, via] = arista;
       const unico = arista[4] === 1;
       const largo = this.distancia(a, b);
       this.adyacencia[a]!.push({ nodo: b, clase, via, largo });
       if (!unico) this.adyacencia[b]!.push({ nodo: a, clase, via, largo });
+      this.adyacenciaLibre[a]!.push({ nodo: b, clase, via, largo });
+      this.adyacenciaLibre[b]!.push({ nodo: a, clase, via, largo });
     }
   }
 
@@ -31,8 +36,8 @@ export class GrafoBarrio {
     return Math.hypot(bx - ax, bz - az);
   }
 
-  vecinos(nodo: number, clase?: ClaseVia): Vecino[] {
-    const v = this.adyacencia[nodo] ?? [];
+  vecinos(nodo: number, clase?: ClaseVia, libre = false): Vecino[] {
+    const v = (libre ? this.adyacenciaLibre : this.adyacencia)[nodo] ?? [];
     return clase ? v.filter((e) => e.clase === clase) : v;
   }
 
@@ -58,8 +63,9 @@ export class GrafoBarrio {
     return opciones[Math.floor(aleatorio() * opciones.length)]!.nodo;
   }
 
-  /** Camino más corto (Dijkstra) restringido a una clase. Devuelve [] si no hay. */
-  camino(origen: number, destino: number, clase?: ClaseVia): number[] {
+  /** Camino más corto (Dijkstra) restringido a una clase. Devuelve [] si no hay.
+   *  Con `libre`, ignora los sentidos únicos (la policía va a contramano si hace falta). */
+  camino(origen: number, destino: number, clase?: ClaseVia, libre = false): number[] {
     const dist = new Map<number, number>([[origen, 0]]);
     const previo = new Map<number, number>();
     const abiertos = new Set<number>([origen]);
@@ -68,7 +74,7 @@ export class GrafoBarrio {
       for (const n of abiertos) { const d = dist.get(n)!; if (d < du) { du = d; u = n; } }
       abiertos.delete(u);
       if (u === destino) break;
-      for (const v of this.vecinos(u, clase)) {
+      for (const v of this.vecinos(u, clase, libre)) {
         const nd = du + v.largo;
         if (nd < (dist.get(v.nodo) ?? Infinity)) {
           dist.set(v.nodo, nd);
@@ -81,6 +87,19 @@ export class GrafoBarrio {
     const ruta = [destino];
     while (ruta[0] !== origen) ruta.unshift(previo.get(ruta[0]!)!);
     return ruta;
+  }
+
+  /** Conjunto de nodos alcanzables desde uno (BFS), por clase y opcionalmente a contramano. */
+  alcanzables(nodo: number, clase?: ClaseVia, libre = false): Set<number> {
+    const vistos = new Set<number>([nodo]);
+    const pila = [nodo];
+    while (pila.length) {
+      const u = pila.pop()!;
+      for (const v of this.vecinos(u, clase, libre)) {
+        if (!vistos.has(v.nodo)) { vistos.add(v.nodo); pila.push(v.nodo); }
+      }
+    }
+    return vistos;
   }
 
   /** Tamaño de la componente conexa de una clase que contiene al nodo. */

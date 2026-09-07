@@ -28,3 +28,11 @@ body.tactil #joystick, body.tactil #boton-freno, body.tactil #boton-accion { dis
 #aviso.visible { opacity: 1; }
 #racha { position: fixed; left: 50%; top: 18%; transform: translateX(-50%) rotate(-6deg); font-size: 34px; font-weight: 900; color: #e9553f; text-shadow: 3px 3px 0 #fff5e6; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; }
 #racha.visible { opacity: 1; transform: translateX(-50%) rotate(-6deg) scale(1.1); }
+#estrellas { position: fixed; top: max(50px, calc(env(safe-area-inset-top) + 40px)); right: 14px; font-size: 22px; letter-spacing: 2px; color: #f2b134; text-shadow: 0 2px 0 rgba(0,0,0,0.2); pointer-events: none; user-select: none; }
+#estrellas .apagada { color: rgba(255,255,255,0.35); }
+#estrellas.alerta { animation: parpadeo 0.5s steps(2) infinite; }
+@keyframes parpadeo { to { color: #ff5a5a; } }
+#trincao { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(20, 30, 80, 0.75); color: #fff; text-align: center; padding: 24px; z-index: 5; pointer-events: none; }
+#trincao.visible { display: flex; }
+#trincao .titulo { font-size: 56px; font-weight: 900; letter-spacing: 3px; transform: rotate(-4deg); text-shadow: 4px 4px 0 #1f4fd8; }
+#trincao p { max-width: 320px; font-size: 16px; }

@@ -65,3 +65,19 @@ describe('grafo del Mercado', () => {
     expect(via!.nombre.length).toBeGreaterThan(0);
   });
 });
+
+describe('camino libre (a contramano)', () => {
+  const g = new GrafoBarrio(nivel.grafo);
+
+  it('alcanza más nodos rodados ignorando el sentido único', () => {
+    const a = g.masCercano(0, 0, 'rodada');
+    let dirigidos = 0, libres = 0;
+    for (let i = 0; i < g.nodos.length; i++) {
+      if (g.vecinos(i, 'rodada').length === 0) continue;
+      if (g.camino(a, i, 'rodada').length) dirigidos++;
+      if (g.camino(a, i, 'rodada', true).length) libres++;
+    }
+    expect(libres).toBeGreaterThan(dirigidos);
+    expect(libres).toBeGreaterThan(100);
+  });
+});

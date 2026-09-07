@@ -20,6 +20,8 @@ import { FRASES, Trastos } from './mundo/trastos';
 import { MarcasNeumatico } from './efectos/marcas';
 import { Particulas } from './efectos/particulas';
 import { MarcadorJugador } from './efectos/marcador';
+import { NivelBusqueda } from './policia/busqueda';
+import { Patrullas } from './policia/patrullas';
 
 declare global {
   interface Window {
@@ -28,11 +30,13 @@ declare global {
     __pv_jugando: boolean;
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
-    __pv_prueba: { robarCoche: () => boolean };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void };
   }
 }
 
 export type Calidad = 'alta' | 'baja';
+
+const SIN_ENTRADA = { eje: { x: 0, y: 0 }, freno: true, accion: false };
 
 /** Sin GPU (SwiftShader, llvmpipe) o forzado por `?calidad=baja`: sin sombras y a DPR 1. */
 function detectarCalidad(): Calidad {
@@ -69,6 +73,12 @@ export class Juego {
   private marcas = new MarcasNeumatico();
   private particulas = new Particulas();
   private marcador = new MarcadorJugador();
+  private busqueda = new NivelBusqueda();
+  private patrullas!: Patrullas;
+  private tiempoTrincao = 0;
+  private motosRobadas = new Set<Scooter>();
+  private rndPolicia = () => Math.random();
+  private arranque = { x: 0, z: 0, rumbo: 0 };
   private racha = 0;
   private tiempoRacha = 0;
   private colorChispa = new THREE.Color('#ffd166');
@@ -149,6 +159,7 @@ export class Juego {
     const vecino = this.grafo.vecinos(nodoInicio, 'rodada')[0];
     const [vx, vz] = vecino ? this.grafo.nodos[vecino.nodo]! : [ix, iz - 1];
     const arranque = { x: ix, z: iz, rumbo: Math.atan2(vx - ix, -(vz - iz)) };
+    this.arranque = arranque;
     const partida = cargarPartida();
     const inicio = partida ?? arranque;
     this.dinero = partida?.dinero ?? 0;
@@ -163,6 +174,9 @@ export class Juego {
     this.escena.add(this.vecinos.grupo);
     this.trafico = new Trafico(fisica, this.grafo, 14);
     this.escena.add(this.trafico.grupo);
+    this.patrullas = new Patrullas(fisica, this.grafo);
+    this.escena.add(this.patrullas.grupo);
+    this.motosRobadas.add(this.scooter);
     this.aparcarCoches(nivel);
     if (partida?.aPie) this.bajarse();
     this.trastos.gestionarRadio(inicio.x, inicio.z);
@@ -175,6 +189,7 @@ export class Juego {
     window.__pv_escena = this.escena;
     // Ganchos para la sonda de verificación: forzar situaciones que no se pueden guionizar con teclas.
     window.__pv_prueba = {
+      calor: (n: number) => { this.busqueda.calor = n; },
       robarCoche: () => {
         const c = this.trafico.lista[0];
         if (!c) return false;
@@ -183,7 +198,7 @@ export class Juego {
         return this.subirse() && this.coche !== null;
       },
     };
-    window.__pv_info = () => ({ calidad: this.calidad, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
+    window.__pv_info = () => ({ calidad: this.calidad, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: this.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo]), dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
@@ -273,12 +288,17 @@ export class Juego {
       mejorCoche = c;
       mejorDc = 0;
       this.hud.avisar(['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
+      this.busqueda.fechoria('robo_coche');
     }
     if (mejorCoche && mejorDc < mejorD) {
       this.coche = mejorCoche;
       this.coche.montar(true);
     } else if (mejorMoto) {
-      if (mejorMoto !== this.scooter) this.hud.avisar(`${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
+      if (!this.motosRobadas.has(mejorMoto)) {
+        this.motosRobadas.add(mejorMoto);
+        this.hud.avisar(`${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
+        this.busqueda.fechoria('robo_moto');
+      }
       this.scooter = mejorMoto;
       this.scooter.montar(true);
       this.coche = null;
@@ -287,6 +307,61 @@ export class Juego {
     this.aPie = false;
     this.botonAccion.textContent = 'BAJAR';
     return true;
+  }
+
+  /** Estrellas, patrullas que aparecen y desaparecen, sirena y el momento de que te trinquen. */
+  private actualizarPolicia(pos: THREE.Vector3, rapidez: number, dt: number): void {
+    if (this.tiempoTrincao > 0) {
+      this.tiempoTrincao -= dt;
+      if (this.tiempoTrincao <= 0) this.hud.mostrarTrincao(false);
+      return;
+    }
+    const cambio = this.busqueda.actualizar(dt);
+    if (cambio > 0) this.hud.avisar(this.busqueda.estrellas >= 3 ? '¡Las motos de la Local!' : '¡Que viene la Local!', 1.8);
+    this.hud.ponerEstrellas(this.busqueda.estrellas);
+
+    const dotacion = this.busqueda.dotacion;
+    const coches = this.patrullas.lista.filter((p) => p.tipo === 'coche');
+    const motos = this.patrullas.lista.filter((p) => p.tipo === 'moto');
+    if (coches.length < dotacion.coches) this.patrullas.aparecer('coche', pos, this.rndPolicia);
+    if (motos.length < dotacion.motos) this.patrullas.aparecer('moto', pos, this.rndPolicia);
+    // Sobran: se retira la más lejana (se va por donde vino).
+    const lejana = (lista: typeof coches): typeof coches[number] | undefined =>
+      lista.sort((a, b) => Math.hypot(b.x - pos.x, b.z - pos.z) - Math.hypot(a.x - pos.x, a.z - pos.z))[0];
+    if (coches.length > dotacion.coches) { const p = lejana(coches); if (p) this.patrullas.retirar(p); }
+    if (motos.length > dotacion.motos) { const p = lejana(motos); if (p) this.patrullas.retirar(p); }
+
+    const via = viaMasCercana(this.nivel, pos.x, pos.z, 6);
+    const enPasaje = via?.clase === 'peatonal';
+    const r = this.patrullas.actualizar({ x: pos.x, z: pos.z, rapidez, enPasaje }, dt);
+    if (r.visto) this.busqueda.visto();
+    if (r.choques > 0) { this.busqueda.fechoria('choque_patrulla', r.choques); this.hud.avisar('¡Le has dado a la patrulla!', 1.5); }
+    let cercania = 0;
+    for (const p of this.patrullas.lista) cercania = Math.max(cercania, 1 - Math.min(1, Math.hypot(p.x - pos.x, p.z - pos.z) / 70));
+    this.audio.actualizarSirena(this.patrullas.lista.length > 0, cercania, dt);
+    if (r.trincado) this.trincar();
+  }
+
+  private trincar(): void {
+    this.tiempoTrincao = 3;
+    this.hud.mostrarTrincao(true);
+    this.hud.ponerEstrellas(0);
+    this.busqueda.limpiar();
+    this.patrullas.retirarTodas();
+    this.dinero = Math.max(0, Math.floor(this.dinero * 0.8));
+    this.hud.ponerDinero(this.dinero);
+    this.racha = 0;
+    this.hud.ponerRacha(0);
+    this.audio.claxon();
+    // Te sueltan en el Mercado, con tu moto de siempre.
+    if (this.coche) { this.coche.montar(false); this.coche = null; }
+    if (this.aPie) { this.peaton.esconder(); this.aPie = false; }
+    this.scooter.teletransportar(this.arranque.x, this.arranque.z, this.arranque.rumbo);
+    this.scooter.montar(true);
+    this.botonAccion.textContent = 'BAJAR';
+    this.camara.colocar(this.arranque.x, this.arranque.z);
+    this.trastos.gestionarRadio(this.arranque.x, this.arranque.z);
+    this.guardar();
   }
 
   empezar(): void {
@@ -334,9 +409,10 @@ export class Juego {
         else this.hud.avisar('Frena antes de bajarte', 1.2);
       }
       while (this.acumulador >= PASO_FISICA && pasos < 2) {
-        if (this.aPie) this.peaton.actualizar(this.controles, PASO_FISICA);
-        else if (this.coche) this.coche.actualizar(this.controles, PASO_FISICA);
-        else this.scooter.actualizar(this.controles, PASO_FISICA);
+        const entrada = this.tiempoTrincao > 0 ? SIN_ENTRADA : this.controles;
+        if (this.aPie) this.peaton.actualizar(entrada, PASO_FISICA);
+        else if (this.coche) this.coche.actualizar(entrada, PASO_FISICA);
+        else this.scooter.actualizar(entrada, PASO_FISICA);
         this.trafico.actualizar(this.aPie ? this.peaton.posicion : this.vehiculo.estado, PASO_FISICA);
         this.fisica.paso();
         for (const m of this.scooters) { if (m === this.scooter && !this.aPie && !this.coche) m.despuesDelPaso(); else m.reposo(); }
@@ -375,7 +451,9 @@ export class Juego {
         this.hud.avisar(['¡Atropello!', '¡Al suelo, vecino!', '¡Uy, uy, uy!', '¡Que era el del quinto!'][Math.floor(Math.random() * 4)]!, 1.5);
         this.camara.sacudir(0.35);
         this.audio.golpe(4);
+        this.busqueda.fechoria('atropello', eventos.atropellos);
       }
+      this.actualizarPolicia(jugadorPos, rapidez, dt);
 
       // Trastos derribados: dinero, racha y frase de barrio.
       const derribados = this.trastos.actualizar(jugadorPos.x, jugadorPos.z);
@@ -393,6 +471,7 @@ export class Juego {
         }
         this.hud.ponerDinero(this.dinero);
         this.hud.ponerRacha(this.racha);
+        this.busqueda.fechoria('trasto', derribados.length);
       }
       if (this.tiempoRacha > 0) {
         this.tiempoRacha -= dt;

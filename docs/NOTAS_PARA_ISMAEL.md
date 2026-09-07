@@ -22,4 +22,6 @@ Objetivo: **hito 1 entero** (Moverse) publicado y jugable en el móvil.
       robar motos aparcadas y 110 vecinos que pasean, huyen e insultan.
 - [x] **Bloque 4 (hecho a la 01:35)** — Tráfico de coches por las calles rodadas, coches
       aparcados y robo en marcha; tests del grafo, geometría, vecinos y tráfico.
-- [ ] **Bloque 5 (04:15-04:45)** — Cierre: roadmap, decisiones, estas notas, verificación final.
+- [x] **Bloque 5 (hecho a la 01:50)** — Policía Local: estrellas, patrullas en coche y en moto,
+      sirena, ¡Trincao! y vuelta al Mercado. Manifest PWA.
+- [ ] **Bloque 6** — Ciclo día/noche, más sensación arcade, cierre y notas.

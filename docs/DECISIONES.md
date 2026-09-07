@@ -264,3 +264,39 @@ como cualquier otro. Los semáforos quedan para otra noche; los nodos ya vienen 
 
 **El coche comparte modelo arcade con la moto pero sobre un cuboide.** Más lento en girar
 parado (necesita rodar), derrape más largo y rebote más blando. Velocidad punta 21 m/s.
+
+## 2026-09-08 — Marcador del jugador en vez de transparentar edificios
+
+La cámara mira desde el sur, así que un bloque de diez plantas tapa la calle que tiene al
+norte, y ahí desaparecía la moto. Las dos soluciones habituales son transparentar los
+edificios que se interponen o marcar al jugador por encima de todo. Se ha hecho lo segundo
+(anillo en el suelo y punta sobre la cabeza sin test de profundidad) porque es gratis, no
+rompe la estética de bloques sólidos y es lo que hacen los GTA desde arriba. Si en el móvil
+resulta insuficiente, lo siguiente es atenuar los edificios entre cámara y jugador.
+
+**Dos subpasos de física por frame como máximo.** Con el navegador a 10 fps (SwiftShader),
+tres subpasos de Rapier con 60 cuerpos y el trimesh del barrio se comían 7,7 ms del update.
+Con dos, el juego va a cámara lenta por debajo de 30 fps en vez de tragarse CPU; a 60 fps
+no cambia nada.
+
+## 2026-09-08 — Policía Local: calor, estrellas y patrullas cinemáticas
+
+**Las estrellas son tramos de un "calor" que sube con cada fechoría** (un cono 4, un atropello
+22, robar un coche 35, chocar con una patrulla 40) y baja con el tiempo solo si ninguna
+patrulla te tiene a menos de 55 m. Así las gamberradas pequeñas no llaman a nadie hasta que
+se acumulan, y perderlas de vista es lo que te limpia. Lógica pura en `src/policia/busqueda.ts`
+con tests.
+
+**Las patrullas son cinemáticas, como el tráfico,** y persiguen por el grafo con Dijkstra hasta
+el nodo más cercano al jugador (ruta recalculada cada 1,5 s). A menos de 26 m y sin edificios
+en medio (un rayo de Rapier contra los cuerpos fijos) van a por ti en línea recta. **La
+asimetría del barrio está aquí:** los coches patrulla solo usan aristas rodadas y no entran en
+modo directo si estás en un pasaje; las motos de la Local, que aparecen a partir de la tercera
+estrella, usan todo el grafo y sí se meten.
+
+**Trincado = parado a menos de 3,2 m de una patrulla durante 1,1 s.** Mientras vas a más de
+12 km/h no te trincan: puedes rozarlas. Al trincarte pierdes el 20 % del dinero y te sueltan
+en el Mercado con tu moto (no hay comisaría en la caja; la de Pino Montano queda fuera).
+
+**Sin semáforos todavía.** Los nodos `traffic_signals` están en el nivel, pero el tráfico
+frena en todos los cruces igual y con 14 coches nadie los echa de menos.

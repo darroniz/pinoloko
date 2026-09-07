@@ -73,6 +73,20 @@ await new Promise((r) => setTimeout(r, 1500));
 await p.keyboard.up('w'); await p.keyboard.up('a');
 console.log('en coche', JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { enCoche: i.enCoche, trafico: i.trafico, aPie: i.aPie }; })));
 await p.screenshot({ path: 'logs/captura-coche.png' });
+// Policía: tres estrellas, huir un poco y luego quedarse quieto hasta que te trinquen.
+await p.evaluate(() => window.__pv_prueba.calor(300));
+await p.keyboard.down('w');
+await new Promise((r) => setTimeout(r, 3000));
+await p.keyboard.up('w');
+console.log('policia', JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { estrellas: i.estrellas, patrullas: i.patrullas, v: i.vehiculo.map((n) => Math.round(n)) }; })));
+let trincado = false;
+for (let i = 0; i < 40 && !trincado; i++) {
+  await new Promise((r) => setTimeout(r, 1000));
+  const info = await p.evaluate(() => { const i = window.__pv_info(); return { estrellas: i.estrellas, calor: i.calor, patrullas: i.patrullas, v: i.vehiculo.map((n) => Math.round(n)), trincao: document.getElementById('trincao').classList.contains('visible') }; });
+  if (i % 5 === 0) console.log('t+' + i, JSON.stringify(info));
+  if (info.trincao) { trincado = true; console.log('TRINCADO en t+' + i, JSON.stringify(info)); await p.screenshot({ path: 'logs/captura-trincao.png' }); }
+}
+console.log('trincado', trincado);
 const f1 = await p.evaluate(() => window.__pv_frames);
 console.log('frames/5s', f1 - f0, 'update mediana', await p.evaluate(() => { const m = performance.getEntriesByName('update').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'render mediana', await p.evaluate(() => { const m = performance.getEntriesByName('render').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'objetos', await p.evaluate(() => { let n = 0; window.__pv_escena?.traverse(() => n++); return n; }));
 console.log(JSON.stringify(await p.evaluate(() => window.__pv_info())));

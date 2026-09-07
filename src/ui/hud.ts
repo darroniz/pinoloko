@@ -34,6 +34,21 @@ export class Hud {
     this.dinero.textContent = `${cantidad} €`;
   }
 
+  private estrellas = document.getElementById('estrellas')!;
+  private trincao = document.getElementById('trincao')!;
+  private ultimasEstrellas = -1;
+
+  ponerEstrellas(n: number): void {
+    if (n === this.ultimasEstrellas) return;
+    this.ultimasEstrellas = n;
+    this.estrellas.innerHTML = n === 0 ? '' : Array.from({ length: 5 }, (_, i) => `<span class="${i < n ? '' : 'apagada'}">★</span>`).join('');
+    this.estrellas.classList.toggle('alerta', n >= 3);
+  }
+
+  mostrarTrincao(si: boolean): void {
+    this.trincao.classList.toggle('visible', si);
+  }
+
   ponerRacha(n: number): void {
     this.racha.textContent = n >= 2 ? `×${n} lío` : '';
     this.racha.classList.toggle('visible', n >= 2);

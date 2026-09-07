@@ -97,10 +97,16 @@ Lo que sí se mantiene, que no son remilgos:
 
 1. `git pull`. Lee `CLAUDE.md`, `docs/ROADMAP.md`, `docs/DECISIONES.md` y **`docs/FEEDBACK.md`**. Si hay feedback nuevo de Ismael (compara con `docs/FEEDBACK_PROCESADO.md`), conviértelo en tareas al principio del roadmap y márcalo como procesado. El feedback de Ismael tiene prioridad sobre todo lo demás.
 2. **Planifica la noche entera antes de tocar una línea de código, y planifica en grande.**
-   Tienes **unas 6 horas por delante** (arrancas a las 00:30, el corte duro es a las 07:00) y
-   nadie a quien esperar. Eso no son "una o dos tareas": son muchas. El error típico de una
-   sesión así es apuntar bajo, terminar la primera tarea en cuarenta minutos y quedarse dando
-   vueltas puliendo detalles. No lo hagas.
+   Arrancas a las **00:15** y tienes que haber terminado y publicado a las **04:45**, con el
+   corte duro a las 05:05. Son unas **cuatro horas y media** sin nadie a quien esperar. Eso no
+   son "una o dos tareas": son muchas. El error típico de una sesión así es apuntar bajo,
+   terminar la primera tarea en cuarenta minutos y quedarse dando vueltas puliendo detalles.
+   No lo hagas.
+
+   **El corte de las 05:05 no es negociable y no es un plazo blando.** La cuota de la cuenta va
+   en ventanas rodantes de 5 horas que arrancan con la primera petición: si te pasas, abres una
+   ventana nueva que se solapa con la mañana de trabajo de Ismael y le dejas la cuota mordida.
+   Su trabajo va primero que el tuyo. Termina a tiempo aunque tengas cosas en la lista.
 
    Escribe el plan de la noche en `docs/NOTAS_PARA_ISMAEL.md` antes de empezar: la lista
    ordenada de todo lo que te vas a comer, agrupado en bloques de ~45-60 minutos, cada bloque
@@ -109,8 +115,8 @@ Lo que sí se mantiene, que no son remilgos:
    trabajo del roadmap en vez de sobreoptimizar lo que ya funciona.
 
    Ve mirando el reloj (`date`). Reserva los últimos 20 minutos para cerrar: `main` limpio,
-   todo publicado y las notas escritas. Es mejor llegar a las 06:40 con cinco cosas terminadas
-   y publicadas que a las 07:00 con siete y dos a medias.
+   todo publicado y las notas escritas. Es mejor llegar a las 04:30 con cinco cosas terminadas
+   y publicadas que a las 04:45 con siete y dos a medias.
 
 3. Si es la primera sesión: crea el proyecto completo (Vite, estructura, `CLAUDE.md` con este
    brief resumido, `docs/ROADMAP.md` con los hitos de abajo) y, con 6 horas por delante, llega

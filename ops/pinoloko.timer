@@ -1,9 +1,9 @@
 [Unit]
-Description=Lanza la sesión nocturna de Pinoloko a las 00:30
+Description=Lanza la sesión nocturna de Pinoloko a las 00:15
 
 [Timer]
-OnCalendar=*-*-* 00:30:00
-RandomizedDelaySec=5min
+OnCalendar=*-*-* 00:15:00
+RandomizedDelaySec=2min
 Persistent=false
 Unit=pinoloko.service
 

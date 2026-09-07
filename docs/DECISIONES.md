@@ -116,9 +116,28 @@ Lo que **no** se ha tocado, porque no eran remilgos de marca:
 La sesión nocturna corre con **Fable 5.1** (`claude-fable-5-1`), fijado en la unidad de systemd
 (`PINOLOKO_MODEL`), no en el script: se cambia editando la unidad y recargando, sin tocar el repo.
 
-La ventana de trabajo pasa a ser de **unas 6 horas** (00:30 a ~06:40, con corte duro de systemd a
-las 07:00) y `--max-turns` sube a 1500, de forma que el límite real sea el reloj y no los turnos.
+La ventana de trabajo es de **unas 4 horas y media** (00:15 a 04:45, con corte duro a las 05:05)
+y `--max-turns` sube a 1500, de forma que el límite real sea el reloj y no los turnos.
 El paso 2 del protocolo obliga a escribir el plan de la noche antes de tocar código, en bloques de
 45-60 minutos con commit publicable cada uno. El motivo es que el riesgo de una sesión larga y sin
 supervisión no es pasarse, es apuntar bajo: terminar la primera tarea pronto y gastar el resto de
 la noche puliendo lo que ya funcionaba.
+
+## 2026-09-07 — La noche cabe en una sola ventana de cuota
+
+Se pidieron 6 horas de trabajo por noche. No caben, y el motivo no es técnico sino de cuota: el
+plan mide el consumo en **ventanas rodantes de 5 horas** que arrancan con la primera petición, no
+a una hora fija. Una sesión de 6 h arrancando a las 00:30 agota la ventana 00:30-05:30 y **abre
+una segunda** de 05:30 a 10:30, que se solapa con la mañana de trabajo de Ismael y se la deja
+mordida.
+
+Así que la noche se ajusta a **00:15 → 04:45** (corte duro 05:05), dentro de una sola ventana.
+A las 09:00 esa ventana ya expiró y la mañana arranca limpia. Se pierde hora y media de trabajo
+autónomo a cambio de no tocar la cuota con la que Ismael trabaja: el cambio vale la pena porque
+su trabajo va primero.
+
+Además, `noche.sh` no arranca si el consumo **semanal** cacheado supera el 70%
+(`PINOLOKO_TOPE_SEMANAL`). El límite de 7 días es el que de verdad duele: se acumula noche a
+noche y solo se reinicia una vez por semana. Es un freno grueso, porque la cifra que lee es la de
+la última lectura de la CLI y no la de ese instante, pero basta para que el juego no se coma la
+semana.

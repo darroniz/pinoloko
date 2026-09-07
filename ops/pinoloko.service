@@ -9,9 +9,10 @@ User=idarroniz
 WorkingDirectory=/home/idarroniz/pinoloko
 ExecStart=/home/idarroniz/pinoloko/scripts/noche.sh
 
-# La sesión trabaja unas 6 h (00:30 -> ~06:40). El corte duro va algo más allá,
-# como red de seguridad, no como plazo de trabajo.
-TimeoutStartSec=6h30m
+# La ventana de 5 h del plan es RODANTE: arranca con la primera petición. Si la
+# sesión pasa de 5 h abre una segunda ventana que se solapa con la mañana de
+# Ismael. Por eso el corte va a 4h50m: 00:15 -> 05:05, dentro de una sola ventana.
+TimeoutStartSec=4h50m
 
 # La Pi comparte sitio con Immich y el stack de Velltec: la sesión nocturna
 # cede CPU y disco, y tiene techo de memoria.

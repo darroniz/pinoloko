@@ -4,6 +4,8 @@ export interface Partida {
   z: number;
   rumbo: number;
   dinero: number;
+  aPie?: boolean;
+  modelo?: number;
 }
 
 const CLAVE = 'pinoloko.partida.v1';
@@ -14,7 +16,7 @@ export function cargarPartida(): Partida | null {
     if (!bruto) return null;
     const p = JSON.parse(bruto) as Partial<Partida>;
     if (typeof p.x !== 'number' || typeof p.z !== 'number') return null;
-    return { x: p.x, z: p.z, rumbo: p.rumbo ?? 0, dinero: p.dinero ?? 0 };
+    return { x: p.x, z: p.z, rumbo: p.rumbo ?? 0, dinero: p.dinero ?? 0, aPie: p.aPie ?? false, modelo: p.modelo ?? 0 };
   } catch {
     return null;
   }

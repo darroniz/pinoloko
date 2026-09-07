@@ -18,7 +18,7 @@ export class Controles implements Entrada {
   private ejeMando = { x: 0, y: 0 };
   private accionPulsada = false;
 
-  constructor(zonaJoystick: HTMLElement, bola: HTMLElement, botonFreno: HTMLElement) {
+  constructor(zonaJoystick: HTMLElement, bola: HTMLElement, botonFreno: HTMLElement, botonAccion: HTMLElement) {
     this.tactil = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
     if (this.tactil) document.body.classList.add('tactil');
 
@@ -64,6 +64,8 @@ export class Controles implements Entrada {
     botonFreno.addEventListener('pointercancel', () => { this.frenoTactil = false; });
     botonFreno.addEventListener('pointerleave', () => { this.frenoTactil = false; });
     botonFreno.addEventListener('contextmenu', (e) => e.preventDefault());
+    botonAccion.addEventListener('pointerdown', (e) => { e.preventDefault(); this.accionPulsada = true; });
+    botonAccion.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
   private leerMando(): void {

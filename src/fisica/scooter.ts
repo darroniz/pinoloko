@@ -6,6 +6,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import type { MundoFisico } from './mundo';
 import { RAPIER as R } from './mundo';
 import type { Entrada } from '../control/entrada';
+import { crearWifly } from '../mundo/wifly';
 
 export interface AjustesScooter {
   aceleracion: number;
@@ -20,6 +21,12 @@ export interface AjustesScooter {
   inclinacionMaxima: number;
 }
 
+export interface ModeloScooter {
+  nombre: string;
+  color: string;
+  ajustes: AjustesScooter;
+}
+
 export const JOG_RR: AjustesScooter = {
   aceleracion: 11,
   velocidadMaxima: 16,
@@ -32,6 +39,14 @@ export const JOG_RR: AjustesScooter = {
   agarreDerrape: 2.2,
   inclinacionMaxima: 0.6,
 };
+
+export const MODELOS: ModeloScooter[] = [
+  { nombre: 'Yamaha Jog RR', color: '#e63946', ajustes: JOG_RR },
+  { nombre: 'Piaggio Zip SP', color: '#2b6cd9', ajustes: { ...JOG_RR, aceleracion: 10, velocidadMaxima: 15, giroMaximo: 3.7, agarre: 12 } },
+  { nombre: 'Aprilia Sonic', color: '#f2c14e', ajustes: { ...JOG_RR, aceleracion: 12, velocidadMaxima: 17, giroMaximo: 3.1, agarreDerrape: 1.8 } },
+  { nombre: 'Peugeot Speedfight', color: '#2a9d8f', ajustes: { ...JOG_RR, aceleracion: 10.5, velocidadMaxima: 16, frenado: 26 } },
+  { nombre: 'Gilera Runner', color: '#7b2cbf', ajustes: { ...JOG_RR, aceleracion: 12.5, velocidadMaxima: 18, giroMaximo: 2.9, agarre: 10 } },
+];
 
 export interface EstadoScooter {
   x: number;
@@ -67,9 +82,13 @@ export class Scooter {
   private readonly ruedaTrasera: THREE.Mesh;
   private readonly manillar: THREE.Group;
   private giroActual = 0;
+  private readonly piloto: THREE.Group;
+  readonly modelo: ModeloScooter;
+  conducida = false;
 
-  constructor(fisica: MundoFisico, x: number, z: number, rumbo: number, ajustes: AjustesScooter = JOG_RR) {
-    this.ajustes = ajustes;
+  constructor(fisica: MundoFisico, x: number, z: number, rumbo: number, modelo: ModeloScooter = MODELOS[0]!) {
+    this.modelo = modelo;
+    this.ajustes = modelo.ajustes;
     this.rumbo = rumbo;
     this.cuerpo = fisica.world.createRigidBody(
       R.RigidBodyDesc.dynamic().setTranslation(x, RADIO + 0.1, z).lockRotations().setLinearDamping(0.05).setCcdEnabled(true),
@@ -84,12 +103,9 @@ export class Scooter {
     this.chasis = new THREE.Group();
     this.chasis.scale.setScalar(ESCALA_VISUAL);
     this.malla.add(this.chasis);
-    const carroceria = new THREE.MeshLambertMaterial({ color: '#e63946' });
+    const carroceria = new THREE.MeshLambertMaterial({ color: modelo.color });
     const negro = new THREE.MeshLambertMaterial({ color: '#2b2b2f' });
     const cromo = new THREE.MeshLambertMaterial({ color: '#d0d4dc' });
-    const piel = new THREE.MeshLambertMaterial({ color: '#e0ac8b' });
-    const camiseta = new THREE.MeshLambertMaterial({ color: '#f5f5f5' });
-    const chandal = new THREE.MeshLambertMaterial({ color: '#1d4ed8' });
 
     const cuerpoMoto = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 1.05), carroceria);
     cuerpoMoto.position.set(0, 0.42, 0.1);
@@ -116,25 +132,11 @@ export class Scooter {
     this.manillar.add(barra, faro);
     this.chasis.add(this.ruedaTrasera, this.ruedaDelantera, this.manillar);
 
-    // Wifly: cápsula con cabeza, chándal y gorra, hasta que haya modelo.
-    const wifly = new THREE.Group();
-    const tronco = new THREE.Mesh(new THREE.CapsuleGeometry(0.17, 0.3, 3, 8), camiseta);
-    tronco.position.set(0, 0.98, 0.15);
-    const piernaIz = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.34, 0.14), chandal);
-    piernaIz.position.set(-0.12, 0.62, -0.02);
-    const piernaDe = piernaIz.clone();
-    piernaDe.position.x = 0.12;
-    const cabeza = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), piel);
-    cabeza.position.set(0, 1.36, 0.1);
-    const gorra = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.09, 10), negro);
-    gorra.position.set(0, 1.46, 0.1);
-    const visera = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.03, 0.18), negro);
-    visera.position.set(0, 1.43, -0.08);
-    const brazos = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.08, 0.08), camiseta);
-    brazos.position.set(0, 1.0, -0.3);
-    brazos.rotation.x = -0.4;
-    wifly.add(tronco, piernaIz, piernaDe, cabeza, gorra, visera, brazos);
-    this.chasis.add(wifly);
+    this.piloto = crearWifly(true).grupo;
+    this.piloto.visible = false;
+    this.chasis.add(this.piloto);
+    // Aparcada: dormida y apoyada en el suelo hasta que alguien la toque o se suba.
+    this.cuerpo.sleep();
 
     this.malla.traverse((o) => { if (o instanceof THREE.Mesh) o.castShadow = true; });
     this.sincronizar();
@@ -147,6 +149,25 @@ export class Scooter {
 
   get direccion(): THREE.Vector3 {
     return new THREE.Vector3(Math.sin(this.rumbo), 0, -Math.cos(this.rumbo));
+  }
+
+  /** Wifly se sube o se baja: el piloto se dibuja y la moto pasa a responder a la entrada. */
+  montar(si: boolean): void {
+    this.conducida = si;
+    this.piloto.visible = si;
+    if (si) this.cuerpo.wakeUp();
+  }
+
+  /** Paso sin conductor: solo sincroniza la malla (la física sigue por si la empujan). */
+  reposo(): void {
+    if (!this.cuerpo.isSleeping()) {
+      const v = this.cuerpo.linvel();
+      const rapidez = Math.hypot(v.x, v.z);
+      // Sin nadie encima, se frena sola y no gira.
+      this.cuerpo.setLinvel({ x: v.x * 0.96, y: v.y, z: v.z * 0.96 }, true);
+      this.estado.velocidad = rapidez;
+      this.sincronizar();
+    }
   }
 
   teletransportar(x: number, z: number, rumbo: number): void {

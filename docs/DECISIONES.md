@@ -235,3 +235,19 @@ móvil de Ismael.
 **En calidad baja se sacrifica lo que solo se nota de cerca:** DPR 0,5, sin sombras, sin
 antialias, sin líneas de borde en los edificios y sin la capa de acera de las calles rodadas.
 Los móviles con GPU van en calidad alta con todo.
+
+## 2026-09-08 — Vecinos sin física, motos aparcadas como cuerpos dormidos
+
+**Los vecinos no tienen cuerpo de Rapier.** Son posiciones que recorren el grafo peatonal con
+una máquina de estados (pasear, huir, caído, levantarse) y se dibujan como instancias (una
+cápsula por color de ropa más una esfera de cabeza). El atropello se detecta por distancia y
+velocidad de la moto, no por colisión física: es más barato, más predecible y más de dibujos
+animados. 110 vecinos cuestan menos de 0,5 ms por frame. Los insultos son avisos en el HUD.
+
+**Las motos aparcadas son instancias completas de `Scooter` con el cuerpo dormido.** Se despiertan
+al empujarlas o al subirse. Catorce repartidas junto a bares, mercado, farmacias y colegios,
+con cinco modelos de nombre real y ajustes distintos (la Runner corre más, la Zip gira mejor).
+Subirse elige la más cercana a 3,2 m; bajarse exige ir a menos de 9 km/h.
+
+**A pie Wifly es otra bola.** Radio 0,4 m, sin fricción, con amortiguación alta: se para en seco
+al soltar el stick. El botón de freno hace de "correr". Cabe por cualquier pasaje.

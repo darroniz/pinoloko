@@ -69,8 +69,17 @@ export class AudioJuego {
     this.motor.frequency.setTargetAtTime(38 + this.rpm * 95, t, 0.05);
     this.armonico?.frequency.setTargetAtTime(76 + this.rpm * 190, t, 0.05);
     this.motorFiltro.frequency.setTargetAtTime(300 + this.rpm * 900, t, 0.05);
-    this.motorGanancia.gain.setTargetAtTime(0.10 + this.rpm * 0.14, t, 0.1);
+    if (!this.silenciado) this.motorGanancia.gain.setTargetAtTime(0.10 + this.rpm * 0.14, t, 0.1);
     this.derrapeGanancia.gain.setTargetAtTime(derrapando ? 0.16 : 0, t, 0.08);
+  }
+
+  private silenciado = false;
+
+  /** A pie no hay motor que oír. */
+  silenciarMotor(si: boolean): void {
+    if (si === this.silenciado || !this.ctx || !this.motorGanancia) return;
+    this.silenciado = si;
+    if (si) this.motorGanancia.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
   }
 
   golpe(fuerza: number): void {

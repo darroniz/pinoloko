@@ -17,9 +17,9 @@ Objetivo: **hito 1 entero** (Moverse) publicado y jugable en el móvil.
 - [x] **Bloque 2 (01:40-02:40, hecho a la 01:05)** — Scooter con Rapier: controles en plano de pantalla (teclado,
       joystick táctil, mando), inclinación en curva, derrape al frenar, rebote en choques.
       Cámara que sigue con retroceso a velocidad. Push: se conduce.
-- [ ] **Bloque 3 (02:40-03:30)** — Vida en la azotea y en la calle: aires, depósitos,
-      tendederos, parabólicas; árboles; conos y macetas que se llevan por delante; marcas de
-      neumático; HUD con velocidad y nombre de calle; motor sintetizado. Push.
+- [x] **Bloque 3 (hecho a la 01:15, iba dentro del 1 y el 2)** — Azoteas con trastos, árboles,
+      conos y macetas, marcas, HUD, motor. Y de propina del hito 2: Wifly a pie, subir y bajar,
+      robar motos aparcadas y 110 vecinos que pasean, huyen e insultan.
 - [ ] **Bloque 4 (03:30-04:15)** — Tests Vitest del grafo y del cargador, ajuste de sensación
       arcade, guardado en localStorage, créditos con atribución OSM, metadatos móvil. Push.
 - [ ] **Bloque 5 (04:15-04:45)** — Cierre: roadmap, decisiones, estas notas, verificación final.

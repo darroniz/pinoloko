@@ -23,10 +23,11 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] **Gate: moverse por el barrio tiene que ser divertido antes de pasar de aquí.**
 
 ## 2. Vida
-- [ ] Wifly a pie por los pasajes: entrar y salir de vehículos, robar motos y coches parados
-      y en marcha.
+- [x] Wifly a pie por los pasajes: bajarse y subirse a la moto (E / botón SUBIR-BAJAR), robar
+      las motos aparcadas por el barrio (Jog RR, Zip SP, Sonic, Speedfight, Runner).
+- [ ] Coches aparcados y en marcha que se puedan robar y conducir (más pesados, derrape largo).
 - [ ] Tráfico por el grafo rodado, con cruces y semáforos simples.
-- [ ] Peatones con máquina de estados (pasear, huir, reaccionar, insultar en sevillano).
+- [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano).
 - [ ] Ciclo día/noche.
 
 ## 3. Cafre

@@ -25,6 +25,25 @@ console.log('a mitad', JSON.stringify(await p.evaluate(() => { const i = window.
 await p.keyboard.down('d');
 await new Promise((r) => setTimeout(r, 2500));
 await p.keyboard.up('w'); await p.keyboard.up('d');
+// Frenar, bajarse, andar, volver a subirse.
+await p.keyboard.down('Space');
+await new Promise((r) => setTimeout(r, 2000));
+await p.keyboard.up('Space');
+await p.keyboard.press('e');
+await new Promise((r) => setTimeout(r, 800));
+console.log('tras E', JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { aPie: i.aPie, peaton: i.peaton, scooter: [i.scooter.x, i.scooter.z, i.scooter.velocidad] }; })));
+await p.keyboard.down('s');
+await new Promise((r) => setTimeout(r, 1500));
+await p.keyboard.up('s');
+console.log('andando', JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { aPie: i.aPie, peaton: i.peaton }; })));
+await p.keyboard.down('w');
+await new Promise((r) => setTimeout(r, 1500));
+await p.keyboard.up('w');
+await new Promise((r) => setTimeout(r, 300));
+await p.keyboard.press('e');
+await new Promise((r) => setTimeout(r, 500));
+console.log('tras 2ª E', JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { aPie: i.aPie, vecinosCerca: i.vecinosCerca }; })));
+await p.screenshot({ path: 'logs/captura-pie.png' });
 const f1 = await p.evaluate(() => window.__pv_frames);
 console.log('frames/5s', f1 - f0, 'update mediana', await p.evaluate(() => { const m = performance.getEntriesByName('update').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'render mediana', await p.evaluate(() => { const m = performance.getEntriesByName('render').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'objetos', await p.evaluate(() => { let n = 0; window.__pv_escena?.traverse(() => n++); return n; }));
 console.log(JSON.stringify(await p.evaluate(() => window.__pv_info())));

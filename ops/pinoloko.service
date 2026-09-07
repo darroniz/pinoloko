@@ -9,8 +9,9 @@ User=idarroniz
 WorkingDirectory=/home/idarroniz/pinoloko
 ExecStart=/home/idarroniz/pinoloko/scripts/noche.sh
 
-# Corte duro: si una sesión se atasca, no se come la mañana.
-TimeoutStartSec=5h
+# La sesión trabaja unas 6 h (00:30 -> ~06:40). El corte duro va algo más allá,
+# como red de seguridad, no como plazo de trabajo.
+TimeoutStartSec=6h30m
 
 # La Pi comparte sitio con Immich y el stack de Velltec: la sesión nocturna
 # cede CPU y disco, y tiene techo de memoria.
@@ -23,7 +24,8 @@ MemoryMax=2400M
 Environment=NODE_OPTIONS=--max-old-space-size=1536
 Environment=CHROMIUM_PATH=/usr/bin/chromium
 Environment=PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-Environment=PINOLOKO_MAX_TURNS=400
+Environment=PINOLOKO_MAX_TURNS=1500
+Environment=PINOLOKO_MODEL=claude-fable-5-1
 Environment=PATH=/home/idarroniz/.local/bin:/usr/local/bin:/usr/bin:/bin
 
 [Install]

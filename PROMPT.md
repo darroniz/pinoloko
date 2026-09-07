@@ -96,17 +96,38 @@ Lo que sí se mantiene, que no son remilgos:
 ### Protocolo de cada sesión nocturna (síguelo en orden)
 
 1. `git pull`. Lee `CLAUDE.md`, `docs/ROADMAP.md`, `docs/DECISIONES.md` y **`docs/FEEDBACK.md`**. Si hay feedback nuevo de Ismael (compara con `docs/FEEDBACK_PROCESADO.md`), conviértelo en tareas al principio del roadmap y márcalo como procesado. El feedback de Ismael tiene prioridad sobre todo lo demás.
-2. Si es la primera sesión: crea el proyecto completo (Vite, estructura, `CLAUDE.md` con este brief resumido, `docs/ROADMAP.md` con los hitos de abajo) y llega como mínimo hasta un coche que se conduce por un tramo de Pino Montano publicado en la URL de arriba.
-3. Elige la siguiente tarea del roadmap. Tareas pequeñas: cada una debe caber en la sesión y dejar el juego jugable al terminar.
-4. Implementa. Escribe tests (Vitest) para la lógica sin renderizado: grafo de tráfico, nivel de búsqueda, economía, sistema de zonas.
-5. **Verifica antes de publicar.** `npm run lint && npm run test && npm run build` deben pasar. Después sirve el `dist/` y ábrelo con Playwright en headless (Chromium del sistema), viewport de móvil (390x844), y comprueba las tres cosas:
+2. **Planifica la noche entera antes de tocar una línea de código, y planifica en grande.**
+   Tienes **unas 6 horas por delante** (arrancas a las 00:30, el corte duro es a las 07:00) y
+   nadie a quien esperar. Eso no son "una o dos tareas": son muchas. El error típico de una
+   sesión así es apuntar bajo, terminar la primera tarea en cuarenta minutos y quedarse dando
+   vueltas puliendo detalles. No lo hagas.
+
+   Escribe el plan de la noche en `docs/NOTAS_PARA_ISMAEL.md` antes de empezar: la lista
+   ordenada de todo lo que te vas a comer, agrupado en bloques de ~45-60 minutos, cada bloque
+   con su propio commit publicable. Sé ambicioso — apunta a vaciar un hito entero del roadmap,
+   no a picotear tareas sueltas. Si a mitad de noche vas más rápido de lo previsto, coge más
+   trabajo del roadmap en vez de sobreoptimizar lo que ya funciona.
+
+   Ve mirando el reloj (`date`). Reserva los últimos 20 minutos para cerrar: `main` limpio,
+   todo publicado y las notas escritas. Es mejor llegar a las 06:40 con cinco cosas terminadas
+   y publicadas que a las 07:00 con siete y dos a medias.
+
+3. Si es la primera sesión: crea el proyecto completo (Vite, estructura, `CLAUDE.md` con este
+   brief resumido, `docs/ROADMAP.md` con los hitos de abajo) y, con 6 horas por delante, llega
+   bastante más allá del mínimo: el objetivo de la primera noche es el hito 1 entero — la caja
+   del Mercado extruida desde OSM, la scooter conduciéndose y la cámara alta — publicado y
+   jugable desde el móvil.
+4. Elige la siguiente tarea del plan. Tareas pequeñas: cada una debe caber en un bloque y dejar
+   el juego jugable al terminar.
+5. Implementa. Escribe tests (Vitest) para la lógica sin renderizado: grafo de tráfico, nivel de búsqueda, economía, sistema de zonas.
+6. **Verifica antes de publicar.** `npm run lint && npm run test && npm run build` deben pasar. Después sirve el `dist/` y ábrelo con Playwright en headless (Chromium del sistema), viewport de móvil (390x844), y comprueba las tres cosas:
    - cero errores de consola y cero peticiones fallidas;
    - el bucle de render avanza: al menos **120 frames en 10 segundos** (contador expuesto en `window.__pv_frames`);
    - presupuesto de CPU por frame: la mediana de `performance.measure` del `update()` del juego (lógica, sin dibujar) por debajo de **8 ms** en esta máquina.
    Si algo falla, arréglalo; si no puedes arreglarlo, revierte el commit y anota el problema en `docs/NOTAS_PARA_ISMAEL.md`.
-6. Commit con mensaje claro y `git push` a `main` (esto despliega a GitHub Pages). Nunca dejes `main` roto. Después del push, espera al workflow (`gh` no está instalado: consulta el estado con la API pública de Actions con `curl`) y comprueba que la URL publicada responde 200.
-7. Actualiza `docs/ROADMAP.md` y escribe en `docs/NOTAS_PARA_ISMAEL.md` un párrafo con fecha: qué hay nuevo esta noche, qué probar y dónde, qué dudas has resuelto tú solo. Corto, para leer en el móvil.
-8. Si te queda presupuesto, repite desde el paso 3. Si no, para. Prefiere una feature terminada y publicada a tres a medias.
+7. Commit con mensaje claro y `git push` a `main` (esto despliega a GitHub Pages). Nunca dejes `main` roto. Después del push, espera al workflow (`gh` no está instalado: consulta el estado con la API pública de Actions con `curl`) y comprueba que la URL publicada responde 200.
+8. Actualiza `docs/ROADMAP.md` y añade una línea al plan de la noche en `docs/NOTAS_PARA_ISMAEL.md` marcando el bloque como hecho.
+9. **Vuelve al paso 4 mientras te quede tiempo.** Al terminar la noche, cierra `docs/NOTAS_PARA_ISMAEL.md` con un párrafo corto con fecha: qué hay nuevo, qué probar y dónde, qué dudas has resuelto tú solo. Para leer en el móvil.
 
 ### Roadmap inicial (refínalo tú, mantén el orden de prioridad)
 

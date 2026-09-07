@@ -110,3 +110,15 @@ Lo que **no** se ha tocado, porque no eran remilgos de marca:
 - el tono (violencia de juguete, nada sexual, nada de humor de odio);
 - la atribución a OpenStreetMap, que es la licencia de los datos del mapa;
 - no meter en el repo ficheros (modelos, texturas, audio) sacados de otro juego.
+
+## 2026-09-07 — Fable 5.1 y noches de 6 horas con plan por delante
+
+La sesión nocturna corre con **Fable 5.1** (`claude-fable-5-1`), fijado en la unidad de systemd
+(`PINOLOKO_MODEL`), no en el script: se cambia editando la unidad y recargando, sin tocar el repo.
+
+La ventana de trabajo pasa a ser de **unas 6 horas** (00:30 a ~06:40, con corte duro de systemd a
+las 07:00) y `--max-turns` sube a 1500, de forma que el límite real sea el reloj y no los turnos.
+El paso 2 del protocolo obliga a escribir el plan de la noche antes de tocar código, en bloques de
+45-60 minutos con commit publicable cada uno. El motivo es que el riesgo de una sesión larga y sin
+supervisión no es pasarse, es apuntar bajo: terminar la primera tarea pronto y gastar el resto de
+la noche puliendo lo que ya funcionaba.

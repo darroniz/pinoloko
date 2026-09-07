@@ -25,8 +25,9 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 ## 2. Vida
 - [x] Wifly a pie por los pasajes: bajarse y subirse a la moto (E / botón SUBIR-BAJAR), robar
       las motos aparcadas por el barrio (Jog RR, Zip SP, Sonic, Speedfight, Runner).
-- [ ] Coches aparcados y en marcha que se puedan robar y conducir (más pesados, derrape largo).
-- [ ] Tráfico por el grafo rodado, con cruces y semáforos simples.
+- [x] Coches aparcados y del tráfico que se pueden robar y conducir (más pesados, derrape largo).
+- [x] Tráfico por el grafo rodado: circulan por su derecha, frenan en cruces y ante obstáculos.
+- [ ] Semáforos en los cruces con `highway=traffic_signals` (los datos ya están en el nivel).
 - [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano).
 - [ ] Ciclo día/noche.
 

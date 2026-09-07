@@ -5,10 +5,13 @@ import { Controles } from './control/entrada';
 import { MundoFisico, PASO_FISICA } from './fisica/mundo';
 import { MODELOS, Scooter } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
+import { Coche, COLORES_COCHE } from './fisica/coche';
+import { Trafico } from './mundo/trafico';
 import { Vecinos } from './mundo/peatones';
 import { construirArboles, construirAzoteas } from './mundo/azoteas';
 import { GrafoBarrio, viaMasCercana } from './mundo/grafo';
 import { cargarNivel, construirBarrio, COLORES } from './mundo/nivel';
+import { dentroDePoligono } from './mundo/geometria';
 import type { Nivel } from './mundo/tipos';
 import { Hud } from './ui/hud';
 import { AudioJuego } from './audio/motor';
@@ -16,6 +19,7 @@ import { cargarPartida, guardarPartida } from './guardado';
 import { FRASES, Trastos } from './mundo/trastos';
 import { MarcasNeumatico } from './efectos/marcas';
 import { Particulas } from './efectos/particulas';
+import { MarcadorJugador } from './efectos/marcador';
 
 declare global {
   interface Window {
@@ -24,6 +28,7 @@ declare global {
     __pv_jugando: boolean;
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
+    __pv_prueba: { robarCoche: () => boolean };
   }
 }
 
@@ -63,6 +68,7 @@ export class Juego {
   private trastos!: Trastos;
   private marcas = new MarcasNeumatico();
   private particulas = new Particulas();
+  private marcador = new MarcadorJugador();
   private racha = 0;
   private tiempoRacha = 0;
   private colorChispa = new THREE.Color('#ffd166');
@@ -71,6 +77,9 @@ export class Juego {
   private peaton!: Peaton;
   private vecinos!: Vecinos;
   private aPie = false;
+  private coche: Coche | null = null;
+  private coches: Coche[] = [];
+  private trafico!: Trafico;
   private botonAccion = document.getElementById('boton-accion')!;
   private tiempoInsulto = 0;
   readonly calidad: Calidad;
@@ -116,7 +125,7 @@ export class Juego {
     this.trastos = new Trastos(fisica);
     this.trastos.poblar(nivel, arboles.posiciones);
 
-    this.escena.add(this.trastos.grupo, this.marcas.malla, this.particulas.puntos);
+    this.escena.add(this.trastos.grupo, this.marcas.malla, this.particulas.puntos, this.marcador.grupo);
 
     // Luz: hemisferio cálido y un sol con sombras suaves que sigue al jugador.
     this.escena.add(new THREE.HemisphereLight('#ffffff', '#c9b69a', 0.85));
@@ -152,6 +161,9 @@ export class Juego {
     this.escena.add(this.peaton.malla);
     this.vecinos = new Vecinos(this.grafo, 110);
     this.escena.add(this.vecinos.grupo);
+    this.trafico = new Trafico(fisica, this.grafo, 14);
+    this.escena.add(this.trafico.grupo);
+    this.aparcarCoches(nivel);
     if (partida?.aPie) this.bajarse();
     this.trastos.gestionarRadio(inicio.x, inicio.z);
     this.camara.colocar(inicio.x, inicio.z);
@@ -161,7 +173,17 @@ export class Juego {
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.guardar(); });
     window.__pv_listo = true;
     window.__pv_escena = this.escena;
-    window.__pv_info = () => ({ calidad: this.calidad, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
+    // Ganchos para la sonda de verificación: forzar situaciones que no se pueden guionizar con teclas.
+    window.__pv_prueba = {
+      robarCoche: () => {
+        const c = this.trafico.lista[0];
+        if (!c) return false;
+        if (!this.aPie) this.bajarse();
+        this.peaton.aparecer(c.x + 2, c.z, 0);
+        return this.subirse() && this.coche !== null;
+      },
+    };
+    window.__pv_info = () => ({ calidad: this.calidad, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
@@ -185,29 +207,82 @@ export class Juego {
     }
   }
 
-  /** Wifly se baja de la moto y se queda de pie a su lado. */
+  /** Coches aparcados en el arcén de las calles rodadas. */
+  private aparcarCoches(nivel: Nivel): void {
+    const rnd = (n: number) => ((Math.sin(n * 78.233) * 43758.5453) % 1 + 1) % 1;
+    let i = 0;
+    for (const via of nivel.vias) {
+      if (via.clase !== 'rodada' || via.tipo === 'service' || i >= 12) continue;
+      if (rnd(via.id) > 0.45) continue;
+      const [ax, az] = via.puntos[0]!;
+      const [bx, bz] = via.puntos[1] ?? via.puntos[0]!;
+      const dx = bx - ax, dz = bz - az;
+      const l = Math.hypot(dx, dz) || 1;
+      if (l < 12) continue;
+      const ux = dx / l, uz = dz / l;
+      const lado = via.ancho / 2 + 1.3;
+      const x = ax + ux * (5 + rnd(via.id + 1) * (l - 10)) - uz * lado;
+      const z = az + uz * (5 + rnd(via.id + 1) * (l - 10)) + ux * lado;
+      const coche = new Coche(this.fisica, x, z, Math.atan2(ux, -uz), COLORES_COCHE[Math.floor(rnd(via.id + 2) * COLORES_COCHE.length)]!);
+      this.coches.push(coche);
+      this.escena.add(coche.malla);
+      i++;
+    }
+  }
+
+  /** Lo que lleva Wifly ahora mismo (moto o coche), para cámara, HUD y efectos. */
+  private get vehiculo(): Scooter | Coche {
+    return this.coche ?? this.scooter;
+  }
+
+  /** Wifly se baja del vehículo y se queda de pie a su lado. */
   private bajarse(): void {
     if (this.aPie) return;
-    const e = this.scooter.estado;
-    const lado = this.scooter.direccion.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).multiplyScalar(1.2);
-    this.scooter.montar(false);
+    const v = this.vehiculo;
+    const e = v.estado;
+    const lado = v.direccion.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).multiplyScalar(this.coche ? 2.2 : 1.2);
+    v.montar(false);
     this.peaton.aparecer(e.x + lado.x, e.z + lado.z, e.rumbo);
     this.aPie = true;
+    this.coche = null;
     this.botonAccion.textContent = 'SUBIR';
   }
 
-  /** Se sube a la moto más cercana si hay una a mano. */
+  /** Se sube a lo más cercano que haya a mano: moto, coche aparcado o coche del tráfico. */
   private subirse(): boolean {
     const p = this.peaton.posicion;
-    let mejor: Scooter | null = null, mejorD = 3.2 * 3.2;
+    let mejorMoto: Scooter | null = null, mejorD = 3.2 * 3.2;
     for (const m of this.scooters) {
       const d = (m.estado.x - p.x) ** 2 + (m.estado.z - p.z) ** 2;
-      if (d < mejorD) { mejorD = d; mejor = m; }
+      if (d < mejorD) { mejorD = d; mejorMoto = m; }
     }
-    if (!mejor) return false;
-    if (mejor !== this.scooter) this.hud.avisar(`${mejor.modelo.nombre}: ¡mía!`, 1.8);
-    this.scooter = mejor;
-    this.scooter.montar(true);
+    let mejorCoche: Coche | null = null, mejorDc = 4.2 * 4.2;
+    for (const c of this.coches) {
+      const d = (c.estado.x - p.x) ** 2 + (c.estado.z - p.z) ** 2;
+      if (d < mejorDc) { mejorDc = d; mejorCoche = c; }
+    }
+    const delTrafico = this.trafico.masCercano(p.x, p.z, 4.2);
+    const dTrafico = delTrafico ? (delTrafico.x - p.x) ** 2 + (delTrafico.z - p.z) ** 2 : Infinity;
+
+    if (delTrafico && dTrafico < mejorD && dTrafico < mejorDc) {
+      // Robo en marcha: el coche sale del tráfico y pasa a ser un coche de verdad.
+      const c = new Coche(this.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color);
+      this.trafico.quitar(delTrafico);
+      this.coches.push(c);
+      this.escena.add(c.malla);
+      mejorCoche = c;
+      mejorDc = 0;
+      this.hud.avisar(['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
+    }
+    if (mejorCoche && mejorDc < mejorD) {
+      this.coche = mejorCoche;
+      this.coche.montar(true);
+    } else if (mejorMoto) {
+      if (mejorMoto !== this.scooter) this.hud.avisar(`${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
+      this.scooter = mejorMoto;
+      this.scooter.montar(true);
+      this.coche = null;
+    } else return false;
     this.peaton.esconder();
     this.aPie = false;
     this.botonAccion.textContent = 'BAJAR';
@@ -230,7 +305,7 @@ export class Juego {
 
   private guardar(): void {
     if (!this.scooter) return;
-    const pos = this.aPie ? this.peaton.posicion : this.scooter.posicion;
+    const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
     guardarPartida({ x: pos.x, z: pos.z, rumbo: this.scooter.estado.rumbo, dinero: this.dinero, aPie: this.aPie, modelo: MODELOS.indexOf(this.scooter.modelo) });
   }
 
@@ -255,20 +330,23 @@ export class Juego {
       let pasos = 0;
       if (this.controles.accion) {
         if (this.aPie) { if (!this.subirse()) this.hud.avisar('No hay moto a mano', 1.2); }
-        else if (Math.abs(this.scooter.estado.velocidad) < 2.5) this.bajarse();
+        else if (Math.abs(this.vehiculo.estado.velocidad) < 2.5) this.bajarse();
         else this.hud.avisar('Frena antes de bajarte', 1.2);
       }
-      while (this.acumulador >= PASO_FISICA && pasos < 3) {
+      while (this.acumulador >= PASO_FISICA && pasos < 2) {
         if (this.aPie) this.peaton.actualizar(this.controles, PASO_FISICA);
+        else if (this.coche) this.coche.actualizar(this.controles, PASO_FISICA);
         else this.scooter.actualizar(this.controles, PASO_FISICA);
+        this.trafico.actualizar(this.aPie ? this.peaton.posicion : this.vehiculo.estado, PASO_FISICA);
         this.fisica.paso();
-        for (const m of this.scooters) { if (m === this.scooter && !this.aPie) m.despuesDelPaso(); else m.reposo(); }
+        for (const m of this.scooters) { if (m === this.scooter && !this.aPie && !this.coche) m.despuesDelPaso(); else m.reposo(); }
+        for (const c of this.coches) { if (c === this.coche && !this.aPie) c.despuesDelPaso(); else c.reposo(); }
         if (this.aPie) this.peaton.sincronizar();
         this.acumulador -= PASO_FISICA;
         pasos++;
       }
-      if (pasos === 3) this.acumulador = 0;
-      const e = this.scooter.estado;
+      if (pasos === 2) this.acumulador = 0;
+      const e = this.vehiculo.estado;
       if (e.golpe > 0 && !this.aPie) {
         this.camara.sacudir(e.golpe * 0.06);
         this.audio.golpe(e.golpe);
@@ -277,13 +355,13 @@ export class Juego {
       // Marcas y polvo del derrape o de la frenada fuerte.
       const frenando = !this.aPie && this.controles.freno && Math.abs(e.velocidad) > 4;
       if (!this.aPie && (e.derrapando || frenando)) {
-        const atras = this.scooter.direccion.multiplyScalar(-0.6);
+        const atras = this.vehiculo.direccion.multiplyScalar(this.coche ? -1.6 : -0.6);
         this.marcas.pintar(e.x + atras.x, e.z + atras.z, e.derrapando ? 1 : 0.55);
         if (e.derrapando && Math.random() < 0.5) this.particulas.emitir(e.x + atras.x, 0.2, e.z + atras.z, 1, this.colorPolvo, 2);
       } else this.marcas.cortar();
 
       // Vecinos: pasean, huyen, insultan y se caen si los atropellas.
-      const jugadorPos = this.aPie ? this.peaton.posicion : this.scooter.posicion;
+      const jugadorPos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
       const rapidez = this.aPie ? this.peaton.velocidad : Math.abs(e.velocidad);
       const eventos = this.vecinos.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
       this.tiempoInsulto -= dt;
@@ -327,13 +405,14 @@ export class Juego {
       this.particulas.actualizar(dt);
     }
 
-    const pos = this.aPie ? this.peaton.posicion : this.scooter.posicion;
-    const v = this.aPie ? this.peaton.cuerpo.linvel() : this.scooter.cuerpo.linvel();
+    const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
+    const v = this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel();
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
+    this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);
     this.sol.position.set(pos.x + 60, 120, pos.z + 40);
     this.sol.target.position.set(pos.x, 0, pos.z);
 
-    this.hud.ponerVelocidad(this.aPie ? this.peaton.velocidad : this.scooter.estado.velocidad);
+    this.hud.ponerVelocidad(this.aPie ? this.peaton.velocidad : this.vehiculo.estado.velocidad);
     this.tiempoCalle += dt;
     if (this.tiempoCalle > 0.3) {
       this.tiempoCalle = 0;
@@ -342,7 +421,7 @@ export class Juego {
       this.hud.ponerCalle(via?.nombre || (via ? 'Pasaje' : this.nivel.nombre));
     }
     const acelerando = !this.aPie && Math.hypot(this.controles.eje.x, this.controles.eje.y) > 0.2 && !this.controles.freno;
-    this.audio.actualizar(this.aPie ? 0 : this.scooter.estado.velocidad, acelerando, !this.aPie && this.scooter.estado.derrapando, dt);
+    this.audio.actualizar(this.aPie ? 0 : this.vehiculo.estado.velocidad, acelerando, !this.aPie && this.vehiculo.estado.derrapando, dt, !!this.coche);
     this.audio.silenciarMotor(this.aPie);
     this.tiempoGuardado += dt;
     if (this.tiempoGuardado > 5) { this.tiempoGuardado = 0; this.guardar(); }

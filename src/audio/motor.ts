@@ -61,14 +61,16 @@ export class AudioJuego {
 
   private armonico: OscillatorNode | null = null;
 
-  actualizar(velocidad: number, acelerando: boolean, derrapando: boolean, dt: number): void {
+  actualizar(velocidad: number, acelerando: boolean, derrapando: boolean, dt: number, coche = false): void {
     if (!this.ctx || !this.motor || !this.motorGanancia || !this.motorFiltro || !this.derrapeGanancia) return;
-    const objetivo = 0.15 + Math.min(1, Math.abs(velocidad) / 16) * 0.85 + (acelerando ? 0.12 : 0);
+    const objetivo = 0.15 + Math.min(1, Math.abs(velocidad) / (coche ? 21 : 16)) * 0.85 + (acelerando ? 0.12 : 0);
     this.rpm += (objetivo - this.rpm) * Math.min(1, dt * 5);
     const t = this.ctx.currentTime;
-    this.motor.frequency.setTargetAtTime(38 + this.rpm * 95, t, 0.05);
-    this.armonico?.frequency.setTargetAtTime(76 + this.rpm * 190, t, 0.05);
-    this.motorFiltro.frequency.setTargetAtTime(300 + this.rpm * 900, t, 0.05);
+    // El coche suena más grave y más redondo que el dos tiempos.
+    const grave = coche ? 0.55 : 1;
+    this.motor.frequency.setTargetAtTime((38 + this.rpm * 95) * grave, t, 0.05);
+    this.armonico?.frequency.setTargetAtTime((76 + this.rpm * 190) * grave, t, 0.05);
+    this.motorFiltro.frequency.setTargetAtTime((300 + this.rpm * 900) * (coche ? 0.7 : 1), t, 0.05);
     if (!this.silenciado) this.motorGanancia.gain.setTargetAtTime(0.10 + this.rpm * 0.14, t, 0.1);
     this.derrapeGanancia.gain.setTargetAtTime(derrapando ? 0.16 : 0, t, 0.08);
   }

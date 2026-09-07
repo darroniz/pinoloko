@@ -251,3 +251,16 @@ Subirse elige la más cercana a 3,2 m; bajarse exige ir a menos de 9 km/h.
 
 **A pie Wifly es otra bola.** Radio 0,4 m, sin fricción, con amortiguación alta: se para en seco
 al soltar el stick. El botón de freno hace de "correr". Cabe por cualquier pasaje.
+
+## 2026-09-08 — Tráfico cinemático y coches que cambian de dueño
+
+**Los coches del tráfico son cuerpos cinemáticos.** Siguen el grafo rodado por su derecha
+(carril a 1,7 m del eje), frenan al llegar a un cruce y se paran si tienen delante al jugador
+u otro coche; si llevan más de 4 s parados arrancan despacio para deshacer atascos. Un cuerpo
+cinemático empuja a la moto pero no se deja empujar: es lo que hace que chocar con el tráfico
+sea un rebote y no un billar. Cuando Wifly se sube a uno, sale de la lista de tráfico y se
+crea un `Coche` dinámico en su sitio: a partir de ahí se conduce, se aparca y se abandona
+como cualquier otro. Los semáforos quedan para otra noche; los nodos ya vienen en el nivel.
+
+**El coche comparte modelo arcade con la moto pero sobre un cuboide.** Más lento en girar
+parado (necesita rodar), derrape más largo y rebote más blando. Velocidad punta 21 m/s.

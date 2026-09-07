@@ -42,3 +42,10 @@ Ismael y lo cuenta en `FEEDBACK.md`.
 
 **Lanzador: timer de systemd, no cron.** Permite limitar memoria y prioridad de CPU/disco para
 no molestar a los otros servicios de la Pi, y deja los logs en el journal además del fichero.
+
+**El dominio se ata en los ajustes del repo, no en el fichero `CNAME`.** Con despliegue por
+workflow (`build_type: workflow`), GitHub Pages **ignora** el `CNAME` del artefacto: el dominio
+vive en la configuración del repo (`PUT /repos/:owner/:repo/pages`, campo `cname`), ya fijado a
+`pinoloko.com`. Se mantiene `public/CNAME` de todas formas como red de seguridad y como pista
+para quien lea el repo. Si algún día el dominio "se cae" del sitio, el sitio a mirar es Settings
+→ Pages, no el fichero.

@@ -29,7 +29,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Tráfico por el grafo rodado: circulan por su derecha, frenan en cruces y ante obstáculos.
 - [ ] Semáforos en los cruces con `highway=traffic_signals` (los datos ya están en el nivel).
 - [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano).
-- [ ] Ciclo día/noche.
+- [x] Ciclo día/noche (10 minutos por día, sol que gira, hora en el HUD).
+- [ ] Faros de los vehículos y ventanas encendidas de noche.
 
 ## 3. Cafre
 - [x] Objetos derribables: conos, macetas, contenedores, papeleras, vallas, terrazas de bar, cajas del mercado.

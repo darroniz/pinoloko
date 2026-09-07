@@ -87,6 +87,12 @@ for (let i = 0; i < 40 && !trincado; i++) {
   if (info.trincao) { trincado = true; console.log('TRINCADO en t+' + i, JSON.stringify(info)); await p.screenshot({ path: 'logs/captura-trincao.png' }); }
 }
 console.log('trincado', trincado);
+await p.evaluate(() => window.__pv_prueba.hora(22.5));
+await new Promise((r) => setTimeout(r, 1500));
+await p.screenshot({ path: 'logs/captura-noche.png' });
+await p.evaluate(() => window.__pv_prueba.hora(7.2));
+await new Promise((r) => setTimeout(r, 1500));
+await p.screenshot({ path: 'logs/captura-amanecer.png' });
 const f1 = await p.evaluate(() => window.__pv_frames);
 console.log('frames/5s', f1 - f0, 'update mediana', await p.evaluate(() => { const m = performance.getEntriesByName('update').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'render mediana', await p.evaluate(() => { const m = performance.getEntriesByName('render').map((e) => e.duration).sort((a, b) => a - b); return m[Math.floor(m.length / 2)]; }), 'objetos', await p.evaluate(() => { let n = 0; window.__pv_escena?.traverse(() => n++); return n; }));
 console.log(JSON.stringify(await p.evaluate(() => window.__pv_info())));

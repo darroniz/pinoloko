@@ -22,6 +22,7 @@ import { Particulas } from './efectos/particulas';
 import { MarcadorJugador } from './efectos/marcador';
 import { NivelBusqueda } from './policia/busqueda';
 import { Patrullas } from './policia/patrullas';
+import { Cielo } from './mundo/cielo';
 
 declare global {
   interface Window {
@@ -30,13 +31,14 @@ declare global {
     __pv_jugando: boolean;
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void };
   }
 }
 
 export type Calidad = 'alta' | 'baja';
 
 const SIN_ENTRADA = { eje: { x: 0, y: 0 }, freno: true, accion: false };
+const PASO_MAXIMO = 1 / 20;
 
 /** Sin GPU (SwiftShader, llvmpipe) o forzado por `?calidad=baja`: sin sombras y a DPR 1. */
 function detectarCalidad(): Calidad {
@@ -79,6 +81,7 @@ export class Juego {
   private motosRobadas = new Set<Scooter>();
   private rndPolicia = () => Math.random();
   private arranque = { x: 0, z: 0, rumbo: 0 };
+  private cielo!: Cielo;
   private racha = 0;
   private tiempoRacha = 0;
   private colorChispa = new THREE.Color('#ffd166');
@@ -138,7 +141,8 @@ export class Juego {
     this.escena.add(this.trastos.grupo, this.marcas.malla, this.particulas.puntos, this.marcador.grupo);
 
     // Luz: hemisferio cálido y un sol con sombras suaves que sigue al jugador.
-    this.escena.add(new THREE.HemisphereLight('#ffffff', '#c9b69a', 0.85));
+    const ambiente = new THREE.HemisphereLight('#ffffff', '#c9b69a', 0.85);
+    this.escena.add(ambiente);
     this.sol = new THREE.DirectionalLight('#fff3dc', 1.6);
     this.sol.castShadow = true;
     this.sol.shadow.mapSize.set(this.calidad === 'alta' ? 2048 : 512, this.calidad === 'alta' ? 2048 : 512);
@@ -152,6 +156,7 @@ export class Juego {
     this.sol.shadow.bias = -0.0008;
     this.sol.shadow.normalBias = 0.05;
     this.escena.add(this.sol, this.sol.target);
+    this.cielo = new Cielo(this.escena, this.sol, ambiente);
 
     // Arranque: en la calle rodada más cercana al Mercado, mirando a lo largo de ella.
     const nodoInicio = this.grafo.masCercano(0, 0, 'rodada');
@@ -163,6 +168,8 @@ export class Juego {
     const partida = cargarPartida();
     const inicio = partida ?? arranque;
     this.dinero = partida?.dinero ?? 0;
+    if (partida?.hora !== undefined) this.cielo.hora = partida.hora;
+    this.cielo.actualizar(0);
     this.scooter = new Scooter(fisica, inicio.x, inicio.z, inicio.rumbo, MODELOS[partida?.modelo ?? 0] ?? MODELOS[0]);
     this.scooter.montar(true);
     this.scooters.push(this.scooter);
@@ -190,6 +197,7 @@ export class Juego {
     // Ganchos para la sonda de verificación: forzar situaciones que no se pueden guionizar con teclas.
     window.__pv_prueba = {
       calor: (n: number) => { this.busqueda.calor = n; },
+      hora: (h: number) => { this.cielo.hora = h; },
       robarCoche: () => {
         const c = this.trafico.lista[0];
         if (!c) return false;
@@ -198,7 +206,7 @@ export class Juego {
         return this.subirse() && this.coche !== null;
       },
     };
-    window.__pv_info = () => ({ calidad: this.calidad, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: this.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo]), dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
+    window.__pv_info = () => ({ calidad: this.calidad, timestep: this.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: this.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, p.cuerpo.isSleeping()]), dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
@@ -381,7 +389,7 @@ export class Juego {
   private guardar(): void {
     if (!this.scooter) return;
     const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
-    guardarPartida({ x: pos.x, z: pos.z, rumbo: this.scooter.estado.rumbo, dinero: this.dinero, aPie: this.aPie, modelo: MODELOS.indexOf(this.scooter.modelo) });
+    guardarPartida({ x: pos.x, z: pos.z, rumbo: this.scooter.estado.rumbo, dinero: this.dinero, aPie: this.aPie, modelo: MODELOS.indexOf(this.scooter.modelo), hora: this.cielo.hora });
   }
 
   private frame(tiempo: number): void {
@@ -401,27 +409,27 @@ export class Juego {
   private actualizar(dt: number): void {
     this.controles.actualizar();
     if (this.jugando) {
+      // Paso de física variable: 1/60 s a 60 fps, dos subpasos a 30 fps, y por debajo el
+      // paso crece hasta 1/20 s para que el tiempo de juego siga siendo real (hasta 20 fps).
       this.acumulador += dt;
-      let pasos = 0;
-      if (this.controles.accion) {
-        if (this.aPie) { if (!this.subirse()) this.hud.avisar('No hay moto a mano', 1.2); }
-        else if (Math.abs(this.vehiculo.estado.velocidad) < 2.5) this.bajarse();
-        else this.hud.avisar('Frena antes de bajarte', 1.2);
-      }
-      while (this.acumulador >= PASO_FISICA && pasos < 2) {
+      const pasos = Math.min(2, Math.max(1, Math.ceil(this.acumulador / PASO_FISICA)));
+      const paso = Math.min(PASO_MAXIMO, this.acumulador / pasos);
+      this.fisica.world.timestep = paso;
+      this.acumulador = Math.max(0, this.acumulador - paso * pasos);
+      if (this.acumulador > PASO_FISICA) this.acumulador = 0;
+      for (let i = 0; i < pasos; i++) {
         const entrada = this.tiempoTrincao > 0 ? SIN_ENTRADA : this.controles;
-        if (this.aPie) this.peaton.actualizar(entrada, PASO_FISICA);
-        else if (this.coche) this.coche.actualizar(entrada, PASO_FISICA);
-        else this.scooter.actualizar(entrada, PASO_FISICA);
-        this.trafico.actualizar(this.aPie ? this.peaton.posicion : this.vehiculo.estado, PASO_FISICA);
+        if (this.aPie) this.peaton.actualizar(entrada, paso);
+        else if (this.coche) this.coche.actualizar(entrada, paso);
+        else this.scooter.actualizar(entrada, paso);
+        this.trafico.actualizar(this.aPie ? this.peaton.posicion : this.vehiculo.estado, paso);
         this.fisica.paso();
+        this.trafico.despuesDelPaso();
+        this.patrullas.despuesDelPaso();
         for (const m of this.scooters) { if (m === this.scooter && !this.aPie && !this.coche) m.despuesDelPaso(); else m.reposo(); }
         for (const c of this.coches) { if (c === this.coche && !this.aPie) c.despuesDelPaso(); else c.reposo(); }
         if (this.aPie) this.peaton.sincronizar();
-        this.acumulador -= PASO_FISICA;
-        pasos++;
       }
-      if (pasos === 2) this.acumulador = 0;
       const e = this.vehiculo.estado;
       if (e.golpe > 0 && !this.aPie) {
         this.camara.sacudir(e.golpe * 0.06);
@@ -488,14 +496,16 @@ export class Juego {
     const v = this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel();
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
     this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);
-    this.sol.position.set(pos.x + 60, 120, pos.z + 40);
-    this.sol.target.position.set(pos.x, 0, pos.z);
+    if (this.jugando) this.cielo.actualizar(dt);
+    this.cielo.colocarSol(pos.x, pos.z);
+    this.hud.ponerHora(this.cielo.textoHora);
 
     this.hud.ponerVelocidad(this.aPie ? this.peaton.velocidad : this.vehiculo.estado.velocidad);
     this.tiempoCalle += dt;
     if (this.tiempoCalle > 0.3) {
       this.tiempoCalle = 0;
       this.trastos.gestionarRadio(pos.x, pos.z);
+      this.trafico.gestionarRadio(pos.x, pos.z);
       const via = viaMasCercana(this.nivel, pos.x, pos.z);
       this.hud.ponerCalle(via?.nombre || (via ? 'Pasaje' : this.nivel.nombre));
     }

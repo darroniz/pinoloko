@@ -1,5 +1,6 @@
 // Tráfico: coches que recorren el grafo rodado por su derecha, frenan en los cruces y
-// se paran si tienen algo delante. Cuerpos cinemáticos de Rapier (empujan, no se empujan).
+// se paran si tienen algo delante. Cuerpos dinámicos pesados guiados por velocidad: empujan
+// a la moto sin disparar la física, y un contenedor o un bloque los para de verdad.
 // Si Wifly les para el coche y se sube, el coche pasa a ser suyo (ver Juego).
 import * as THREE from 'three';
 import type RAPIER from '@dimforge/rapier3d-compat';
@@ -21,7 +22,11 @@ export interface CocheTrafico {
   z: number;
   rumbo: number;
   parado: number;
+  /** Con cuerpo físico solo cerca del jugador; lejos, se mueve sobre el carril sin simular. */
+  activo: boolean;
 }
+
+const RADIO_ACTIVO = 120;
 
 const CARRIL = 1.7;
 const VELOCIDAD_CRUCERO = 8;
@@ -47,33 +52,82 @@ export class Trafico {
 
   private crear(origen: number, destino: number, t: number): void {
     const color = COLORES_COCHE[Math.floor(this.rnd() * COLORES_COCHE.length)]!;
-    const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased());
-    this.fisica.world.createCollider(R.ColliderDesc.cuboid(ANCHO / 2, ALTO / 2, LARGO / 2), cuerpo);
+    const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.dynamic().lockRotations().setLinearDamping(2));
+    this.fisica.world.createCollider(
+      R.ColliderDesc.cuboid(ANCHO / 2, ALTO / 2, LARGO / 2).setDensity(6).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
+      cuerpo,
+    );
     const malla = new THREE.Mesh(geometriaCoche(color), MATERIAL_COCHE);
     malla.scale.setScalar(1.35);
     malla.castShadow = true;
     this.grupo.add(malla);
-    const c: CocheTrafico = { cuerpo, malla, color, origen, destino, t, velocidad: VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0 };
+    const c: CocheTrafico = { cuerpo, malla, color, origen, destino, t, velocidad: VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, activo: true };
     this.lista.push(c);
     this.colocar(c);
   }
 
-  /** Posición sobre la arista actual, desplazada al carril derecho. */
-  private colocar(c: CocheTrafico): void {
+  /** Punto de la arista actual en el carril derecho para el parámetro t. */
+  private puntoCarril(c: CocheTrafico, t: number): { x: number; z: number; rumbo: number } {
     const [ax, az] = this.grafo.nodos[c.origen]!;
     const [bx, bz] = this.grafo.nodos[c.destino]!;
     const dx = bx - ax, dz = bz - az;
     const l = Math.hypot(dx, dz) || 1;
     const ux = dx / l, uz = dz / l;
     const rx = -uz, rz = ux; // derecha respecto a la marcha
-    c.x = ax + dx * c.t + rx * CARRIL;
-    c.z = az + dz * c.t + rz * CARRIL;
-    c.rumbo = Math.atan2(ux, -uz);
+    return { x: ax + dx * t + rx * CARRIL, z: az + dz * t + rz * CARRIL, rumbo: Math.atan2(ux, -uz) };
+  }
+
+  /** Coloca el coche de golpe (al nacer o al cambiar de arista). */
+  private colocar(c: CocheTrafico): void {
+    const p = this.puntoCarril(c, c.t);
+    c.x = p.x;
+    c.z = p.z;
+    c.rumbo = p.rumbo;
     this.q.setFromAxisAngle(this.eje, -c.rumbo);
-    c.cuerpo.setNextKinematicTranslation({ x: c.x, y: ALTO / 2 + 0.02, z: c.z });
-    c.cuerpo.setNextKinematicRotation({ x: this.q.x, y: this.q.y, z: this.q.z, w: this.q.w });
+    c.cuerpo.setTranslation({ x: c.x, y: ALTO / 2 + 0.02, z: c.z }, true);
+    c.cuerpo.setRotation({ x: this.q.x, y: this.q.y, z: this.q.z, w: this.q.w }, true);
+    c.cuerpo.setLinvel({ x: 0, y: 0, z: 0 }, true);
     c.malla.position.set(c.x, 0.02, c.z);
     c.malla.rotation.y = -c.rumbo;
+  }
+
+  /** Empuja el cuerpo hacia el punto objetivo del carril con la velocidad que toca. */
+  private guiar(c: CocheTrafico, dt: number): void {
+    const objetivo = this.puntoCarril(c, Math.min(1, c.t + (c.velocidad * dt * 2) / this.largoArista(c) + 0.02));
+    const ex = objetivo.x - c.x, ez = objetivo.z - c.z;
+    const d = Math.hypot(ex, ez) || 1;
+    const vel = Math.min(c.velocidad, d / dt);
+    const v = c.cuerpo.linvel();
+    c.cuerpo.setLinvel({ x: (ex / d) * vel, y: v.y, z: (ez / d) * vel }, true);
+    c.rumbo = objetivo.rumbo;
+    this.q.setFromAxisAngle(this.eje, -c.rumbo);
+    c.cuerpo.setRotation({ x: this.q.x, y: this.q.y, z: this.q.z, w: this.q.w }, true);
+  }
+
+  private largoArista(c: CocheTrafico): number {
+    const [ax, az] = this.grafo.nodos[c.origen]!;
+    const [bx, bz] = this.grafo.nodos[c.destino]!;
+    return Math.hypot(bx - ax, bz - az) || 1;
+  }
+
+  /** Tras el paso de física: lee dónde ha acabado cada coche y actualiza t y la malla. */
+  despuesDelPaso(): void {
+    for (const c of this.lista) {
+      if (!c.activo) continue;
+      const p = c.cuerpo.translation();
+      c.x = p.x;
+      c.z = p.z;
+      const [ax, az] = this.grafo.nodos[c.origen]!;
+      const [bx, bz] = this.grafo.nodos[c.destino]!;
+      const dx = bx - ax, dz = bz - az;
+      const l2 = dx * dx + dz * dz || 1;
+      c.t = Math.max(0, Math.min(1, ((c.x - ax) * dx + (c.z - az) * dz) / l2));
+      c.malla.position.set(c.x, Math.max(0.02, p.y - ALTO / 2), c.z);
+      c.malla.rotation.y = -c.rumbo;
+      // Si se ha salido mucho del carril (lo han empujado), vuelve a él de golpe.
+      const carril = this.puntoCarril(c, c.t);
+      if (Math.hypot(carril.x - c.x, carril.z - c.z) > 6) { c.parado = 0; this.colocar(c); }
+    }
   }
 
   /** Coche más cercano a un punto, o null si no hay ninguno a menos de `maximo` metros. */
@@ -115,15 +169,38 @@ export class Trafico {
       if (c.parado > 4) objetivo = 2;
 
       c.velocidad += (objetivo - c.velocidad) * Math.min(1, dt * (objetivo < c.velocidad ? 6 : 2));
-      c.t += (c.velocidad * dt) / largo;
-      if (c.t >= 1) {
+      if (c.t >= 0.995) {
         const siguiente = this.grafo.siguienteAlAzar(c.destino, c.origen, 'rodada', this.rnd);
         c.origen = c.destino;
         c.destino = siguiente === c.origen ? this.grafo.siguienteAlAzar(c.origen, -1, 'rodada', this.rnd) : siguiente;
         c.t = 0;
         if (c.destino === c.origen) { c.t = 0.5; }
+        this.colocar(c);
+      } else if (c.activo) this.guiar(c, dt);
+      else {
+        // Lejos: avanza por el carril sin física.
+        c.t = Math.min(0.995, c.t + (c.velocidad * dt) / largo);
+        const p = this.puntoCarril(c, c.t);
+        c.x = p.x; c.z = p.z; c.rumbo = p.rumbo;
+        c.malla.position.set(c.x, 0.02, c.z);
+        c.malla.rotation.y = -c.rumbo;
       }
-      this.colocar(c);
+    }
+  }
+
+  /** Activa o desactiva el cuerpo físico según la distancia al jugador. Llamar cada medio segundo. */
+  gestionarRadio(x: number, z: number): void {
+    const r2 = RADIO_ACTIVO * RADIO_ACTIVO;
+    for (const c of this.lista) {
+      const cerca = (c.x - x) ** 2 + (c.z - z) ** 2 < r2;
+      if (cerca && !c.activo) {
+        c.activo = true;
+        c.cuerpo.setEnabled(true);
+        this.colocar(c);
+      } else if (!cerca && c.activo) {
+        c.activo = false;
+        c.cuerpo.setEnabled(false);
+      }
     }
   }
 }

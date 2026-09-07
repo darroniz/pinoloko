@@ -1,5 +1,6 @@
 // Patrullas de la Policía Local. Coches por el grafo rodado y, a partir de tres estrellas,
-// motos que sí entran por los pasajes. Cinemáticas como el tráfico: persiguen por el grafo
+// motos que sí entran por los pasajes. Cuerpos dinámicos pesados guiados por velocidad
+// (como el tráfico): te embisten, pero un contenedor las frena. Persiguen por el grafo
 // (Dijkstra hasta el nodo más cercano al jugador) y, cuando lo tienen a tiro sin edificios
 // en medio, van a por él en línea recta.
 import * as THREE from 'three';
@@ -91,11 +92,16 @@ export class Patrullas {
     if (!candidatos.length) return null;
     const nodo = candidatos[Math.floor(rnd() * candidatos.length)]!;
     const [x, z] = this.grafo.nodos[nodo]!;
-    const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased().setTranslation(x, ALTO / 2, z));
+    const cuerpo = this.fisica.world.createRigidBody(
+      R.RigidBodyDesc.dynamic().setTranslation(x, ALTO / 2, z).lockRotations().setLinearDamping(2),
+    );
     const malla = new THREE.Group();
     let luz: THREE.Mesh;
     if (tipo === 'coche') {
-      this.fisica.world.createCollider(R.ColliderDesc.cuboid(ANCHO / 2, ALTO / 2, LARGO / 2), cuerpo);
+      this.fisica.world.createCollider(
+        R.ColliderDesc.cuboid(ANCHO / 2, ALTO / 2, LARGO / 2).setDensity(6).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
+        cuerpo,
+      );
       const carroceria = new THREE.Mesh(geometriaCoche('#f4f4f4'), MATERIAL_COCHE);
       const franja = new THREE.Mesh(new THREE.BoxGeometry(ANCHO + 0.02, 0.2, LARGO * 0.7), new THREE.MeshLambertMaterial({ color: '#1f4fd8' }));
       franja.position.set(0, 0.62, 0.1);
@@ -104,7 +110,10 @@ export class Patrullas {
       malla.add(carroceria, franja, luz);
       malla.scale.setScalar(1.35);
     } else {
-      this.fisica.world.createCollider(R.ColliderDesc.cuboid(0.35, 0.6, 0.8), cuerpo);
+      this.fisica.world.createCollider(
+        R.ColliderDesc.cuboid(0.35, 0.6, 0.8).setDensity(4).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
+        cuerpo,
+      );
       const moto = new THREE.Mesh(geometriaMotoPatrulla(), MATERIAL_COCHE);
       luz = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, 0.2), this.materialLuz);
       luz.position.set(0, 0.95, -0.5);
@@ -130,12 +139,32 @@ export class Patrullas {
     for (const p of [...this.lista]) this.retirar(p);
   }
 
+  /** Coloca de golpe (al nacer). */
   private colocar(p: Patrulla): void {
     this.q.setFromAxisAngle(this.eje, -p.rumbo);
-    p.cuerpo.setNextKinematicTranslation({ x: p.x, y: p.tipo === 'coche' ? ALTO / 2 + 0.02 : 0.62, z: p.z });
-    p.cuerpo.setNextKinematicRotation({ x: this.q.x, y: this.q.y, z: this.q.z, w: this.q.w });
+    p.cuerpo.setTranslation({ x: p.x, y: p.tipo === 'coche' ? ALTO / 2 + 0.02 : 0.62, z: p.z }, true);
+    p.cuerpo.setRotation({ x: this.q.x, y: this.q.y, z: this.q.z, w: this.q.w }, true);
     p.malla.position.set(p.x, 0.02, p.z);
     p.malla.rotation.y = -p.rumbo;
+  }
+
+  /** Velocidad hacia donde quiere ir; la física decide dónde acaba. */
+  private guiar(p: Patrulla, vx: number, vz: number): void {
+    const v = p.cuerpo.linvel();
+    p.cuerpo.setLinvel({ x: vx, y: v.y, z: vz }, true);
+    this.q.setFromAxisAngle(this.eje, -p.rumbo);
+    p.cuerpo.setRotation({ x: this.q.x, y: this.q.y, z: this.q.z, w: this.q.w }, true);
+  }
+
+  /** Tras el paso de física: lee las posiciones reales. */
+  despuesDelPaso(): void {
+    for (const p of this.lista) {
+      const t = p.cuerpo.translation();
+      p.x = t.x;
+      p.z = t.z;
+      p.malla.position.set(p.x, 0.02, p.z);
+      p.malla.rotation.y = -p.rumbo;
+    }
   }
 
   /** ¿Hay línea recta sin edificios entre la patrulla y el jugador? */
@@ -211,10 +240,8 @@ export class Patrullas {
         const objetivoVel = p.directo && d < 6 ? Math.max(2, jugador.rapidez) : VELOCIDAD[p.tipo] * (Math.abs(dif) > 1.2 ? 0.45 : 1);
         p.velocidad += (objetivoVel - p.velocidad) * Math.min(1, dt * 3);
       } else p.velocidad *= 0.8;
-      const avance = Math.min(p.velocidad * dt, dist);
-      p.x += Math.sin(p.rumbo) * avance;
-      p.z += -Math.cos(p.rumbo) * avance;
-      this.colocar(p);
+      const vel = Math.min(p.velocidad, dist / Math.max(dt, 1e-3));
+      this.guiar(p, Math.sin(p.rumbo) * vel, -Math.cos(p.rumbo) * vel);
 
       // Trincar: encima del jugador y él casi parado durante un rato.
       if (d < RADIO_TRINCAR) {

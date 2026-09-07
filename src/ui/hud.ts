@@ -38,6 +38,15 @@ export class Hud {
   private trincao = document.getElementById('trincao')!;
   private ultimasEstrellas = -1;
 
+  private hora = document.getElementById('hud-hora')!;
+  private ultimaHora = '';
+
+  ponerHora(texto: string): void {
+    if (texto === this.ultimaHora) return;
+    this.ultimaHora = texto;
+    this.hora.textContent = texto;
+  }
+
   ponerEstrellas(n: number): void {
     if (n === this.ultimasEstrellas) return;
     this.ultimasEstrellas = n;

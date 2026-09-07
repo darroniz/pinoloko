@@ -4,13 +4,16 @@ export interface Entrada {
   eje: { x: number; y: number };
   freno: boolean;
   accion: boolean;
+  reaparecer?: boolean;
 }
 
 export class Controles implements Entrada {
   eje = { x: 0, y: 0 };
   freno = false;
   accion = false;
+  reaparecer = false;
   readonly tactil: boolean;
+  private reaparecerPulsado = false;
   private teclas = new Set<string>();
   private joystick: { x: number; y: number; activo: boolean; id: number } = { x: 0, y: 0, activo: false, id: -1 };
   private frenoTactil = false;
@@ -26,6 +29,7 @@ export class Controles implements Entrada {
       if (e.repeat) return;
       this.teclas.add(e.code);
       if (e.code === 'KeyE' || e.code === 'Enter') this.accionPulsada = true;
+      if (e.code === 'KeyR') this.reaparecerPulsado = true;
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     });
     window.addEventListener('keyup', (e) => this.teclas.delete(e.code));
@@ -98,5 +102,7 @@ export class Controles implements Entrada {
     this.freno = t.has('Space') || t.has('ShiftLeft') || t.has('ShiftRight') || this.frenoTactil || this.frenoMando;
     this.accion = this.accionPulsada;
     this.accionPulsada = false;
+    this.reaparecer = this.reaparecerPulsado;
+    this.reaparecerPulsado = false;
   }
 }

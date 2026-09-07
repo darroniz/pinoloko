@@ -185,6 +185,10 @@ export class Scooter {
     const rx = -fz, rz = fx;
     let vf = v.x * fx + v.z * fz;
     let vl = v.x * rx + v.z * rz;
+    // Tope de seguridad: si la física ha disparado la velocidad (un empujón raro), se recorta.
+    const tope = a.velocidadMaxima * 1.4;
+    if (Math.abs(vf) > tope) vf = Math.sign(vf) * tope;
+    if (Math.abs(vl) > tope) vl = Math.sign(vl) * tope;
     const rapidez = Math.abs(vf);
 
     // Dirección deseada en el plano de pantalla: arriba = norte (-z), derecha = este (+x).

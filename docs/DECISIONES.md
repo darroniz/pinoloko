@@ -300,3 +300,30 @@ en el Mercado con tu moto (no hay comisaría en la caja; la de Pino Montano qued
 
 **Sin semáforos todavía.** Los nodos `traffic_signals` están en el nivel, pero el tráfico
 frena en todos los cruces igual y con 14 coches nadie los echa de menos.
+
+## 2026-09-08 — Día y noche sin luces puntuales
+
+Un día de juego dura **10 minutos reales** y arranca a las 17:30, que es cuando el barrio está
+vivo. Cambian el color del cielo, el color e intensidad del sol (que además gira para que las
+sombras se muevan) y la luz ambiente. De noche no hay farolas de verdad: en móvil cada luz
+puntual cuesta, y con la cámara alta la sensación de noche la dan el cielo oscuro y el tinte
+azulado del ambiente. La hora se guarda con la partida y se ve en el HUD.
+
+**Tecla R: vuelta al Mercado.** Sin comisaría ni "reaparecer" en el menú, hacía falta una salida
+para quedarse encajado entre un contenedor y un bloque. Solo en teclado; en móvil basta con
+volver a abrir la página si pasa (se guarda cada 5 s).
+
+## 2026-09-08 — Tráfico y patrullas dinámicos, y paso de física variable
+
+**Los coches del tráfico y las patrullas pasan de cinemáticos a dinámicos pesados.** Un cuerpo
+cinemático que se mete en el del jugador hace que Rapier lo expulse a la velocidad que haga
+falta: el coche marcaba 2.208 km/h en el HUD y podía acabar dentro de un bloque. Ahora son
+dinámicos con rotación bloqueada, densidad alta y velocidad fijada cada paso hacia donde
+quieren ir; empujan de verdad, pero un contenedor o una fachada los para. Tras cada paso se lee
+dónde han acabado y se recalcula su posición en el carril. Además moto y coche recortan
+cualquier velocidad que pase de 1,4 veces su máxima, por si acaso.
+
+**Paso de física variable en vez de cámara lenta.** Con tope de dos subpasos de 1/60 s, por
+debajo de 30 fps el mundo iba más lento que el reloj (en la Pi a 10 fps, a un tercio), y las
+patrullas parecían tortugas. Ahora el paso crece hasta 1/20 s cuando el frame es lento: tiempo
+real hasta 20 fps y degradación suave por debajo. A 60 fps no cambia nada.

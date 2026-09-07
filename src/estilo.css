@@ -36,3 +36,4 @@ body.tactil #joystick, body.tactil #boton-freno, body.tactil #boton-accion { dis
 #trincao.visible { display: flex; }
 #trincao .titulo { font-size: 56px; font-weight: 900; letter-spacing: 3px; transform: rotate(-4deg); text-shadow: 4px 4px 0 #1f4fd8; }
 #trincao p { max-width: 320px; font-size: 16px; }
+#hud-hora { position: fixed; top: max(50px, calc(env(safe-area-inset-top) + 40px)); left: 14px; font-size: 13px; font-weight: 700; color: rgba(255,250,240,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.4); pointer-events: none; }

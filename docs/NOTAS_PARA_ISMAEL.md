@@ -24,4 +24,8 @@ Objetivo: **hito 1 entero** (Moverse) publicado y jugable en el móvil.
       aparcados y robo en marcha; tests del grafo, geometría, vecinos y tráfico.
 - [x] **Bloque 5 (hecho a la 01:50)** — Policía Local: estrellas, patrullas en coche y en moto,
       sirena, ¡Trincao! y vuelta al Mercado. Manifest PWA.
-- [ ] **Bloque 6** — Ciclo día/noche, más sensación arcade, cierre y notas.
+- [x] **Bloque 6 (hecho a las 02:00)** — Ciclo día/noche con hora en el HUD, tecla R para
+      volver al Mercado, tráfico y patrullas dinámicos (arreglado el coche a 2.208 km/h),
+      paso de física variable.
+- [ ] **Bloque 7** — Sensación arcade: saltos por bordillos y rampas, faros de noche, ventanas
+      encendidas, semáforos; cierre y notas.

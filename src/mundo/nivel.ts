@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mallasPorLoseta } from './losetas';
 import type { Edificio, Nivel, Punto, Via } from './tipos';
-import { muestrearPolilinea } from './geometria';
+import { distanciaPolilinea, distanciaSegmento2, muestrearPolilinea } from './geometria';
 
 export const COLORES = {
   cielo: '#bfe0f2',
@@ -174,6 +174,26 @@ export function construirBarrio(nivel: Nivel, opciones: { bordes?: boolean; lige
       if (!opciones.ligero) lineas.push(...geometriaLineaCentral(via, 0.04, cLinea));
     } else {
       pasajes.push(...geometriaVia(via, 0.025, via.tipo === 'cycleway' ? cCarril : cPasaje));
+    }
+  }
+  // Pasos de cebra: cinco franjas blancas cruzando la calle rodada más cercana.
+  for (const [px, pz] of nivel.pasos ?? []) {
+    const via = nivel.vias.filter((v) => v.clase === 'rodada').sort((a, b) => distanciaPolilinea(px, pz, a.puntos) - distanciaPolilinea(px, pz, b.puntos))[0];
+    if (!via) continue;
+    let mejor = { d: Infinity, tx: 1, tz: 0 };
+    for (let i = 0; i + 1 < via.puntos.length; i++) {
+      const [ax, az] = via.puntos[i]!;
+      const [bx, bz] = via.puntos[i + 1]!;
+      const { d2 } = distanciaSegmento2(px, pz, ax, az, bx, bz);
+      if (d2 < mejor.d) { const l = Math.hypot(bx - ax, bz - az) || 1; mejor = { d: d2, tx: (bx - ax) / l, tz: (bz - az) / l }; }
+    }
+    for (let k = -2; k <= 2; k++) {
+      const g = normalizar(new THREE.PlaneGeometry(0.5, via.ancho - 0.6));
+      g.rotateX(-Math.PI / 2);
+      g.rotateY(-Math.atan2(mejor.tz, mejor.tx));
+      g.translate(px + mejor.tx * k * 1.0, 0.045, pz + mejor.tz * k * 1.0);
+      pintar(g, cLinea);
+      lineas.push({ geometria: g, x: px, z: pz });
     }
   }
   for (const [nombre, piezas] of [['aceras', aceras], ['pasajes', pasajes], ['asfalto', asfalto], ['lineas', lineas]] as const) {

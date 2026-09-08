@@ -327,3 +327,23 @@ cualquier velocidad que pase de 1,4 veces su máxima, por si acaso.
 debajo de 30 fps el mundo iba más lento que el reloj (en la Pi a 10 fps, a un tercio), y las
 patrullas parecían tortugas. Ahora el paso crece hasta 1/20 s cuando el frame es lento: tiempo
 real hasta 20 fps y degradación suave por debajo. A 60 fps no cambia nada.
+
+## 2026-09-08 — Mecheros, faros, pasos de cebra y por qué no hay semáforos
+
+**Los 20 mecheros** (el minijuego del brief) están repartidos por pasajes, mercado y bares, a más
+de 45 m entre sí, y se guardan aparte de la partida para que no se pierdan al volver al Mercado.
+Cada uno da 10 €; el vigésimo, un aviso de rey del barrio.
+
+**Faros de noche:** dos conos aditivos delante del vehículo, sin luz real. Basta para que se
+lea que es de noche y que vas en moto.
+
+**No hay semáforos en la caja.** OSM no trae ningún `highway=traffic_signals` en estos 500 m
+(Pino Montano es de rotondas, pasos de cebra y ceda el paso), así que los "semáforos simples"
+del brief no aplican aquí: el tráfico frena en todos los cruces y ya está. Sí hay 13 pasos de
+cebra (`crossing:markings=zebra`) y se pintan. Ojo con Overpass: `out body` + `out skel`
+devuelve los nodos etiquetados dos veces, la segunda sin etiquetas; el generador ahora se queda
+con la etiquetada (era el motivo de que saliesen 0 pasos).
+
+**Trincar a 5,5 m entre centros.** Con 3,2 m nunca pasaba: dos coches morro con culo ya distan
+3,9 m. Y la patrulla se para al llegar, porque si sigue empujando, el jugador no deja de moverse
+y el contador de "parado" no arranca.

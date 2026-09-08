@@ -23,6 +23,7 @@ import { MarcadorJugador } from './efectos/marcador';
 import { NivelBusqueda } from './policia/busqueda';
 import { Patrullas } from './policia/patrullas';
 import { Cielo } from './mundo/cielo';
+import { Mecheros, TOTAL_MECHEROS } from './mundo/mecheros';
 
 declare global {
   interface Window {
@@ -82,6 +83,8 @@ export class Juego {
   private rndPolicia = () => Math.random();
   private arranque = { x: 0, z: 0, rumbo: 0 };
   private cielo!: Cielo;
+  private mecheros!: Mecheros;
+  private faros = new THREE.Group();
   private racha = 0;
   private tiempoRacha = 0;
   private colorChispa = new THREE.Color('#ffd166');
@@ -185,6 +188,18 @@ export class Juego {
     this.escena.add(this.patrullas.grupo);
     this.motosRobadas.add(this.scooter);
     this.aparcarCoches(nivel);
+    this.mecheros = new Mecheros(nivel);
+    this.escena.add(this.mecheros.grupo);
+    this.hud.ponerMecheros(this.mecheros.cuantos, TOTAL_MECHEROS);
+    // Faros: dos conos de luz que se ven de noche delante del vehículo.
+    const materialFaro = new THREE.MeshBasicMaterial({ color: '#ffe9a8', transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending });
+    for (const lado of [-0.5, 0.5]) {
+      const cono = new THREE.Mesh(new THREE.ConeGeometry(2.2, 9, 8, 1, true).rotateX(-Math.PI / 2).translate(0, 0, -5), materialFaro);
+      cono.position.set(lado, 0.3, -0.5);
+      this.faros.add(cono);
+    }
+    this.faros.visible = false;
+    this.escena.add(this.faros);
     if (partida?.aPie) this.bajarse();
     this.trastos.gestionarRadio(inicio.x, inicio.z);
     this.camara.colocar(inicio.x, inicio.z);
@@ -206,7 +221,7 @@ export class Juego {
         return this.subirse() && this.coche !== null;
       },
     };
-    window.__pv_info = () => ({ calidad: this.calidad, timestep: this.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: this.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, p.cuerpo.isSleeping()]), dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
+    window.__pv_info = () => ({ calidad: this.calidad, timestep: this.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: this.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
@@ -462,6 +477,22 @@ export class Juego {
         this.busqueda.fechoria('atropello', eventos.atropellos);
       }
       this.actualizarPolicia(jugadorPos, rapidez, dt);
+      const mechero = this.mecheros.actualizar(jugadorPos.x, jugadorPos.z, dt);
+      if (mechero >= 0) {
+        this.dinero += 10;
+        this.hud.ponerDinero(this.dinero);
+        this.hud.ponerMecheros(this.mecheros.cuantos, TOTAL_MECHEROS);
+        this.hud.avisar(this.mecheros.cuantos === TOTAL_MECHEROS ? '¡Los 20 mecheros! Eres el rey de Pino Montano' : `Mechero ${this.mecheros.cuantos}/${TOTAL_MECHEROS}`, 1.6);
+        this.audio.claxon();
+      }
+      // Faros de noche, pegados al vehículo que lleves.
+      this.faros.visible = this.cielo.esDeNoche && !this.aPie;
+      if (this.faros.visible) {
+        const v = this.vehiculo;
+        this.faros.position.set(v.estado.x, 0, v.estado.z);
+        this.faros.rotation.y = -v.estado.rumbo;
+        this.faros.scale.setScalar(this.coche ? 1.4 : 1);
+      }
 
       // Trastos derribados: dinero, racha y frase de barrio.
       const derribados = this.trastos.actualizar(jugadorPos.x, jugadorPos.z);

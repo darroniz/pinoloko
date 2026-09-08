@@ -122,7 +122,14 @@ def nombre_via(t: dict) -> str:
 def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
     datos = descargar(bbox, nombre_cache)
     proy = Proyeccion(bbox)
-    nodos = {e["id"]: e for e in datos["elements"] if e["type"] == "node"}
+    # Overpass devuelve los nodos con etiquetas primero (out body) y luego todos sin ellas
+    # (out skel): hay que quedarse con la versión etiquetada cuando existe.
+    nodos: dict = {}
+    for e in datos["elements"]:
+        if e["type"] != "node":
+            continue
+        if e["id"] not in nodos or e.get("tags"):
+            nodos[e["id"]] = e
     vias = {e["id"]: e for e in datos["elements"] if e["type"] == "way"}
     relaciones = [e for e in datos["elements"] if e["type"] == "relation"]
 
@@ -280,6 +287,10 @@ def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
     bancos = [list(proy.xz(e["lat"], e["lon"])) for e in datos["elements"]
               if e["type"] == "node" and e.get("tags", {}).get("amenity") == "bench"]
 
+    semaforos = [list(proy.xz(n["lat"], n["lon"])) for nid, n in nodos.items() if nid in cruces_semaforo]
+    pasos_cebra = [list(proy.xz(n["lat"], n["lon"])) for n in nodos.values()
+                   if n.get("tags", {}).get("highway") == "crossing"]
+
     zonas = []
     for w in vias.values():
         t = w.get("tags", {})
@@ -306,6 +317,8 @@ def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
         "arboles": arboles,
         "bancos": bancos,
         "zonas": zonas,
+        "semaforos": semaforos,
+        "pasos": pasos_cebra,
         "atribucion": "© colaboradores de OpenStreetMap (ODbL)",
     }
     salida.mkdir(parents=True, exist_ok=True)
@@ -321,4 +334,4 @@ if __name__ == "__main__":
     n = generar(bbox, nombre, salida)
     print(f"{len(n['edificios'])} edificios, {len(n['vias'])} vías, {len(n['grafo']['nodos'])} nodos / "
           f"{len(n['grafo']['aristas'])} aristas, {len(n['pois'])} POIs, {len(n['arboles'])} árboles, "
-          f"{len(n['zonas'])} zonas → {salida / 'nivel.json'} ({(salida / 'nivel.json').stat().st_size // 1024} KB)")
+          f"{len(n['zonas'])} zonas, {len(n['semaforos'])} semáforos, {len(n['pasos'])} pasos → {salida / 'nivel.json'} ({(salida / 'nivel.json').stat().st_size // 1024} KB)")

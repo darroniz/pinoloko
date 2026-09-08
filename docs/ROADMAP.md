@@ -27,10 +27,11 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
       las motos aparcadas por el barrio (Jog RR, Zip SP, Sonic, Speedfight, Runner).
 - [x] Coches aparcados y del tráfico que se pueden robar y conducir (más pesados, derrape largo).
 - [x] Tráfico por el grafo rodado: circulan por su derecha, frenan en cruces y ante obstáculos.
-- [ ] Semáforos en los cruces con `highway=traffic_signals` (los datos ya están en el nivel).
+- [x] ~~Semáforos~~: no hay ninguno en la caja del Mercado (OSM). Pasos de cebra pintados.
 - [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano).
 - [x] Ciclo día/noche (10 minutos por día, sol que gira, hora en el HUD).
-- [ ] Faros de los vehículos y ventanas encendidas de noche.
+- [x] Faros de los vehículos de noche.
+- [ ] Ventanas encendidas de noche.
 
 ## 3. Cafre
 - [x] Objetos derribables: conos, macetas, contenedores, papeleras, vallas, terrazas de bar, cajas del mercado.
@@ -52,8 +53,9 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] Sistema de zonas documentado en `docs/COMO_ANADIR_UN_BARRIO.md`.
 
 ## 6. Freestyle completo
-- [ ] Carreras por los pasajes, saltos con rampas, "recoge los 20 mecheros".
-- [ ] Coleccionables, garaje de motos, estadísticas.
+- [x] "Recoge los 20 mecheros" (repartidos por pasajes, mercado y bares; se guardan).
+- [ ] Carreras por los pasajes y saltos con rampas.
+- [ ] Garaje de motos y estadísticas.
 - [ ] Menú principal y pantalla de créditos (con atribución a OpenStreetMap).
 - [ ] Comercios y bares del barrio con el `name` real de las etiquetas de OSM.
 

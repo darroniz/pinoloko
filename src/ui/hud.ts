@@ -47,6 +47,12 @@ export class Hud {
     this.hora.textContent = texto;
   }
 
+  private mecheros = document.getElementById('hud-mecheros')!;
+
+  ponerMecheros(n: number, total: number): void {
+    this.mecheros.textContent = `🔥 ${n}/${total}`;
+  }
+
   ponerEstrellas(n: number): void {
     if (n === this.ultimasEstrellas) return;
     this.ultimasEstrellas = n;

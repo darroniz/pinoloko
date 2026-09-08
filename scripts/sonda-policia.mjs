@@ -13,13 +13,16 @@ p.on('pageerror', (e) => console.log('PAGEERR', String(e)));
 await p.goto(`http://127.0.0.1:${srv.address().port}/?calidad=baja`, { waitUntil: 'load' });
 await p.waitForFunction(() => window.__pv_listo === true, null, { timeout: 120000 });
 await p.click('#boton-jugar');
+await new Promise((r) => setTimeout(r, 3000));
 await p.evaluate(() => window.__pv_prueba.calor(300));
 let f0 = await p.evaluate(() => window.__pv_frames);
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 30; i++) {
   await new Promise((r) => setTimeout(r, 1000));
   const f1 = await p.evaluate(() => window.__pv_frames);
   console.log('fps', f1 - f0, 'timestep', await p.evaluate(() => window.__pv_info().timestep));
   f0 = f1;
-  console.log('t+' + i, JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { patrullas: i.patrullas, v: i.vehiculo.map((n) => Math.round(n)) }; })));
+  const info = await p.evaluate(() => { const i = window.__pv_info(); return { patrullas: i.patrullas, v: i.vehiculo.map((n) => Math.round(n)), trincao: document.getElementById('trincao').classList.contains('visible') }; });
+  if (i % 3 === 0 || info.trincao) console.log('t+' + i, JSON.stringify(info));
+  if (info.trincao) break;
 }
 await b.close(); srv.close();

@@ -37,7 +37,8 @@ export interface Patrulla {
 const VELOCIDAD: Record<TipoPatrulla, number> = { coche: 11.5, moto: 13.5 };
 const RADIO_VISTA = 55;
 const RADIO_DIRECTO = 26;
-const RADIO_TRINCAR = 3.2;
+// Distancia entre centros: dos coches morro con culo ya están a 3,9 m, así que 5,5.
+const RADIO_TRINCAR = 5.5;
 
 let geoMoto: THREE.BufferGeometry | null = null;
 function geometriaMotoPatrulla(): THREE.BufferGeometry {
@@ -237,7 +238,8 @@ export class Patrullas {
         while (dif < -Math.PI) dif += Math.PI * 2;
         const giro = p.tipo === 'moto' ? 4 : 2.6;
         p.rumbo += Math.max(-giro * dt, Math.min(giro * dt, dif));
-        const objetivoVel = p.directo && d < 6 ? Math.max(2, jugador.rapidez) : VELOCIDAD[p.tipo] * (Math.abs(dif) > 1.2 ? 0.45 : 1);
+        // Encima del jugador se para: si lo empuja, él no deja de moverse y nunca se le trinca.
+        const objetivoVel = d < RADIO_TRINCAR - 0.8 ? 0 : p.directo && d < 9 ? Math.max(3, jugador.rapidez) : VELOCIDAD[p.tipo] * (Math.abs(dif) > 1.2 ? 0.45 : 1);
         p.velocidad += (objetivoVel - p.velocidad) * Math.min(1, dt * 3);
       } else p.velocidad *= 0.8;
       const vel = Math.min(p.velocidad, dist / Math.max(dt, 1e-3));

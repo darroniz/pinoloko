@@ -27,5 +27,6 @@ Objetivo: **hito 1 entero** (Moverse) publicado y jugable en el móvil.
 - [x] **Bloque 6 (hecho a las 02:00)** — Ciclo día/noche con hora en el HUD, tecla R para
       volver al Mercado, tráfico y patrullas dinámicos (arreglado el coche a 2.208 km/h),
       paso de física variable.
-- [ ] **Bloque 7** — Sensación arcade: saltos por bordillos y rampas, faros de noche, ventanas
-      encendidas, semáforos; cierre y notas.
+- [x] **Bloque 7 (hecho a las 02:10)** — Los 20 mecheros, faros de noche, pasos de cebra,
+      trincado arreglado con patrullas dinámicas.
+- [ ] **Bloque 8** — Daño y destrucción de vehículos, claxon táctil, créditos; cierre y notas.

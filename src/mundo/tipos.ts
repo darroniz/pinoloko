@@ -63,5 +63,7 @@ export interface Nivel {
   arboles: Punto[];
   bancos: Punto[];
   zonas: Zona[];
+  semaforos: Punto[];
+  pasos: Punto[];
   atribucion: string;
 }

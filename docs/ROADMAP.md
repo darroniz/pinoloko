@@ -31,7 +31,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano).
 - [x] Ciclo día/noche (10 minutos por día, sol que gira, hora en el HUD).
 - [x] Faros de los vehículos de noche.
-- [ ] Ventanas encendidas de noche.
+- [x] Ventanas encendidas de noche (fachadas que miran a la cámara, encendidas al azar).
 
 ## 3. Cafre
 - [x] Objetos derribables: conos, macetas, contenedores, papeleras, vallas, terrazas de bar, cajas del mercado.
@@ -42,7 +42,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 ## 4. Policía local
 - [x] Nivel de búsqueda por estrellas (calor que sube con fechorías y baja fuera de la vista).
 - [x] Coches patrulla que persiguen por el grafo y a tiro en línea recta.
-- [ ] Controles policiales (patrulla parada cortando una calle).
+- [x] Controles policiales: a dos estrellas, un coche cruzado con conos por delante que arranca al verte.
 - [x] Asimetría del barrio: la patrulla no entra en los pasajes; a partir de tres estrellas,
       motos de la Local que sí.
 - [x] Escapar bajando el nivel; "¡Trincao!" y reaparición en el Mercado (no hay comisaría en la caja).
@@ -57,7 +57,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] Carreras por los pasajes y saltos con rampas.
 - [x] Garaje de motos (las robadas se quedan; eliges con cuál sales) y estadísticas acumuladas.
 - [x] Menú (portada y ESC / ☰ en partida, con pausa), créditos con atribución a OpenStreetMap, nueva partida.
-- [ ] Comercios y bares del barrio con el `name` real de las etiquetas de OSM.
+- [x] Rótulos con el `name` real de bares y comercios (atlas de canvas, sobre la azotea del local).
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media.

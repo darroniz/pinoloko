@@ -97,6 +97,7 @@ export class Juego {
   private botonAccion = document.getElementById('boton-accion')!;
   private tiempoInsulto = 0;
   private enParada = false;
+  private tiempoControl = 4;
   private contador = new Contador();
   private garaje = new Garaje();
   private menu: Menu;
@@ -378,12 +379,21 @@ export class Juego {
       lista.sort((a, c) => Math.hypot(c.x - pos.x, c.z - pos.z) - Math.hypot(a.x - pos.x, a.z - pos.z))[0];
     if (coches.length > dotacion.coches) { const p = lejana(coches); if (p) b.patrullas.retirar(p); }
     if (motos.length > dotacion.motos) { const p = lejana(motos); if (p) b.patrullas.retirar(p); }
+    // Controles: a partir de dos estrellas, uno cruzado por delante de ti cada pocos segundos.
+    const controles = b.patrullas.lista.filter((p) => p.tipo === 'control');
+    this.tiempoControl -= dt;
+    if (this.busqueda.estrellas >= 2 && controles.length < 1 && this.tiempoControl <= 0) {
+      this.tiempoControl = 9;
+      const dir = this.aPie ? { x: 0, z: 0 } : this.vehiculo.direccion;
+      if (b.patrullas.aparecerControl({ x: pos.x, z: pos.z, dirX: dir.x, dirZ: dir.z }, this.rndPolicia)) this.hud.avisar('Control de la Local más adelante', 1.6);
+    } else if (this.busqueda.estrellas < 2) for (const p of controles) b.patrullas.retirar(p);
 
     const via = viaMasCercana(b.nivel, pos.x, pos.z, 6);
     const enPasaje = via?.clase === 'peatonal';
     const r = b.patrullas.actualizar({ x: pos.x, z: pos.z, rapidez, enPasaje }, dt);
     if (r.visto) this.busqueda.visto();
     if (r.choques > 0) { this.busqueda.fechoria('choque_patrulla', r.choques); this.hud.avisar('¡Le has dado a la patrulla!', 1.5); }
+    if (r.activados > 0) { this.busqueda.visto(); this.hud.avisar('¡Alto, Policía Local!', 1.6); }
     let cercania = 0;
     for (const p of b.patrullas.lista) cercania = Math.max(cercania, 1 - Math.min(1, Math.hypot(p.x - pos.x, p.z - pos.z) / 70));
     this.audio.actualizarSirena(b.patrullas.lista.length > 0, cercania, dt);
@@ -614,8 +624,9 @@ export class Juego {
         this.audio.claxon();
         b.vecinos.asustar(jugadorPos.x, jugadorPos.z, 14);
       }
-      // Faros de noche, pegados al vehículo que lleves.
+      // Faros de noche, pegados al vehículo que lleves; y las ventanas del barrio encendidas.
       this.faros.visible = this.cielo.esDeNoche && !this.aPie;
+      b.ventanas.visible = this.cielo.esDeNoche;
       if (this.faros.visible) {
         const v = this.vehiculo;
         this.faros.position.set(v.estado.x, 0, v.estado.z);

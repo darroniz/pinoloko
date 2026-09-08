@@ -21,7 +21,7 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       `docs/COMO_ANADIR_UN_BARRIO.md`. Push.
 - [x] **Bloque 3 (hecho a la 01:00)** — Hito 6: menú principal con créditos (OSM), estadísticas
       de la partida y garaje (motos que has robado, elegir con cuál sales). Push.
-- [ ] **Bloque 4 (03:00-03:45)** — Rótulos con el `name` real de bares y comercios sobre
+- [x] **Bloque 4 (hecho a la 01:15)** — Rótulos con el `name` real de bares y comercios sobre
       las puertas, ventanas encendidas de noche, controles policiales. Push.
 - [ ] **Bloque 5 (03:45-04:25)** — Carreras por los pasajes contra el reloj (checkpoints)
       y rampas para saltar. Push.

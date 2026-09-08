@@ -1,5 +1,6 @@
 // Patrullas de la Policía Local. Coches por el grafo rodado y, a partir de tres estrellas,
-// motos que sí entran por los pasajes. Cuerpos dinámicos pesados guiados por velocidad
+// motos que sí entran por los pasajes. A partir de dos estrellas, controles: un coche cruzado
+// en la calle con conos que no se mueve hasta que te ve de cerca, y entonces sale a por ti. Cuerpos dinámicos pesados guiados por velocidad
 // (como el tráfico): te embisten, pero un contenedor las frena. Persiguen por el grafo
 // (Dijkstra hasta el nodo más cercano al jugador) y, cuando lo tienen a tiro sin edificios
 // en medio, van a por él en línea recta.
@@ -12,7 +13,7 @@ import type { GrafoBarrio } from '../mundo/grafo';
 import type { ClaseVia } from '../mundo/tipos';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoPatrulla = 'coche' | 'moto';
+export type TipoPatrulla = 'coche' | 'moto' | 'control';
 
 export interface Patrulla {
   tipo: TipoPatrulla;
@@ -34,7 +35,8 @@ export interface Patrulla {
   tiempoBloqueado: number;
 }
 
-const VELOCIDAD: Record<TipoPatrulla, number> = { coche: 11.5, moto: 13.5 };
+const VELOCIDAD: Record<TipoPatrulla, number> = { coche: 11.5, moto: 13.5, control: 0 };
+const RADIO_CONTROL = 24;
 const RADIO_VISTA = 55;
 const RADIO_DIRECTO = 26;
 // Distancia entre centros: dos coches morro con culo ya están a 3,9 m, así que 5,5.
@@ -75,8 +77,46 @@ export class Patrullas {
 
   constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio) {}
 
+  /**
+   * Control: un coche patrulla cruzado en una calle rodada a 50-110 m, por delante del jugador
+   * si se sabe hacia dónde va, con dos conos. Se queda quieto hasta que el jugador se acerca.
+   */
+  aparecerControl(jugador: { x: number; z: number; dirX: number; dirZ: number }, rnd: () => number): Patrulla | null {
+    const objetivo = this.grafo.masCercano(jugador.x, jugador.z, 'rodada');
+    const alcanzables = this.grafo.alcanzables(objetivo, 'rodada', true);
+    const delante: number[] = [], resto: number[] = [];
+    for (const i of alcanzables) {
+      const [x, z] = this.grafo.nodos[i]!;
+      const dx = x - jugador.x, dz = z - jugador.z;
+      const d = Math.hypot(dx, dz);
+      if (d < 50 || d > 110) continue;
+      // Solo cruces con una calle rodada que cortar (dos vecinos o más).
+      const vecinos = this.grafo.vecinos(i, 'rodada');
+      if (vecinos.length < 2) continue;
+      ((dx * jugador.dirX + dz * jugador.dirZ) / d > 0.4 ? delante : resto).push(i);
+    }
+    const candidatos = delante.length ? delante : resto;
+    if (!candidatos.length) return null;
+    const nodo = candidatos[Math.floor(rnd() * candidatos.length)]!;
+    const p = this.aparecer('coche', jugador, rnd, nodo);
+    if (!p) return null;
+    p.tipo = 'control';
+    // Cruzado respecto a la calle: perpendicular a la primera arista rodada del nodo.
+    const [x, z] = this.grafo.nodos[nodo]!;
+    const v = this.grafo.vecinos(nodo, 'rodada')[0];
+    const [vx, vz] = v ? this.grafo.nodos[v.nodo]! : [x, z - 1];
+    p.rumbo = Math.atan2(vx - x, -(vz - z)) + Math.PI / 2;
+    const cono = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.7, 7).translate(0, 0.35, 0), new THREE.MeshLambertMaterial({ color: '#ff7a1a' }));
+    const cono2 = cono.clone();
+    cono.position.set(1.9, 0, 0);
+    cono2.position.set(-1.9, 0, 0);
+    p.malla.add(cono, cono2);
+    this.colocar(p);
+    return p;
+  }
+
   /** Aparece una patrulla en un nodo del grafo lejos del jugador pero no demasiado. */
-  aparecer(tipo: TipoPatrulla, jugador: { x: number; z: number }, rnd: () => number): Patrulla | null {
+  aparecer(tipo: TipoPatrulla, jugador: { x: number; z: number }, rnd: () => number, nodoFijo?: number): Patrulla | null {
     const clase: ClaseVia | undefined = tipo === 'coche' ? 'rodada' : undefined;
     // Solo nodos desde los que se llega al jugador: la caja corta calles en el borde y deja
     // trozos de grafo sueltos donde una patrulla se quedaría dando vueltas.
@@ -90,8 +130,8 @@ export class Patrullas {
       if (d > 70 && d < 160) candidatos.push(i);
     }
     if (!candidatos.length) for (const i of alcanzables) { const [x, z] = this.grafo.nodos[i]!; if (Math.hypot(x - jugador.x, z - jugador.z) > 40) candidatos.push(i); }
-    if (!candidatos.length) return null;
-    const nodo = candidatos[Math.floor(rnd() * candidatos.length)]!;
+    if (nodoFijo === undefined && !candidatos.length) return null;
+    const nodo = nodoFijo ?? candidatos[Math.floor(rnd() * candidatos.length)]!;
     const [x, z] = this.grafo.nodos[nodo]!;
     const cuerpo = this.fisica.world.createRigidBody(
       R.RigidBodyDesc.dynamic().setTranslation(x, ALTO / 2, z).lockRotations().setLinearDamping(2),
@@ -182,8 +222,8 @@ export class Patrullas {
    * Mueve las patrullas. Devuelve si alguna ve al jugador y si lo han trincado.
    * `esquivable`: el jugador está donde un coche patrulla no entra (pasaje); solo las motos siguen.
    */
-  actualizar(jugador: { x: number; z: number; rapidez: number; enPasaje: boolean }, dt: number): { visto: boolean; trincado: boolean; choques: number } {
-    let visto = false, trincado = false, choques = 0;
+  actualizar(jugador: { x: number; z: number; rapidez: number; enPasaje: boolean }, dt: number): { visto: boolean; trincado: boolean; choques: number; activados: number } {
+    let visto = false, trincado = false, choques = 0, activados = 0;
     this.tiempoLuz += dt;
     const rojo = Math.floor(this.tiempoLuz * 4) % 2 === 0;
     for (const p of [...this.lista]) {
@@ -192,6 +232,19 @@ export class Patrullas {
       p.luz.material = rojo ? this.materialLuzRoja : this.materialLuz;
       const dx = jugador.x - p.x, dz = jugador.z - p.z;
       const d = Math.hypot(dx, dz);
+      if (p.tipo === 'control') {
+        // Quieto y sin contar como "visto" hasta tenerte cerca y a la vista: entonces arranca.
+        this.guiar(p, 0, 0);
+        if (d < RADIO_CONTROL && this.despejado(p, jugador)) {
+          p.tipo = 'coche';
+          p.ruta = [this.grafo.masCercano(p.x, p.z, 'rodada')];
+          p.tiempoRuta = 0;
+          p.malla.children.filter((o) => o instanceof THREE.Mesh && o.geometry instanceof THREE.ConeGeometry).forEach((o) => p.malla.remove(o));
+          activados++;
+        }
+        if (d < RADIO_TRINCAR) { if (jugador.rapidez < 3.5) p.tiempoEncima += dt; if (p.tiempoEncima > 1.1) trincado = true; }
+        continue;
+      }
       if (d < RADIO_VISTA) visto = true;
       const clase: ClaseVia | undefined = p.tipo === 'coche' ? 'rodada' : undefined;
 
@@ -251,6 +304,6 @@ export class Patrullas {
         if (p.tiempoEncima > 1.1) trincado = true;
       } else p.tiempoEncima = Math.max(0, p.tiempoEncima - dt);
     }
-    return { visto, trincado, choques };
+    return { visto, trincado, choques, activados };
   }
 }

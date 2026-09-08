@@ -9,6 +9,8 @@ import { GrafoBarrio } from './grafo';
 import { cargarNivel, construirBarrio } from './nivel';
 import { Mecheros } from './mecheros';
 import { Paradas } from './paradas';
+import { Rotulos } from './rotulos';
+import { construirVentanas } from './ventanas';
 import { Vecinos } from './peatones';
 import { Trafico } from './trafico';
 import { Trastos } from './trastos';
@@ -27,6 +29,8 @@ export class Barrio {
   readonly patrullas: Patrullas;
   readonly mecheros: Mecheros;
   readonly paradas: Paradas;
+  readonly rotulos: Rotulos;
+  readonly ventanas: THREE.Group;
   readonly scooters: Scooter[] = [];
   readonly coches: Coche[] = [];
   readonly arranque: { x: number; z: number; rumbo: number };
@@ -53,6 +57,10 @@ export class Barrio {
     this.grupo.add(this.mecheros.grupo);
     this.paradas = new Paradas(nivel);
     this.grupo.add(this.paradas.grupo);
+    this.rotulos = new Rotulos(nivel);
+    this.grupo.add(this.rotulos.grupo);
+    this.ventanas = construirVentanas(nivel);
+    this.grupo.add(this.ventanas);
 
     // Arranque: en la calle rodada más cercana a la parada donde te deja el 13 (o al centro
     // de la caja si no hay parada), mirando a lo largo de ella.
@@ -142,6 +150,8 @@ export class Barrio {
     this.grupo.traverse((o) => {
       if (o instanceof THREE.Mesh || o instanceof THREE.InstancedMesh || o instanceof THREE.LineSegments) {
         o.geometry.dispose();
+        const m = o.material as THREE.Material & { map?: THREE.Texture | null };
+        if (m.map) { m.map.dispose(); m.dispose(); }
       }
     });
     this.fisica.world.free();

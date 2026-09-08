@@ -36,6 +36,7 @@ export class Rampas {
       for (const m of muestras) {
         if (this.posiciones.length >= cuantas) break;
         if (nivel.edificios.some((e) => dentroDePoligono(m.x, m.z, e.poligono))) continue;
+        if (nivel.zonas.some((z) => z.clase === 'water' && dentroDePoligono(m.x, m.z, z.poligono))) continue;
         if (evitar.some(([x, z]) => Math.hypot(x - m.x, z - m.z) < 6)) continue;
         if (this.posiciones.some(([x, z]) => Math.hypot(x - m.x, z - m.z) < 60)) continue;
         this.colocar(fisica, m.x, m.z, Math.atan2(m.tx, -m.tz), angulo, geo, material, lados);

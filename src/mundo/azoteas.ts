@@ -141,8 +141,10 @@ export function construirArboles(nivel: Nivel): { grupo: THREE.Group; posiciones
   const naranjos = crear(new THREE.SphereGeometry(1.25, 7, 5).translate(0, 2.9, 0), new THREE.MeshLambertMaterial({ color: '#4f8f45', flatShading: true }), 400);
   const posiciones: Punto[] = [];
 
+  const agua = nivel.zonas.filter((z) => z.clase === 'water');
   const libre = (x: number, z: number, minimo = 3.2): boolean => {
     for (const e of nivel.edificios) if (dentroDePoligono(x, z, e.poligono)) return false;
+    for (const a of agua) if (dentroDePoligono(x, z, a.poligono)) return false;
     for (const via of nivel.vias) {
       // No plantar sobre asfalto ni en medio de un pasaje ancho.
       const medio = via.ancho / 2 + (via.clase === 'rodada' ? 0.6 : 0);

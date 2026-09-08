@@ -139,6 +139,39 @@ def simplificar(p: list[tuple[float, float]], tolerancia: float = 0.3) -> list[t
     return pts
 
 
+def recortar(p: list[tuple[float, float]], minx: float, minz: float, maxx: float, maxz: float) -> list[tuple[float, float]]:
+    """Recorta un polígono a un rectángulo (Sutherland-Hodgman). El río es una vía de 4 km:
+    sin recorte sería un triángulo gigante que el recorte de losetas del cliente descartaría."""
+    def lado(pts, dentro, cruce):
+        out = []
+        for i in range(len(pts)):
+            a, b = pts[i - 1], pts[i]
+            da, db = dentro(a), dentro(b)
+            if db:
+                if not da:
+                    out.append(cruce(a, b))
+                out.append(b)
+            elif da:
+                out.append(cruce(a, b))
+        return out
+
+    def cruce_x(x):
+        return lambda a, b: (x, a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]))
+
+    def cruce_z(z):
+        return lambda a, b: (a[0] + (b[0] - a[0]) * (z - a[1]) / (b[1] - a[1]), z)
+
+    pts = list(p)
+    for dentro, cruce in (
+        (lambda q: q[0] >= minx, cruce_x(minx)), (lambda q: q[0] <= maxx, cruce_x(maxx)),
+        (lambda q: q[1] >= minz, cruce_z(minz)), (lambda q: q[1] <= maxz, cruce_z(maxz)),
+    ):
+        pts = lado(pts, dentro, cruce)
+        if len(pts) < 3:
+            return []
+    return [(round(x, 2), round(z, 2)) for x, z in pts]
+
+
 def clasificar_edificio(t: dict) -> str:
     b = t.get("building", "yes")
     am = t.get("amenity", "")
@@ -366,8 +399,13 @@ def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = No
             clase = "grass"
         elif t.get("amenity") == "parking" and "building" not in t:
             clase = "parking"
+        elif t.get("natural") == "water" or t.get("waterway") == "riverbank":
+            clase = "water"
         if clase:
             r = anillo(w)
+            if clase == "water":
+                ancho, fondo = proy.tamano
+                r = recortar(r, -ancho / 2 - 40, -fondo / 2 - 40, ancho / 2 + 40, fondo / 2 + 40)
             if len(r) >= 3:
                 zonas.append({"clase": clase, "poligono": [list(p) for p in r]})
 

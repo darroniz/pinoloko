@@ -279,8 +279,10 @@ export class Trastos {
   poblar(nivel: Nivel, arboles: Punto[]): void {
     const rnd = azar(777);
     const ocupado: Punto[] = [...arboles];
+    const agua = nivel.zonas.filter((z) => z.clase === 'water');
     const libre = (x: number, z: number, minimo = 1.2): boolean => {
       for (const e of nivel.edificios) if (dentroDePoligono(x, z, e.poligono)) return false;
+      for (const a of agua) if (dentroDePoligono(x, z, a.poligono)) return false;
       for (const [px, pz] of ocupado) if ((px - x) ** 2 + (pz - z) ** 2 < minimo * minimo) return false;
       return true;
     };

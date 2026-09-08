@@ -831,6 +831,15 @@ export class Juego {
       b.trafico.gestionarRadio(pos.x, pos.z);
       const via = viaMasCercana(b.nivel, pos.x, pos.z);
       this.hud.ponerCalle(via?.nombre || (via ? 'Pasaje' : b.nivel.nombre));
+      // Al río: en Triana el Guadalquivir es zona de agua; caer dentro te devuelve a la parada.
+      if (this.jugando && this.tiempoTrincao <= 0 && b.nivel.zonas.some((z) => z.clase === 'water' && dentroDePoligono(pos.x, pos.z, z.poligono))) {
+        this.hud.avisar(this.aPie ? '¡Al Guadalquivir! Wifly no sabe nadar' : '¡La moto al Guadalquivir!', 2.6);
+        this.audio.golpe(8);
+        this.particulas.emitir(pos.x, 0.3, pos.z, 40, new THREE.Color('#9fd3e8'), 6);
+        this.abandonarCarrera(null);
+        this.contador.sumar('chapuzones');
+        this.volverAlArranque();
+      }
       // A pie y junto a una parada, el botón de acción pasa a ser "EL 13".
       const parada = this.aPie ? b.paradas.cercana(pos.x, pos.z, RADIO_PARADA) : null;
       const enParada = !!parada;

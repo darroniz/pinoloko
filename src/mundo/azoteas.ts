@@ -128,7 +128,7 @@ export function construirAzoteas(nivel: Nivel): THREE.Group {
   return grupo;
 }
 
-/** Árboles low-poly: por los pasajes y en los jardines; OSM no trae ninguno en la caja. */
+/** Árboles low-poly: primero los reales de OSM (`natural=tree`), y el resto por los pasajes y jardines. */
 export function construirArboles(nivel: Nivel): { grupo: THREE.Group; posiciones: Punto[] } {
   const grupo = new THREE.Group();
   grupo.name = 'arboles';
@@ -168,6 +168,9 @@ export function construirArboles(nivel: Nivel): { grupo: THREE.Group; posiciones
     else if (r < 0.7) poner(copasClaras, x, 0, z, giro, escala);
     else poner(naranjos, x, 0, z, giro, escala);
   };
+
+  // Los árboles que OSM sí trae (en la Alameda, la hilera de álamos) van donde están de verdad.
+  for (const [x, z] of nivel.arboles) if (!nivel.edificios.some((e) => dentroDePoligono(x, z, e.poligono)) && libre(x, z, 1.5)) plantar(x, z);
 
   for (const via of nivel.vias) {
     if (via.clase === 'rodada' && via.tipo === 'service') continue;

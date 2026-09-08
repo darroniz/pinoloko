@@ -50,7 +50,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 ## 5. El 13
 - [x] Parada de bus (las `bus_stop` de OSM) y cinemática del viaje con cámara baja.
 - [x] La Alameda como segundo barrio (caja de 500 m alrededor de la Alameda de Hércules).
-- [ ] Sistema de zonas documentado en `docs/COMO_ANADIR_UN_BARRIO.md`.
+- [x] Sistema de zonas documentado en `docs/COMO_ANADIR_UN_BARRIO.md` (perfiles en el generador).
 
 ## 6. Freestyle completo
 - [x] "Recoge los 20 mecheros" (repartidos por pasajes, mercado y bares; se guardan).

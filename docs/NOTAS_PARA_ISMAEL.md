@@ -16,7 +16,7 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       `bus_stop` de OSM, cinemática del bus con cámara baja, viaje a la Alameda y vuelta,
       barrio guardado en la partida, mecheros por barrio. Tests del registro de barrios y de
       las paradas. Verificación con viaje incluido. Push.
-- [ ] **Bloque 2 (01:30-02:10)** — La Alameda con su propia paleta (casco antiguo: albero,
+- [x] **Bloque 2 (hecho a las 00:45)** — La Alameda con su propia paleta (casco antiguo: albero,
       blanco y cal), afinar población y rendimiento con 891 edificios.
       `docs/COMO_ANADIR_UN_BARRIO.md`. Push.
 - [ ] **Bloque 3 (02:10-03:00)** — Hito 6: menú principal con créditos (OSM), estadísticas

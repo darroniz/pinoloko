@@ -4,7 +4,8 @@
 Solo stdlib. El nivel lo lee src/mundo/nivel.ts y construye la geometría en el
 navegador (extrusión de huellas, calles como cintas, grafo de tráfico).
 
-Uso: python3 tools/genera_nivel.py [sur,oeste,norte,este] [nombre-cache] [carpeta-salida]
+Uso: python3 tools/genera_nivel.py <id-de-barrio>            (perfil de PERFILES, lo normal)
+     python3 tools/genera_nivel.py [sur,oeste,norte,este] [nombre-cache] [carpeta-salida]
 
 Sistema de coordenadas del juego: x = este, z = sur (Three.js, el norte apunta a -z).
 Origen en el centro de la caja.
@@ -46,6 +47,31 @@ PLANTAS_POR_DEFECTO = {"apartments": 5, "residential": 4, "yes": 4, "public": 2,
                        "commercial": 1, "retail": 1, "garage": 1, "garages": 1, "industrial": 1,
                        "church": 6, "school": 2}
 ALTO_PLANTA = 3.0
+
+# Casco antiguo: cal, albero, ocre y terracota en vez de los pasteles de los bloques.
+PALETA_CASCO = ["#f7f2e6", "#f2e3c2", "#eccfa8", "#f6efe2", "#e8b98a", "#f4d9c4", "#dcae86", "#f0e6d2"]
+
+# Perfil de cada barrio: caja, caché de OSM, nombre y lo que cambia de un barrio a otro
+# (paleta y plantas por defecto cuando OSM no trae `building:levels`). Añadir un barrio es
+# añadir una entrada aquí y ejecutar `python3 tools/genera_nivel.py <id>`.
+PERFILES = {
+    "pino-montano": {
+        "nombre": "Pino Montano · Mercado",
+        "bbox": BBOX_MERCADO,
+        "cache": "pino-montano-mercado",
+        "paleta": PALETA_BLOQUES,
+        "plantas": PLANTAS_POR_DEFECTO,
+        "alto_planta": ALTO_PLANTA,
+    },
+    "alameda": {
+        "nombre": "La Alameda",
+        "bbox": "37.39650,-5.99600,37.40100,-5.99030",
+        "cache": "alameda",
+        "paleta": PALETA_CASCO,
+        "plantas": {**PLANTAS_POR_DEFECTO, "yes": 3, "residential": 3, "apartments": 4, "house": 2},
+        "alto_planta": 3.2,
+    },
+}
 
 
 def hash_id(n: int) -> int:
@@ -106,10 +132,10 @@ def clasificar_edificio(t: dict) -> str:
     return "bloque"
 
 
-def color_edificio(tipo: str, oid: int) -> str:
+def color_edificio(tipo: str, oid: int, paleta: list[str]) -> str:
     if tipo in COLOR_TIPO:
         return COLOR_TIPO[tipo]
-    return PALETA_BLOQUES[hash_id(oid) % len(PALETA_BLOQUES)]
+    return paleta[hash_id(oid) % len(paleta)]
 
 
 def nombre_via(t: dict) -> str:
@@ -119,7 +145,11 @@ def nombre_via(t: dict) -> str:
     return n
 
 
-def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
+def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = None) -> dict:
+    perfil = perfil or PERFILES["pino-montano"]
+    paleta = perfil["paleta"]
+    plantas_defecto = perfil["plantas"]
+    alto_planta = perfil["alto_planta"]
     datos = descargar(bbox, nombre_cache)
     proy = Proyeccion(bbox)
     # Overpass devuelve los nodos con etiquetas primero (out body) y luego todos sin ellas
@@ -162,7 +192,7 @@ def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
         try:
             plantas = int(float(t["building:levels"]))
         except (KeyError, ValueError):
-            plantas = PLANTAS_POR_DEFECTO.get(b, 4)
+            plantas = plantas_defecto.get(b, plantas_defecto.get("yes", 4))
             if tipo in ("mercado", "comercio"):
                 plantas = 1
             elif tipo in ("colegio", "sanidad", "biblioteca", "publico", "bomberos"):
@@ -172,13 +202,13 @@ def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
         try:
             altura = float(t["height"])
         except (KeyError, ValueError):
-            altura = plantas * ALTO_PLANTA + (0.8 if tipo == "bloque" else 0.4)
+            altura = plantas * alto_planta + (0.8 if tipo == "bloque" else 0.4)
         ed = {
             "id": oid,
             "tipo": tipo,
             "plantas": plantas,
             "altura": round(altura, 2),
-            "color": t.get("building:colour") or color_edificio(tipo, oid),
+            "color": t.get("building:colour") or color_edificio(tipo, oid, paleta),
             "poligono": [list(p) for p in exterior],
         }
         if huecos:
@@ -307,7 +337,7 @@ def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
                 zonas.append({"clase": clase, "poligono": [list(p) for p in r]})
 
     nivel = {
-        "nombre": "Pino Montano · Mercado",
+        "nombre": perfil["nombre"],
         "bbox": [float(v) for v in bbox.split(",")],
         "tamano": list(proy.tamano),
         "edificios": edificios,
@@ -328,10 +358,17 @@ def generar(bbox: str, nombre_cache: str, salida: Path) -> dict:
 
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    bbox = args[0] if args else BBOX_MERCADO
-    nombre = args[1] if len(args) > 1 else "pino-montano-mercado"
-    salida = Path(args[2]) if len(args) > 2 else Path(__file__).parent.parent / "public" / "barrios" / "pino-montano"
-    n = generar(bbox, nombre, salida)
+    raiz = Path(__file__).parent.parent / "public" / "barrios"
+    if args and args[0] in PERFILES:
+        perfil = PERFILES[args[0]]
+        bbox, nombre = perfil["bbox"], perfil["cache"]
+        salida = Path(args[1]) if len(args) > 1 else raiz / args[0]
+    else:
+        perfil = PERFILES["pino-montano"]
+        bbox = args[0] if args else BBOX_MERCADO
+        nombre = args[1] if len(args) > 1 else "pino-montano-mercado"
+        salida = Path(args[2]) if len(args) > 2 else raiz / "pino-montano"
+    n = generar(bbox, nombre, salida, perfil)
     print(f"{len(n['edificios'])} edificios, {len(n['vias'])} vías, {len(n['grafo']['nodos'])} nodos / "
           f"{len(n['grafo']['aristas'])} aristas, {len(n['pois'])} POIs, {len(n['arboles'])} árboles, "
           f"{len(n['zonas'])} zonas, {len(n['semaforos'])} semáforos, {len(n['pasos'])} pasos → {salida / 'nivel.json'} ({(salida / 'nivel.json').stat().st_size // 1024} KB)")

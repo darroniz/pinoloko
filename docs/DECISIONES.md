@@ -425,3 +425,25 @@ la misma build daba 5,7 y 8,7 ms en pasadas seguidas.
 Lección de proceso apuntada: encadenar `npm run verificar | tail && git push` publica aunque la
 verificación falle, porque el código de salida es el de `tail`. Ahora se guarda el código de
 salida y solo se publica si es cero.
+
+## 2026-09-09 — Triana, tercer barrio, y cada parada del 13 va a un sitio
+
+Con el hito 5 cerrado y la guía escrita, la mejor prueba de que "añadir un barrio" son cuatro
+pasos era añadir uno: **Triana** (caja de 500 m alrededor de San Jacinto y Pagés del Corro, con
+Calle Betis, Pureza, el Mercado de Triana y el Castillo de San Jorge). 1.214 edificios, 3 paradas,
+36 bares. Ha salido en media hora, casi todo esperando a Overpass.
+
+**Con tres barrios, `destino13` pasa a `destinos13: string[]`** y cada parada del barrio lleva a
+un destino, repartidos por turnos en orden de nombre. No hay menú de destinos: la parada decide,
+como en la vida real, y el aviso al acercarte dice a dónde va. El test comprueba que desde
+cualquier barrio se llega a todos.
+
+**Huellas simplificadas en el generador** (fuera los vértices que se desvían menos de 30 cm del
+segmento entre sus vecinos): Triana pasa de 10.900 a 10.150 vértices y la Alameda de 8.400 a
+6.900 sin que se note. Pino Montano se regenera y ya no es byte a byte igual al de la primera
+noche (2.972 → 2.854 vértices). Y los petos de azotea, además de cuatro plantas, piden 150 m² de
+huella: en Triana había cientos de casas altas y estrechas con peto.
+
+**Lo que Triana no tiene todavía:** el río. La caja toca Calle Betis pero el Guadalquivir es una
+relación multipolígono que el generador no lee (solo vías cerradas para zonas). Queda anotado en
+el roadmap: agua como zona, y de paso el puente.

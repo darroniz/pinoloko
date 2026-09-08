@@ -2,12 +2,19 @@
 import * as THREE from 'three';
 import type { Nivel, Poi } from './tipos';
 
+export interface Parada extends Poi {
+  /** Id del barrio al que lleva el 13 desde esta parada. */
+  destino: string;
+}
+
 export class Paradas {
   readonly grupo = new THREE.Group();
-  readonly lista: Poi[];
+  readonly lista: Parada[];
 
-  constructor(nivel: Nivel) {
-    this.lista = nivel.pois.filter((p) => p.clase === 'bus_stop');
+  /** Cada parada lleva a un destino, repartidos por turnos en orden de nombre. */
+  constructor(nivel: Nivel, destinos: string[] = []) {
+    const pois = nivel.pois.filter((p) => p.clase === 'bus_stop').sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    this.lista = pois.map((p, i) => ({ ...p, destino: destinos[i % Math.max(1, destinos.length)] ?? '' }));
     const poste = new THREE.CylinderGeometry(0.06, 0.06, 3.2, 6).translate(0, 1.6, 0);
     const cartel = new THREE.BoxGeometry(0.9, 0.6, 0.08).translate(0, 3.0, 0);
     const franja = new THREE.BoxGeometry(0.9, 0.2, 0.09).translate(0, 3.15, 0);
@@ -31,8 +38,8 @@ export class Paradas {
   }
 
   /** Parada a menos de `radio` metros, o null. */
-  cercana(x: number, z: number, radio = 5): Poi | null {
-    let mejor: Poi | null = null, mejorD = radio * radio;
+  cercana(x: number, z: number, radio = 5): Parada | null {
+    let mejor: Parada | null = null, mejorD = radio * radio;
     for (const p of this.lista) {
       const d = (p.x - x) ** 2 + (p.z - z) ** 2;
       if (d < mejorD) { mejorD = d; mejor = p; }
@@ -41,7 +48,7 @@ export class Paradas {
   }
 
   /** La parada más cercana a un punto, sin límite (para bajarse del bus). */
-  masCercana(x: number, z: number): Poi | null {
+  masCercana(x: number, z: number): Parada | null {
     return this.cercana(x, z, Infinity);
   }
 }

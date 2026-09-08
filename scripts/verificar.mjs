@@ -85,7 +85,10 @@ try {
   // El 13: viaje al otro barrio y vuelta, sin errores y con el bucle vivo en el barrio nuevo.
   const salida = await pagina.evaluate(() => window.__pv_prueba.barrio());
   const t0 = Date.now();
-  const llegada = await pagina.evaluate(() => window.__pv_prueba.viajar());
+  // Se visita cada barrio que no sea el de salida (el último es el que se mide).
+  const otros = await pagina.evaluate(() => Object.keys(window.__pv_barrios ?? {}).filter((b) => b !== window.__pv_prueba.barrio()));
+  let llegada = salida;
+  for (const b of otros) { llegada = await pagina.evaluate((d) => window.__pv_prueba.viajar(d), b); console.log(`  el 13 → ${llegada}`); }
   console.log(`el 13: ${salida} → ${llegada} en ${((Date.now() - t0) / 1000).toFixed(1)} s`);
   if (llegada === salida) { ok = false; console.log('FALLO: el 13 no ha cambiado de barrio'); }
   // Mismo protocolo que en el barrio inicial (calentamiento y dos ventanas), y el listón es
@@ -104,7 +107,7 @@ try {
   console.log(`frames en 10 s en ${llegada}: ${frames2} (${ventanas2.join(' / ')}; mínimo ${Math.ceil(frames * 0.5)}, la mitad del primero) · memoria ${JSON.stringify(memoria)}`);
   if (frames2 < frames * 0.5) { ok = false; console.log('FALLO: el barrio nuevo rinde menos de la mitad'); }
   await pagina.screenshot({ path: 'logs/captura-viaje.png' });
-  const vuelta = await pagina.evaluate(() => window.__pv_prueba.viajar());
+  const vuelta = await pagina.evaluate((s) => window.__pv_prueba.viajar(s), salida);
   if (vuelta !== salida) { ok = false; console.log('FALLO: el 13 no vuelve'); }
 } catch (e) {
   ok = false; console.log('FALLO:', e.message);

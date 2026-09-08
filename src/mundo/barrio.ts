@@ -8,7 +8,7 @@ import { construirArboles, construirAzoteas } from './azoteas';
 import { GrafoBarrio } from './grafo';
 import { cargarNivel, construirBarrio } from './nivel';
 import { Mecheros } from './mecheros';
-import { Paradas } from './paradas';
+import { Paradas, type Parada } from './paradas';
 import { Rotulos } from './rotulos';
 import { construirVentanas } from './ventanas';
 import { Circuito } from './circuito';
@@ -18,7 +18,7 @@ import { generarRuta, type RutaCarrera } from '../carreras';
 import { Vecinos } from './peatones';
 import { Trafico } from './trafico';
 import { Trastos } from './trastos';
-import type { Nivel, Poi } from './tipos';
+import type { Nivel } from './tipos';
 import { Patrullas } from '../policia/patrullas';
 import type { FichaBarrio } from './barrios';
 import { rutaNivel } from './barrios';
@@ -63,7 +63,7 @@ export class Barrio {
     this.grupo.add(this.patrullas.grupo);
     this.mecheros = new Mecheros(nivel, ficha.id);
     this.grupo.add(this.mecheros.grupo);
-    this.paradas = new Paradas(nivel);
+    this.paradas = new Paradas(nivel, ficha.destinos13);
     this.grupo.add(this.paradas.grupo);
     this.rotulos = new Rotulos(nivel);
     this.grupo.add(this.rotulos.grupo);
@@ -146,7 +146,7 @@ export class Barrio {
   }
 
   /** La parada del 13 donde te deja el bus (por trozo del nombre; si no, la más cercana al centro). */
-  get paradaLlegada(): Poi | null {
+  get paradaLlegada(): Parada | null {
     const buscada = this.ficha.paradaLlegada.toLowerCase();
     return this.paradas.lista.find((p) => p.nombre.toLowerCase().includes(buscada)) ?? this.paradas.masCercana(0, 0);
   }

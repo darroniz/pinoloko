@@ -55,6 +55,14 @@ PALETA_CASCO = ["#f7f2e6", "#f2e3c2", "#eccfa8", "#f6efe2", "#e8b98a", "#f4d9c4"
 # (paleta y plantas por defecto cuando OSM no trae `building:levels`). Añadir un barrio es
 # añadir una entrada aquí y ejecutar `python3 tools/genera_nivel.py <id>`.
 PERFILES = {
+    "triana": {
+        "nombre": "Triana",
+        "bbox": "37.38225,-6.00833,37.38675,-6.00267",
+        "cache": "triana",
+        "paleta": PALETA_CASCO,
+        "plantas": {**PLANTAS_POR_DEFECTO, "yes": 3, "residential": 3, "apartments": 4, "house": 2},
+        "alto_planta": 3.2,
+    },
     "pino-montano": {
         "nombre": "Pino Montano · Mercado",
         "bbox": BBOX_MERCADO,
@@ -104,6 +112,31 @@ def area_firmada(p: list[tuple[float, float]]) -> float:
         x2, z2 = p[(i + 1) % len(p)]
         a += x1 * z2 - x2 * z1
     return a / 2
+
+
+def simplificar(p: list[tuple[float, float]], tolerancia: float = 0.3) -> list[tuple[float, float]]:
+    """Quita los vértices que se desvían menos de `tolerancia` metros del segmento entre sus
+    vecinos (OSM trae muchos puntos casi colineales). Nunca baja de cuatro vértices."""
+    pts = list(p)
+    cambiado = True
+    while cambiado and len(pts) > 4:
+        cambiado = False
+        for i in range(len(pts)):
+            if len(pts) <= 4:
+                break
+            (ax, az), (bx, bz), (cx, cz) = pts[i - 1], pts[i], pts[(i + 1) % len(pts)]
+            dx, dz = cx - ax, cz - az
+            l2 = dx * dx + dz * dz
+            if l2 == 0:
+                d = math.hypot(bx - ax, bz - az)
+            else:
+                t = max(0.0, min(1.0, ((bx - ax) * dx + (bz - az) * dz) / l2))
+                d = math.hypot(ax + t * dx - bx, az + t * dz - bz)
+            if d < tolerancia:
+                pts.pop(i)
+                cambiado = True
+                break
+    return pts
 
 
 def clasificar_edificio(t: dict) -> str:
@@ -184,6 +217,8 @@ def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = No
     def edificio(oid: int, t: dict, exterior: list, huecos: list) -> None:
         if len(exterior) < 3:
             return
+        exterior = simplificar(exterior)
+        huecos = [simplificar(h) for h in huecos]
         if area_firmada(exterior) < 0:  # orientación uniforme (sentido horario en xz)
             exterior = exterior[::-1]
         huecos = [h[::-1] if area_firmada(h) > 0 else h for h in huecos if len(h) >= 3]

@@ -31,8 +31,8 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       al publicar. Push.
 - [x] **Bloque 8 (hecho a la 01:48)** — El 13 circulando de verdad por las calles rodadas (y
       robable), vecinos sentados en las terrazas. Push.
-- [ ] **Bloque 9 (03:30-04:20)** — Lo que quede del roadmap y pulido de lo de la noche
-      (ajustes por sondas, textos, `docs/ASSETS_PENDIENTES.md`). Push.
+- [x] **Bloque 9 (hecho a la 01:40)** — Cómo se juega, pitidos y fanfarria, assets pendientes.
+- [x] **Bloque 10 (hecho a la 01:55)** — Triana como tercer barrio y paradas con destino propio.
 - [ ] **Cierre (04:25-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Plan de la noche del 2026-09-08 (primera sesión, 00:15 → 04:45)

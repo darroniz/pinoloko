@@ -38,7 +38,8 @@ declare global {
     __pv_jugando: boolean;
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: () => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_barrios: Record<string, unknown>;
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -103,6 +104,7 @@ export class Juego {
   private botonAccion = document.getElementById('boton-accion')!;
   private tiempoInsulto = 0;
   private enParada = false;
+  private destinoViaje = BARRIO_INICIAL;
   private tiempoControl = 4;
   private carrera = new Carrera();
   private records = new Records();
@@ -202,6 +204,7 @@ export class Juego {
     document.addEventListener('visibilitychange', () => { if (document.hidden) this.guardar(); });
     window.__pv_listo = true;
     window.__pv_escena = this.escena;
+    window.__pv_barrios = BARRIOS;
     // Ganchos para la sonda de verificación: forzar situaciones que no se pueden guionizar con teclas.
     window.__pv_prueba = {
       calor: (n: number) => { this.busqueda.calor = n; },
@@ -214,7 +217,7 @@ export class Juego {
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
       rampas: () => this.barrio.rampas.posiciones.map(([x, z], i) => ({ x, z, rumbo: this.barrio.rampas.rumbos[i] ?? 0 })),
-      viajar: async () => { await this.viajar(this.barrio.ficha.destino13); return this.barrio.ficha.id; },
+      viajar: async (destino?: string) => { await this.viajar(destino ?? this.barrio.ficha.destinos13[0]!); return this.barrio.ficha.id; },
       robarBus: () => {
         const bus = this.barrio.trafico.lista.find((c) => c.tipo === 'bus');
         if (!bus) return false;
@@ -302,8 +305,9 @@ export class Juego {
     const p = this.peaton.posicion;
     const parada = this.barrio.paradas.cercana(p.x, p.z, RADIO_PARADA);
     if (!parada) return;
-    const destino = BARRIOS[this.barrio.ficha.destino13];
+    const destino = BARRIOS[parada.destino];
     if (!destino) return;
+    this.destinoViaje = destino.id;
     const dir = this.barrio.direccionCalle(parada.x, parada.z);
     this.peaton.esconder();
     this.busqueda.limpiar();
@@ -650,7 +654,7 @@ export class Juego {
     this.controles.actualizar();
     // Cinemática del 13: la cámara es del bus, el barrio se congela y al fundir a negro se viaja.
     if (this.cine.activa || this.cargandoBarrio) {
-      if (this.cine.actualizar(dt, this.camara.camara)) void this.viajar(this.barrio.ficha.destino13);
+      if (this.cine.actualizar(dt, this.camara.camara)) void this.viajar(this.destinoViaje);
       this.cielo.colocarSol(this.cine.bus.position.x, this.cine.bus.position.z);
       this.particulas.actualizar(dt);
       return;
@@ -833,7 +837,7 @@ export class Juego {
       if (enParada !== this.enParada) {
         this.enParada = enParada;
         if (this.aPie) this.botonAccion.textContent = enParada ? 'EL 13' : 'SUBIR';
-        if (enParada && parada) this.hud.avisar(`Parada ${parada.nombre}: pulsa E para coger el 13`, 2.2);
+        if (enParada && parada) this.hud.avisar(`${parada.nombre} · E: el 13 a ${BARRIOS[parada.destino]?.nombre.split(' ·')[0] ?? '?'}`, 2.4);
       }
     }
     const acelerando = !this.aPie && Math.hypot(this.controles.eje.x, this.controles.eje.y) > 0.2 && !this.controles.freno;

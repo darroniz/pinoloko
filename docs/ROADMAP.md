@@ -52,6 +52,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Parada de bus (las `bus_stop` de OSM) y cinemática del viaje con cámara baja.
 - [x] La Alameda como segundo barrio (caja de 500 m alrededor de la Alameda de Hércules).
 - [x] Sistema de zonas documentado en `docs/COMO_ANADIR_UN_BARRIO.md` (perfiles en el generador).
+- [x] Triana como tercer barrio; cada parada del 13 lleva a un destino distinto.
+- [ ] Agua (el Guadalquivir en Triana) como zona: relaciones multipolígono de OSM en el generador.
 
 ## 6. Freestyle completo
 - [x] "Recoge los 20 mecheros" (repartidos por pasajes, mercado y bares; se guardan).

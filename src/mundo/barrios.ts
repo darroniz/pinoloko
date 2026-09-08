@@ -5,8 +5,8 @@
 export interface FichaBarrio {
   id: string;
   nombre: string;
-  /** Texto del cartel de la parada: a dónde te lleva el 13 desde aquí. */
-  destino13: string;
+  /** A dónde lleva el 13 desde aquí. Con varios, cada parada del barrio va a uno (por turnos). */
+  destinos13: string[];
   /** Cuántos vecinos, coches de tráfico, autobuses del 13, motos y coches aparcados. */
   poblacion: { vecinos: number; trafico: number; buses: number; motos: number; coches: number };
   /** Frase de bienvenida al bajar del bus. */
@@ -19,7 +19,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   'pino-montano': {
     id: 'pino-montano',
     nombre: 'Pino Montano · Mercado',
-    destino13: 'alameda',
+    destinos13: ['alameda', 'triana'],
     poblacion: { vecinos: 110, trafico: 14, buses: 1, motos: 14, coches: 12 },
     bienvenida: 'Pino Montano. En casa.',
     paradaLlegada: 'Mercado',
@@ -27,10 +27,18 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   alameda: {
     id: 'alameda',
     nombre: 'La Alameda',
-    destino13: 'pino-montano',
+    destinos13: ['pino-montano', 'triana'],
     poblacion: { vecinos: 160, trafico: 10, buses: 1, motos: 18, coches: 10 },
     bienvenida: 'La Alameda. Territorio de modernos.',
     paradaLlegada: 'Alameda de Hércules',
+  },
+  triana: {
+    id: 'triana',
+    nombre: 'Triana',
+    destinos13: ['pino-montano', 'alameda'],
+    poblacion: { vecinos: 150, trafico: 12, buses: 1, motos: 16, coches: 12 },
+    bienvenida: 'Triana. La otra orilla.',
+    paradaLlegada: 'San Jacinto',
   },
 };
 

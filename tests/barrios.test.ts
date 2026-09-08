@@ -14,10 +14,25 @@ describe('registro de barrios (sistema de zonas)', () => {
     for (const [id, ficha] of Object.entries(BARRIOS)) expect(ficha.id).toBe(id);
   });
 
-  it('el 13 lleva siempre a un barrio que existe y distinto del de salida', () => {
+  it('el 13 lleva siempre a barrios que existen, distintos del de salida, y desde cualquiera se llega a todos', () => {
     for (const ficha of Object.values(BARRIOS)) {
-      expect(BARRIOS[ficha.destino13]).toBeDefined();
-      expect(ficha.destino13).not.toBe(ficha.id);
+      expect(ficha.destinos13.length).toBeGreaterThan(0);
+      for (const d of ficha.destinos13) { expect(BARRIOS[d]).toBeDefined(); expect(d).not.toBe(ficha.id); }
+    }
+    const ids = Object.keys(BARRIOS);
+    for (const origen of ids) {
+      const vistos = new Set([origen]);
+      const cola = [origen];
+      while (cola.length) for (const d of BARRIOS[cola.shift()!]!.destinos13) if (!vistos.has(d)) { vistos.add(d); cola.push(d); }
+      expect([...vistos].sort()).toEqual(ids.slice().sort());
+    }
+  });
+
+  it('cada parada del barrio lleva a un destino y entre todas cubren todos los destinos', () => {
+    for (const ficha of Object.values(BARRIOS)) {
+      const paradas = new Paradas(nivelDe(ficha.id), ficha.destinos13);
+      for (const p of paradas.lista) expect(ficha.destinos13).toContain(p.destino);
+      if (paradas.lista.length >= ficha.destinos13.length) expect(new Set(paradas.lista.map((p) => p.destino)).size).toBe(ficha.destinos13.length);
     }
   });
 

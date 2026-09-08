@@ -79,7 +79,7 @@ export function construirAzoteas(nivel: Nivel): THREE.Group {
       // Peto (murete) alrededor del borde de la azotea: da el borde superior "de verdad".
       // Solo en bloques de cuatro plantas o más: en el casco antiguo (casas de dos y tres
       // plantas, cientos de ellas) eran cien mil triángulos que no se distinguían.
-      for (let i = 0; e.plantas >= 4 && i < e.poligono.length; i++) {
+      for (let i = 0; e.plantas >= 4 && superficie >= 150 && i < e.poligono.length; i++) {
         const [ax, az] = e.poligono[i]!;
         const [bx, bz] = e.poligono[(i + 1) % e.poligono.length]!;
         const l = Math.hypot(bx - ax, bz - az);

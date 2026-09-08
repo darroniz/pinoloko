@@ -14,8 +14,8 @@ Un cuadrado de unos 500 x 500 m en `sur,oeste,norte,este` (grados decimales). Co
 esté cerca del centro de la caja y junto a una calle rodada.
 
 Orientación: la caja de 500 m cabe en un móvil sin que el cargador tarde. El Mercado son 186
-edificios (110 KB); la Alameda, 891 (275 KB) y tarda unos 7 s en construirse en una Pi sin GPU.
-Más de 1.000 edificios y habría que pasar a GLB precompilado.
+edificios (110 KB); la Alameda, 891 (275 KB); Triana, 1.214 (418 KB) y tarda unos 8 s en
+construirse en una Pi sin GPU. Mucho más y habría que pasar a GLB precompilado.
 
 ## 2. Añadir el perfil al generador
 
@@ -50,7 +50,7 @@ En `src/mundo/barrios.ts`, dentro de `BARRIOS`:
 triana: {
   id: 'triana',
   nombre: 'Triana',
-  destino13: 'alameda',                 // a dónde lleva el 13 desde aquí
+  destinos13: ['alameda', 'pino-montano'], // a dónde lleva el 13 desde aquí (una parada por destino, por turnos)
   poblacion: { vecinos: 140, trafico: 12, motos: 16, coches: 10 },
   bienvenida: 'Triana. La otra orilla.',
   paradaLlegada: 'Plaza de Cuba',       // trozo del nombre de la bus_stop donde te deja el bus
@@ -60,12 +60,14 @@ triana: {
 - `paradaLlegada` se busca por trozo del nombre entre las paradas del nivel (sin distinguir
   mayúsculas). Si no casa, se usa la parada más cercana al centro. Ahí reapareces también al
   trincarte y con la tecla R.
-- `destino13` de momento es un único destino por barrio (el 13 va y vuelve). Si algún día hay
-  varios, la ficha crece a una lista y la parada decide.
+- `destinos13`: las paradas del barrio (ordenadas por nombre) se reparten los destinos por
+  turnos: con dos destinos y tres paradas, la primera y la tercera van al primero. El aviso al
+  acercarte a la parada dice a dónde va. Con un solo destino, todas van al mismo sitio.
 - Ajusta `poblacion` a ojo: la Alameda lleva más vecinos y menos tráfico que Pino Montano porque
   es peatonal.
 
-Recuerda enlazar el barrio desde otro: el `destino13` de alguien tiene que apuntar a él.
+Recuerda enlazar el barrio desde otro: algún `destinos13` tiene que apuntar a él. El test
+comprueba que desde cualquier barrio se llega a todos.
 
 ## 4. Comprobar
 
@@ -73,9 +75,11 @@ Recuerda enlazar el barrio desde otro: el `destino13` de alguien tiene que apunt
 npm run lint && npm run test && npm run build && npm run verificar
 ```
 
-- `tests/barrios.test.ts` comprueba cada ficha: que el destino existe, que el nivel está
-  generado, que hay paradas y que la de llegada existe y tiene una calle rodada a menos de 40 m.
-- `npm run verificar` hace un viaje de ida y vuelta en el 13 desde el barrio inicial.
+- `tests/barrios.test.ts` comprueba cada ficha: que los destinos existen y se llega a todos,
+  que el nivel está generado, que hay paradas y que la de llegada existe y tiene una calle rodada
+  a menos de 40 m.
+- `npm run verificar` visita todos los barrios en el 13 y vuelve al inicial; el último visitado
+  es el que se mide (tiene que rendir al menos la mitad que el inicial).
 - Para abrir directamente un barrio en el navegador: `?barrio=triana` en la URL.
 - Para verlo en la Pi con cifras: `node scripts/sonda-barrio.mjs triana` (captura en `logs/`).
 

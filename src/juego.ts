@@ -21,9 +21,11 @@ import { NivelBusqueda } from './policia/busqueda';
 import { Cielo } from './mundo/cielo';
 import { TOTAL_MECHEROS } from './mundo/mecheros';
 import { Barrio } from './mundo/barrio';
+import { PENDIENTE } from './mundo/rampas';
 import { BARRIO_INICIAL, BARRIOS } from './mundo/barrios';
 import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
+import { Carrera, Records, formatearTiempo, premio } from './carreras';
 import { Menu, type Pestana } from './ui/menu';
 
 declare global {
@@ -33,7 +35,7 @@ declare global {
     __pv_jugando: boolean;
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: () => Promise<string>; barrio: () => string };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: () => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -98,6 +100,12 @@ export class Juego {
   private tiempoInsulto = 0;
   private enParada = false;
   private tiempoControl = 4;
+  private carrera = new Carrera();
+  private records = new Records();
+  private indiceCarrera = -1;
+  private enfriamientoCarrera = 0;
+  private tiempoAire = 0;
+  private enAire = false;
   private contador = new Contador();
   private garaje = new Garaje();
   private menu: Menu;
@@ -195,6 +203,12 @@ export class Juego {
       calor: (n: number) => { this.busqueda.calor = n; },
       hora: (h: number) => { this.cielo.hora = h; },
       barrio: () => this.barrio.ficha.id,
+      irA: (x: number, z: number, rumbo = 0) => { this.scooter.teletransportar(x, z, rumbo); this.camara.colocar(x, z); this.barrio.trastos.gestionarRadio(x, z); },
+      carreras: () => this.barrio.carreras.map((c) => c.ruta.puntos.map((n) => this.barrio.grafo.nodos[n] ?? [0, 0])),
+      forzarEje: (x: number, y: number) => { this.controles.forzado = x === 0 && y === 0 ? null : { x, y }; },
+      empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
+      carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
+      rampas: () => this.barrio.rampas.posiciones.map(([x, z], i) => ({ x, z, rumbo: this.barrio.rampas.rumbos[i] ?? 0 })),
       viajar: async () => { await this.viajar(this.barrio.ficha.destino13); return this.barrio.ficha.id; },
       robarCoche: () => {
         const c = this.barrio.trafico.lista[0];
@@ -206,7 +220,7 @@ export class Juego {
     };
     window.__pv_info = () => {
       const b = this.barrio;
-      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
+      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
     };
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
@@ -223,6 +237,7 @@ export class Juego {
     }
     this.coche = null;
     this.aPie = false;
+    if (this.carrera.estado === 'en_curso') { this.carrera.abandonar(); this.hud.ponerCarrera(null); }
     this.reventado.clear();
     this.motosRobadas.clear();
     this.barrio = await Barrio.cargar(ficha, this.calidad, this.escena);
@@ -301,6 +316,7 @@ export class Juego {
     v.montar(false);
     this.peaton.aparecer(e.x + lado.x, e.z + lado.z, e.rumbo);
     this.aPie = true;
+    this.abandonarCarrera('Carrera abandonada');
     this.coche = null;
     this.botonAccion.textContent = 'SUBIR';
   }
@@ -402,6 +418,7 @@ export class Juego {
 
   private trincar(): void {
     this.tiempoTrincao = 3;
+    this.abandonarCarrera(null);
     this.hud.mostrarTrincao(true);
     this.hud.ponerEstrellas(0);
     this.busqueda.limpiar();
@@ -451,6 +468,93 @@ export class Juego {
     const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
     guardarPartida({ x: pos.x, z: pos.z, rumbo: this.scooter.estado.rumbo, dinero: this.dinero, aPie: this.aPie, modelo: MODELOS.indexOf(this.scooter.modelo), hora: this.cielo.hora, barrio: this.barrio.ficha.id });
     this.contador.guardar();
+  }
+
+  /** Sobre una rampa, la moto lleva la velocidad vertical de la pendiente y en lo alto sale volando. */
+  private subirRampa(): void {
+    const e = this.scooter.estado;
+    const r = this.barrio.rampas.pendiente(e.x, e.z);
+    if (!r) return;
+    const v = this.scooter.cuerpo.linvel();
+    const alFrente = v.x * r.dirX + v.z * r.dirZ;
+    if (alFrente < 1) return;
+    const vy = alFrente * (r.avance > 0.8 ? 0.6 : PENDIENTE * 1.05);
+    if (vy > v.y) this.scooter.cuerpo.setLinvel({ x: v.x, y: vy, z: v.z }, true);
+  }
+
+  /** Saltos: en el aire más de un tercio de segundo y aterrizar da aviso y unos euros. */
+  private actualizarSaltos(dt: number): void {
+    if (this.aPie || this.coche) { this.enAire = false; return; }
+    const y = this.vehiculo.posicion.y;
+    const volando = y > 1.0;
+    if (volando) { this.tiempoAire += dt; this.enAire = true; return; }
+    if (this.enAire) {
+      this.enAire = false;
+      if (this.tiempoAire > 0.35) {
+        const euros = 10 + Math.round(this.tiempoAire * 20);
+        this.ganar(euros);
+        this.contador.sumar('saltos');
+        this.contador.maximo('vueloMaximo', this.tiempoAire);
+        this.hud.avisar(this.tiempoAire > 0.8 ? `¡Vuelo de ${this.tiempoAire.toFixed(1)} s! +${euros} €` : `¡Salto! +${euros} €`, 1.6);
+        this.particulas.emitir(this.vehiculo.estado.x, 0.3, this.vehiculo.estado.z, 10, this.colorPolvo, 3);
+      }
+      this.tiempoAire = 0;
+    }
+  }
+
+  private abandonarCarrera(aviso: string | null): void {
+    if (this.carrera.estado !== 'en_curso') return;
+    this.carrera.abandonar();
+    this.barrio.circuito.mostrarRuta(null);
+    this.hud.ponerCarrera(null);
+    this.enfriamientoCarrera = 6;
+    if (aviso) this.hud.avisar(aviso, 1.6);
+  }
+
+  /** Carreras: pasar en moto por una pancarta de salida arranca el reloj; anillos en orden y meta. */
+  private actualizarCarrera(pos: THREE.Vector3, dt: number): void {
+    const b = this.barrio;
+    this.enfriamientoCarrera = Math.max(0, this.enfriamientoCarrera - dt);
+    if (this.carrera.estado === 'fuera') {
+      if (this.aPie || this.coche || this.enfriamientoCarrera > 0) return;
+      b.carreras.forEach((c, i) => {
+        if (this.carrera.estado !== 'fuera') return;
+        const [sx, sz] = b.grafo.nodos[c.salida] ?? [Infinity, Infinity];
+        if (Math.hypot(sx - pos.x, sz - pos.z) > 4.5) return;
+        this.indiceCarrera = i;
+        this.carrera.empezar(c.ruta);
+        b.circuito.mostrarRuta(c.ruta);
+        const mejor = this.records.mejor(b.ficha.id, i);
+        this.hud.avisar(mejor === null ? `¡Carrera! ${c.ruta.puntos.length} puntos por los pasajes` : `¡Carrera! Récord: ${formatearTiempo(mejor)}`, 2.2);
+        this.audio.claxon();
+      });
+      return;
+    }
+    const ruta = this.carrera.ruta!;
+    const r = this.carrera.actualizar(pos.x, pos.z, dt, b.grafo);
+    if (r === 'punto') {
+      this.hud.avisar(`${this.carrera.indice}/${ruta.puntos.length}`, 0.9);
+      this.audio.golpe(3);
+    } else if (r === 'meta') {
+      const dinero = premio(this.carrera.tiempo, ruta.puntos.length);
+      const record = this.records.registrar(b.ficha.id, this.indiceCarrera, this.carrera.tiempo);
+      this.ganar(dinero);
+      this.contador.sumar('carreras');
+      this.hud.avisar(`¡Meta! ${formatearTiempo(this.carrera.tiempo)}${record ? ' · ¡RÉCORD!' : ''} · +${dinero} €`, 3);
+      this.audio.claxon();
+      b.circuito.mostrarRuta(null);
+      this.hud.ponerCarrera(null);
+      this.enfriamientoCarrera = 8;
+      return;
+    } else if (r === 'tiempo') {
+      this.hud.avisar('Se acabó el tiempo', 1.8);
+      b.circuito.mostrarRuta(null);
+      this.hud.ponerCarrera(null);
+      this.enfriamientoCarrera = 6;
+      return;
+    }
+    b.circuito.actualizar(dt, this.carrera.indice, pos.x, pos.z);
+    this.hud.ponerCarrera(`⏱ ${formatearTiempo(this.carrera.tiempo)} · ${this.carrera.indice}/${ruta.puntos.length}`);
   }
 
   /** Dinero que entra: al bolsillo y a la estadística de total ganado. */
@@ -552,7 +656,7 @@ export class Juego {
         const entrada = this.tiempoTrincao > 0 ? SIN_ENTRADA : this.controles;
         if (this.aPie) this.peaton.actualizar(entrada, paso);
         else if (this.coche) this.coche.actualizar(entrada, paso);
-        else this.scooter.actualizar(entrada, paso);
+        else { this.scooter.actualizar(entrada, paso); this.subirRampa(); }
         b.trafico.actualizar(this.aPie ? this.peaton.posicion : this.vehiculo.estado, paso);
         b.fisica.paso();
         b.trafico.despuesDelPaso();
@@ -607,6 +711,8 @@ export class Juego {
         this.hud.avisar(b.mecheros.cuantos === TOTAL_MECHEROS ? `¡Los 20 mecheros! Eres el rey de ${b.ficha.nombre.split(' ·')[0]}` : `Mechero ${b.mecheros.cuantos}/${TOTAL_MECHEROS}`, 1.6);
         this.audio.claxon();
       }
+      this.actualizarCarrera(jugadorPos, dt);
+      this.actualizarSaltos(dt);
       // Daño: humo por debajo de 30 y reventón a 0 (Wifly sale despedido y la moto ya no arranca).
       if (!this.aPie) {
         const v = this.vehiculo;

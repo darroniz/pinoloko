@@ -64,6 +64,13 @@ export class Hud {
     this.trincao.classList.toggle('visible', si);
   }
 
+  private carrera = document.getElementById('hud-carrera')!;
+
+  ponerCarrera(texto: string | null): void {
+    this.carrera.textContent = texto ?? '';
+    this.carrera.classList.toggle('visible', texto !== null);
+  }
+
   ponerRacha(n: number): void {
     this.racha.textContent = n >= 2 ? `×${n} lío` : '';
     this.racha.classList.toggle('visible', n >= 2);

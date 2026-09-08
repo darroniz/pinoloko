@@ -54,7 +54,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 
 ## 6. Freestyle completo
 - [x] "Recoge los 20 mecheros" (repartidos por pasajes, mercado y bares; se guardan).
-- [ ] Carreras por los pasajes y saltos con rampas.
+- [x] Carreras por los pasajes contra el reloj (dos por barrio, récords) y rampas para saltar (dinero por vuelo).
 - [x] Garaje de motos (las robadas se quedan; eliges con cuál sales) y estadísticas acumuladas.
 - [x] Menú (portada y ESC / ☰ en partida, con pausa), créditos con atribución a OpenStreetMap, nueva partida.
 - [x] Rótulos con el `name` real de bares y comercios (atlas de canvas, sobre la azotea del local).

@@ -12,6 +12,8 @@ export class Controles implements Entrada {
   eje = { x: 0, y: 0 };
   freno = false;
   accion = false;
+  /** Eje forzado por la sonda de verificación (null en el juego normal). */
+  forzado: { x: number; y: number } | null = null;
   reaparecer = false;
   claxon = false;
   private claxonTactil = false;
@@ -107,8 +109,8 @@ export class Controles implements Entrada {
     if (x && y) { x *= Math.SQRT1_2; y *= Math.SQRT1_2; }
     if (this.joystick.activo) { x = this.joystick.x; y = this.joystick.y; }
     else if (!x && !y) { x = this.ejeMando.x; y = this.ejeMando.y; }
-    this.eje.x = x;
-    this.eje.y = y;
+    this.eje.x = this.forzado ? this.forzado.x : x;
+    this.eje.y = this.forzado ? this.forzado.y : y;
     this.freno = t.has('Space') || t.has('ShiftLeft') || t.has('ShiftRight') || this.frenoTactil || this.frenoMando;
     this.accion = this.accionPulsada;
     this.accionPulsada = false;

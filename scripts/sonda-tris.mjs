@@ -16,7 +16,6 @@ await new Promise((r) => setTimeout(r, 2000));
 const stats = await p.evaluate(() => {
   const out = {};
   const tris = (o) => { const g = o.geometry; if (!g) return 0; const n = g.index ? g.index.count / 3 : g.getAttribute('position').count / 3; return o.isInstancedMesh ? n * o.count : o.isLineSegments ? 0 : n; };
-  const cam = window.__pv_escena.children.find((c) => c.isPerspectiveCamera);
   window.__pv_escena.traverse((o) => {
     if (!o.geometry) return;
     let top = o; while (top.parent && top.parent !== window.__pv_escena && top.parent.type === 'Group' && !top.parent.name) top = top.parent;

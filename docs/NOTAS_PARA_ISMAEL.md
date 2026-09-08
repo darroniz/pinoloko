@@ -23,7 +23,7 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       de la partida y garaje (motos que has robado, elegir con cuál sales). Push.
 - [x] **Bloque 4 (hecho a la 01:15)** — Rótulos con el `name` real de bares y comercios sobre
       las puertas, ventanas encendidas de noche, controles policiales. Push.
-- [ ] **Bloque 5 (03:45-04:25)** — Carreras por los pasajes contra el reloj (checkpoints)
+- [x] **Bloque 5 (hecho a la 01:40)** — Carreras por los pasajes contra el reloj (checkpoints)
       y rampas para saltar. Push.
 - [ ] **Cierre (04:25-04:45)** — roadmap, decisiones, notas, verificación final y push.
 

@@ -13,11 +13,14 @@ export interface Estadisticas {
   cochesRobados: number;
   reventones: number;
   rachaMaxima: number;
+  carreras: number;
+  saltos: number;
+  vueloMaximo: number;
 }
 
 export const ESTADISTICAS_VACIAS: Estadisticas = {
   segundos: 0, metros: 0, trastos: 0, atropellos: 0, dineroTotal: 0, trincados: 0,
-  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0,
+  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0, carreras: 0, saltos: 0, vueloMaximo: 0,
 };
 
 const CLAVE_STATS = 'pinoloko.estadisticas.v1';
@@ -82,6 +85,9 @@ export function resumen(e: Estadisticas): [string, string][] {
     ['Vehículos reventados', String(e.reventones)],
     ['Veces trincao', String(e.trincados)],
     ['Viajes en el 13', String(e.viajes13)],
+    ['Carreras terminadas', String(e.carreras)],
+    ['Saltos con rampa', String(e.saltos)],
+    ['Vuelo más largo', `${e.vueloMaximo.toFixed(1)} s`],
   ];
 }
 

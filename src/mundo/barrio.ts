@@ -11,6 +11,10 @@ import { Mecheros } from './mecheros';
 import { Paradas } from './paradas';
 import { Rotulos } from './rotulos';
 import { construirVentanas } from './ventanas';
+import { Circuito } from './circuito';
+import { Rampas } from './rampas';
+import { azar } from './geometria';
+import { generarRuta, type RutaCarrera } from '../carreras';
 import { Vecinos } from './peatones';
 import { Trafico } from './trafico';
 import { Trastos } from './trastos';
@@ -31,6 +35,10 @@ export class Barrio {
   readonly paradas: Paradas;
   readonly rotulos: Rotulos;
   readonly ventanas: THREE.Group;
+  readonly circuito: Circuito;
+  readonly rampas: Rampas;
+  /** Carreras del barrio: nodo de salida y su ruta fija. */
+  readonly carreras: { salida: number; ruta: RutaCarrera }[] = [];
   readonly scooters: Scooter[] = [];
   readonly coches: Coche[] = [];
   readonly arranque: { x: number; z: number; rumbo: number };
@@ -73,6 +81,20 @@ export class Barrio {
 
     this.aparcarScooters(ficha.poblacion.motos);
     this.aparcarCoches(ficha.poblacion.coches);
+
+    // Carreras: dos salidas por barrio (una cerca de la parada y otra lejos) con ruta fija.
+    const objetivos: [number, number][] = [[this.arranque.x + 40, this.arranque.z + 10], [this.arranque.x - 130, this.arranque.z - 90], [this.arranque.x + 120, this.arranque.z + 120]];
+    for (const [ox, oz] of objetivos) {
+      if (this.carreras.length >= 2) break;
+      const salida = this.grafo.masCercano(ox, oz, 'peatonal');
+      if (salida < 0 || this.carreras.some((c) => c.salida === salida)) continue;
+      const ruta = generarRuta(this.grafo, salida, 6, azar(1100 + this.carreras.length * 17 + ficha.id.length));
+      if (ruta) this.carreras.push({ salida, ruta });
+    }
+    this.circuito = new Circuito(this.grafo, this.carreras.map((c) => c.salida));
+    this.grupo.add(this.circuito.grupo);
+    this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
+    this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);
   }
 

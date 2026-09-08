@@ -14,6 +14,12 @@ juego.cargar().then(() => {
   console.error(e);
 });
 
+// Sin conexión también se juega: el service worker cachea la build entera. Solo en producción
+// (https) para que la verificación local y el servidor de desarrollo no se queden con cachés.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || new URLSearchParams(location.search).has('sw'))) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => undefined); });
+}
+
 boton.addEventListener('click', () => {
   portada.classList.add('oculta');
   juego.empezar();

@@ -27,7 +27,7 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       y rampas para saltar. Push.
 - [x] **Bloque 6 (hecho a la 01:35)** — Roturas de verdad: macetas en cascos, cajas del mercado
       con la fruta por el aire, sillas y mesas de terraza que saltan en piezas. Push.
-- [ ] **Bloque 7 (02:00-02:40)** — Service worker: jugar sin conexión, actualización limpia
+- [x] **Bloque 7 (hecho a la 01:32)** — Service worker: jugar sin conexión, actualización limpia
       al publicar. Push.
 - [ ] **Bloque 8 (02:40-03:30)** — El 13 circulando de verdad por las calles rodadas (y
       robable), vecinos sentados en las terrazas. Push.

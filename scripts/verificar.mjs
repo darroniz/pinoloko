@@ -73,6 +73,15 @@ try {
   if (frames < 120) { ok = false; console.log('FALLO: pocos frames'); }
   if (medianaUpdate < 0 || medianaUpdate > 8) { ok = false; console.log('FALLO: update lento'); }
   await pagina.screenshot({ path: 'logs/captura.png' });
+  // Service worker: existe, lista los ficheros de la build y todos responden.
+  const sw = await (await fetch(`${url}sw.js`)).text();
+  const lista = JSON.parse(sw.match(/const FICHEROS = (\[.*?\]);/)?.[1] ?? '[]');
+  const enSw = (f) => lista.includes(f);
+  const assets = lista.filter((f) => f.startsWith('/assets/'));
+  let faltan = 0;
+  for (const f of lista) { const r = await fetch(url + f.slice(1)); if (r.status !== 200) { faltan++; console.log('FALLO: en sw.js pero no sirve', f); } }
+  console.log(`sw.js: ${lista.length} ficheros (${assets.length} assets), index ${enSw('/index.html')}, niveles ${enSw('/barrios/pino-montano/nivel.json') && enSw('/barrios/alameda/nivel.json')}`);
+  if (!enSw('/index.html') || assets.length < 3 || faltan) { ok = false; console.log('FALLO: sw.js incompleto'); }
   // El 13: viaje al otro barrio y vuelta, sin errores y con el bucle vivo en el barrio nuevo.
   const salida = await pagina.evaluate(() => window.__pv_prueba.barrio());
   const t0 = Date.now();

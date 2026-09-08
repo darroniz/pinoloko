@@ -63,4 +63,4 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] Rendimiento en móvil de gama media.
 - [x] Sonido sintetizado (motor de dos tiempos y de coche, derrape, golpes, sirena).
 - [x] Manifest PWA, metadatos Open Graph y portada con JUGAR.
-- [ ] Service worker para jugar sin conexión.
+- [x] Service worker generado en el build (caché por versión, página red-primero, assets caché-primero).

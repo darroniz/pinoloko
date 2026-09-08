@@ -95,6 +95,11 @@ export class Coche {
   readonly estado: EstadoCoche = { x: 0, z: 0, rumbo: 0, velocidad: 0, velocidadLateral: 0, derrapando: false, golpe: 0 };
   readonly color: string;
   conducida = false;
+  /** 100 = nueva; por debajo de 30 echa humo; a 0 revienta y ya no arranca. */
+  salud = 100;
+  get rota(): boolean {
+    return this.salud <= 0;
+  }
   private rumbo = 0;
   private giroActual = 0;
   private velocidadPrevia = new THREE.Vector3();
@@ -172,6 +177,7 @@ export class Coche {
       else vf = 0;
       acelerador = 0;
     }
+    if (this.rota) acelerador = 0;
     if (acelerador > 0) {
       vf += a.aceleracion * acelerador * dt;
       if (vf > a.velocidadMaxima) vf = a.velocidadMaxima;
@@ -196,6 +202,7 @@ export class Coche {
     const v = this.cuerpo.linvel();
     const golpe = Math.hypot(v.x - this.velocidadPrevia.x, v.z - this.velocidadPrevia.z);
     this.estado.golpe = golpe > 5 ? golpe : 0;
+    if (golpe > 7 && this.conducida) this.salud = Math.max(0, this.salud - (golpe - 6) * 0.9);
     this.velocidadPrevia.set(v.x, v.y, v.z);
     this.sincronizar();
   }

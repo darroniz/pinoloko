@@ -85,6 +85,10 @@ export class Juego {
   private cielo!: Cielo;
   private mecheros!: Mecheros;
   private faros = new THREE.Group();
+  private colorHumo = new THREE.Color('#5a5a5a');
+  private colorFuego = new THREE.Color('#ff7a1a');
+  private tiempoClaxon = 0;
+  private reventado = new Set<Scooter | Coche>();
   private racha = 0;
   private tiempoRacha = 0;
   private colorChispa = new THREE.Color('#ffd166');
@@ -116,6 +120,7 @@ export class Juego {
       document.getElementById('joystick-bola')!,
       document.getElementById('boton-freno')!,
       document.getElementById('boton-accion')!,
+      document.getElementById('boton-claxon')!,
     );
     window.addEventListener('resize', () => this.redimensionar());
     window.__pv_frames = 0;
@@ -148,7 +153,7 @@ export class Juego {
     this.escena.add(ambiente);
     this.sol = new THREE.DirectionalLight('#fff3dc', 1.6);
     this.sol.castShadow = true;
-    this.sol.shadow.mapSize.set(this.calidad === 'alta' ? 2048 : 512, this.calidad === 'alta' ? 2048 : 512);
+    this.sol.shadow.mapSize.set(this.calidad === 'alta' ? 1024 : 512, this.calidad === 'alta' ? 1024 : 512);
     const s = 95;
     this.sol.shadow.camera.left = -s;
     this.sol.shadow.camera.right = s;
@@ -221,7 +226,7 @@ export class Juego {
         return this.subirse() && this.coche !== null;
       },
     };
-    window.__pv_info = () => ({ calidad: this.calidad, timestep: this.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: this.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
+    window.__pv_info = () => ({ calidad: this.calidad, timestep: this.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: this.trastos.lista.length, activos: this.trastos.activos, despiertos: this.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: this.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: this.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: this.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: this.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: this.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length });
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
@@ -313,6 +318,8 @@ export class Juego {
       this.hud.avisar(['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
       this.busqueda.fechoria('robo_coche');
     }
+    if (mejorCoche && mejorCoche.rota && mejorDc < mejorD) { this.hud.avisar('Ese coche está para el desguace', 1.4); return false; }
+    if (mejorMoto && mejorMoto.rota && (!mejorCoche || mejorD < mejorDc)) { this.hud.avisar('Esa moto ha petado', 1.4); return false; }
     if (mejorCoche && mejorDc < mejorD) {
       this.coche = mejorCoche;
       this.coche.montar(true);
@@ -379,6 +386,8 @@ export class Juego {
     // Te sueltan en el Mercado, con tu moto de siempre.
     if (this.coche) { this.coche.montar(false); this.coche = null; }
     if (this.aPie) { this.peaton.esconder(); this.aPie = false; }
+    this.scooter.salud = 100;
+    this.reventado.delete(this.scooter);
     this.scooter.teletransportar(this.arranque.x, this.arranque.z, this.arranque.rumbo);
     this.scooter.montar(true);
     this.botonAccion.textContent = 'BAJAR';
@@ -485,6 +494,30 @@ export class Juego {
         this.hud.avisar(this.mecheros.cuantos === TOTAL_MECHEROS ? '¡Los 20 mecheros! Eres el rey de Pino Montano' : `Mechero ${this.mecheros.cuantos}/${TOTAL_MECHEROS}`, 1.6);
         this.audio.claxon();
       }
+      // Daño: humo por debajo de 30 y reventón a 0 (Wifly sale despedido y la moto ya no arranca).
+      if (!this.aPie) {
+        const v = this.vehiculo;
+        if (v.salud < 30 && Math.random() < (v.rota ? 0.9 : 0.4)) {
+          const atras = v.direccion.multiplyScalar(this.coche ? 1.5 : 0.5);
+          this.particulas.emitir(v.estado.x + atras.x, 0.8, v.estado.z + atras.z, 1, v.rota ? this.colorFuego : this.colorHumo, 1.2);
+        }
+        if (v.rota && !this.reventado.has(v)) {
+          this.reventado.add(v);
+          this.particulas.emitir(v.estado.x, 1, v.estado.z, 60, this.colorFuego, 9);
+          this.camara.sacudir(1.2);
+          this.audio.golpe(20);
+          this.hud.avisar(this.coche ? '¡El coche ha reventado!' : `¡La ${v instanceof Scooter ? v.modelo.nombre : 'moto'} ha petado!`, 2.2);
+          this.busqueda.fechoria('trasto', 4);
+          this.bajarse();
+        }
+      }
+      // Claxon: asusta a los vecinos de alrededor.
+      this.tiempoClaxon -= dt;
+      if (this.controles.claxon && this.tiempoClaxon <= 0 && !this.aPie) {
+        this.tiempoClaxon = 0.6;
+        this.audio.claxon();
+        this.vecinos.asustar(jugadorPos.x, jugadorPos.z, 14);
+      }
       // Faros de noche, pegados al vehículo que lleves.
       this.faros.visible = this.cielo.esDeNoche && !this.aPie;
       if (this.faros.visible) {
@@ -525,6 +558,7 @@ export class Juego {
 
     const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
     const v = this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel();
+    this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? 72 : 66;
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
     this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);
     if (this.jugando) this.cielo.actualizar(dt);

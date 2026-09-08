@@ -50,7 +50,7 @@ export class Hud {
   private mecheros = document.getElementById('hud-mecheros')!;
 
   ponerMecheros(n: number, total: number): void {
-    this.mecheros.textContent = `🔥 ${n}/${total}`;
+    this.mecheros.textContent = `Mecheros ${n}/${total}`;
   }
 
   ponerEstrellas(n: number): void {

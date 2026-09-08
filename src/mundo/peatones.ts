@@ -156,6 +156,14 @@ export class Vecinos {
     }
   }
 
+  /** Un bocinazo: los que estén a menos de `radio` salen corriendo. */
+  asustar(x: number, z: number, radio: number): void {
+    for (const v of this.lista) {
+      if (v.estado !== 'pasear') continue;
+      if ((v.x - x) ** 2 + (v.z - z) ** 2 < radio * radio) { v.estado = 'huir'; v.tiempo = 1.5 + this.rnd() * 1.5; }
+    }
+  }
+
   /** Mueve a todos y devuelve los eventos con el jugador. */
   actualizar(jugador: { x: number; z: number; rapidez: number }, dt: number): { atropellos: number; insulto: string | null } {
     let atropellos = 0;

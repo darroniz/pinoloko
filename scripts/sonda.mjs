@@ -54,7 +54,7 @@ for (const tecla of ['w', 'd', 's', 'a']) {
   }
   await p.keyboard.up(tecla);
 }
-console.log('colisiones moto comprobadas');
+console.log('colisiones moto comprobadas', JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { salud: i.salud, reventados: i.reventados, aPie: i.aPie }; })));
 console.log('robar coche', await p.evaluate(() => window.__pv_prueba.robarCoche()));
 for (const tecla of ['w', 'd', 's', 'a']) {
   await p.keyboard.down(tecla);
@@ -65,7 +65,7 @@ for (const tecla of ['w', 'd', 's', 'a']) {
   }
   await p.keyboard.up(tecla);
 }
-console.log('colisiones coche comprobadas');
+console.log('colisiones coche comprobadas', JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { salud: i.salud, reventados: i.reventados, aPie: i.aPie }; })));
 await p.keyboard.down('w');
 await new Promise((r) => setTimeout(r, 2500));
 await p.keyboard.down('a');

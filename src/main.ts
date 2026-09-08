@@ -17,4 +17,8 @@ juego.cargar().then(() => {
 boton.addEventListener('click', () => {
   portada.classList.add('oculta');
   juego.empezar();
+  // En móvil, a pantalla completa: sin barra del navegador hay más barrio y menos gestos accidentales.
+  if (window.matchMedia('(pointer: coarse)').matches && document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => undefined);
+  }
 });

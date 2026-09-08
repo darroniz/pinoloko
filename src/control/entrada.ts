@@ -5,6 +5,7 @@ export interface Entrada {
   freno: boolean;
   accion: boolean;
   reaparecer?: boolean;
+  claxon?: boolean;
 }
 
 export class Controles implements Entrada {
@@ -12,6 +13,8 @@ export class Controles implements Entrada {
   freno = false;
   accion = false;
   reaparecer = false;
+  claxon = false;
+  private claxonTactil = false;
   readonly tactil: boolean;
   private reaparecerPulsado = false;
   private teclas = new Set<string>();
@@ -20,8 +23,9 @@ export class Controles implements Entrada {
   private frenoMando = false;
   private ejeMando = { x: 0, y: 0 };
   private accionPulsada = false;
+  private claxonMando = false;
 
-  constructor(zonaJoystick: HTMLElement, bola: HTMLElement, botonFreno: HTMLElement, botonAccion: HTMLElement) {
+  constructor(zonaJoystick: HTMLElement, bola: HTMLElement, botonFreno: HTMLElement, botonAccion: HTMLElement, botonClaxon: HTMLElement) {
     this.tactil = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
     if (this.tactil) document.body.classList.add('tactil');
 
@@ -70,6 +74,10 @@ export class Controles implements Entrada {
     botonFreno.addEventListener('contextmenu', (e) => e.preventDefault());
     botonAccion.addEventListener('pointerdown', (e) => { e.preventDefault(); this.accionPulsada = true; });
     botonAccion.addEventListener('contextmenu', (e) => e.preventDefault());
+    botonClaxon.addEventListener('pointerdown', (e) => { e.preventDefault(); this.claxonTactil = true; });
+    botonClaxon.addEventListener('pointerup', () => { this.claxonTactil = false; });
+    botonClaxon.addEventListener('pointercancel', () => { this.claxonTactil = false; });
+    botonClaxon.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
   private leerMando(): void {
@@ -77,6 +85,7 @@ export class Controles implements Entrada {
     this.ejeMando.x = 0;
     this.ejeMando.y = 0;
     this.frenoMando = false;
+    this.claxonMando = false;
     for (const m of mandos) {
       if (!m) continue;
       const x = m.axes[0] ?? 0, y = -(m.axes[1] ?? 0);
@@ -85,6 +94,7 @@ export class Controles implements Entrada {
       if (dpad.x || dpad.y) { this.ejeMando.x = dpad.x; this.ejeMando.y = dpad.y; }
       if (m.buttons[0]?.pressed || m.buttons[6]?.pressed || m.buttons[1]?.pressed) this.frenoMando = true;
       if (m.buttons[2]?.pressed) this.accionPulsada = true;
+      if (m.buttons[3]?.pressed) this.claxonMando = true;
     }
   }
 
@@ -102,6 +112,7 @@ export class Controles implements Entrada {
     this.freno = t.has('Space') || t.has('ShiftLeft') || t.has('ShiftRight') || this.frenoTactil || this.frenoMando;
     this.accion = this.accionPulsada;
     this.accionPulsada = false;
+    this.claxon = t.has('KeyH') || this.claxonTactil || this.claxonMando;
     this.reaparecer = this.reaparecerPulsado;
     this.reaparecerPulsado = false;
   }

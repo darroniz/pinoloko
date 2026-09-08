@@ -10,6 +10,8 @@ export class CamaraAlta {
   private distancia = 0;
   readonly anguloAltura = THREE.MathUtils.degToRad(58);
   readonly distanciaBase = 66;
+  /** Distancia base según lo que lleves: a pie más cerca, en coche más lejos. */
+  distanciaObjetivo = 66;
   private readonly retrocesoMaximo = 16;
 
   constructor(aspecto: number) {
@@ -40,7 +42,7 @@ export class CamaraAlta {
     if (rapidez > 0.5) deseado.addScaledVector(velocidad.clone().setY(0).normalize(), adelanto);
     const k = 1 - Math.exp(-dt * 4.5);
     this.objetivo.lerp(deseado, k);
-    const distanciaDeseada = this.distanciaBase + Math.min(1, rapidez / 16) * this.retrocesoMaximo;
+    const distanciaDeseada = this.distanciaObjetivo + Math.min(1, rapidez / 16) * this.retrocesoMaximo;
     this.distancia += (distanciaDeseada - this.distancia) * (1 - Math.exp(-dt * 2));
     this.sacudida = Math.max(0, this.sacudida - dt * 3);
     this.aplicar();

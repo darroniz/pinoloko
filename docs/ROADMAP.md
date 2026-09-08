@@ -36,7 +36,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 ## 3. Cafre
 - [x] Objetos derribables: conos, macetas, contenedores, papeleras, vallas, terrazas de bar, cajas del mercado.
 - [ ] Objetos que se rompen de verdad (macetas en trozos, cristales) en vez de solo volcar.
-- [ ] Daño y destrucción de vehículos.
+- [x] Daño y destrucción de vehículos (humo por debajo de 30, reventón a 0).
 - [x] Dinero por destrozos y racha de "lío armado" con multiplicador.
 
 ## 4. Policía local

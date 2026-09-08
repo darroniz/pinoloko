@@ -14,7 +14,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #b8d8c8; fon
 #boton-freno:active { transform: translateY(3px); box-shadow: 0 2px 0 #a33726; }
 #boton-accion { position: fixed; right: 34px; bottom: max(150px, calc(env(safe-area-inset-bottom) + 110px)); width: 72px; height: 72px; border-radius: 50%; border: 0; background: #2b2320; color: #fff; font-weight: 800; font-size: 12px; letter-spacing: 1px; box-shadow: 0 4px 0 #0f0a08; display: none; touch-action: none; user-select: none; }
 #boton-accion:active { transform: translateY(3px); box-shadow: 0 1px 0 #0f0a08; }
-body.tactil #joystick, body.tactil #boton-freno, body.tactil #boton-accion { display: block; }
+#boton-claxon { position: fixed; right: 130px; bottom: max(150px, calc(env(safe-area-inset-bottom) + 110px)); width: 60px; height: 60px; border-radius: 50%; border: 0; background: #f2c14e; color: #2b2320; font-weight: 800; font-size: 12px; box-shadow: 0 4px 0 #a8842a; display: none; touch-action: none; user-select: none; }
+#boton-claxon:active { transform: translateY(3px); box-shadow: 0 1px 0 #a8842a; }
+body.tactil #joystick, body.tactil #boton-freno, body.tactil #boton-accion, body.tactil #boton-claxon { display: block; }
 #portada { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(#ffe9c9, #f6c58f); text-align: center; padding: 24px; z-index: 10; }
 #portada img { width: min(72vw, 360px); image-rendering: auto; }
 #portada p { margin: 0; max-width: 420px; font-size: 17px; }

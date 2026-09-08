@@ -85,6 +85,11 @@ export class Scooter {
   private readonly piloto: THREE.Group;
   readonly modelo: ModeloScooter;
   conducida = false;
+  /** 100 = nueva; por debajo de 30 echa humo; a 0 revienta y ya no arranca. */
+  salud = 100;
+  get rota(): boolean {
+    return this.salud <= 0;
+  }
 
   constructor(fisica: MundoFisico, x: number, z: number, rumbo: number, modelo: ModeloScooter = MODELOS[0]!) {
     this.modelo = modelo;
@@ -219,6 +224,7 @@ export class Scooter {
       else vf = 0;
       acelerador = 0;
     }
+    if (this.rota) acelerador = 0;
     if (acelerador > 0) {
       vf += a.aceleracion * acelerador * dt;
       if (vf > a.velocidadMaxima) vf = a.velocidadMaxima;
@@ -255,6 +261,7 @@ export class Scooter {
     const dvx = v.x - this.velocidadPrevia.x, dvz = v.z - this.velocidadPrevia.z;
     const golpe = Math.hypot(dvx, dvz);
     this.estado.golpe = golpe > 5 ? golpe : 0;
+    if (golpe > 7 && this.conducida) this.salud = Math.max(0, this.salud - (golpe - 6) * 0.9);
     this.velocidadPrevia.set(v.x, v.y, v.z);
     this.sincronizar();
   }

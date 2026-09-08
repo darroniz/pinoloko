@@ -347,3 +347,25 @@ con la etiquetada (era el motivo de que saliesen 0 pasos).
 **Trincar a 5,5 m entre centros.** Con 3,2 m nunca pasaba: dos coches morro con culo ya distan
 3,9 m. Y la patrulla se para al llegar, porque si sigue empujando, el jugador no deja de moverse
 y el contador de "parado" no arranca.
+
+## 2026-09-08 — Daño de vehículos sin barra de vida
+
+Cada vehículo tiene una salud de 100 que baja con los golpes fuertes (solo cuando lo conduces:
+que el tráfico te empuje la moto aparcada no la rompe). Por debajo de 30 echa humo; a 0
+revienta: fogonazo, sacudida, Wifly se baja solo y esa moto ya no arranca (y no te puedes
+subir a una reventada). No hay barra de vida en el HUD a propósito: el humo es la barra. Volver
+al Mercado (trincado o tecla R) te devuelve la moto nueva.
+
+**Claxon (H, botón PIII, Y del mando):** suena y asusta a los vecinos a 14 m. Es lo que hace
+que cruzar un pasaje lleno de gente a bocinazos tenga gracia.
+
+## 2026-09-08 — Pulido para el móvil de la primera noche
+
+- **Pantalla completa al pulsar JUGAR** en pantallas táctiles: sin la barra del navegador cabe
+  más barrio y el joystick no dispara gestos del sistema.
+- **Mapa de sombras a 1024** en calidad alta (era 2048): en un móvil de gama media es la mitad
+  de relleno por frame y desde 66 m no se nota.
+- **Cámara según lo que lleves:** 50 m a pie, 66 en moto, 72 en coche, más el retroceso por
+  velocidad. A pie se ve a Wifly; en coche se ve la calle.
+- **Daño más blando:** un golpe a fondo quita unos 12 puntos en vez de 25. Reventar la moto
+  tiene que costar una mala tarde, no cuatro esquinas.

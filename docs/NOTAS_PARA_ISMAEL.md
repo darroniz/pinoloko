@@ -29,4 +29,7 @@ Objetivo: **hito 1 entero** (Moverse) publicado y jugable en el móvil.
       paso de física variable.
 - [x] **Bloque 7 (hecho a las 02:10)** — Los 20 mecheros, faros de noche, pasos de cebra,
       trincado arreglado con patrullas dinámicas.
-- [ ] **Bloque 8** — Daño y destrucción de vehículos, claxon táctil, créditos; cierre y notas.
+- [x] **Bloque 8 (hecho a las 02:15)** — Daño y reventón de vehículos, claxon que asusta.
+- [x] **Bloque 9 (hecho a las 02:20)** — Pantalla completa en móvil, sombras más baratas,
+      cámara según vehículo, daño más blando.
+- [ ] **Cierre** — notas finales, roadmap, verificación y push.

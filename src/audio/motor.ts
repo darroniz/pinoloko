@@ -124,6 +124,29 @@ export class AudioJuego {
     osc.stop(t + 0.3);
   }
 
+  /** Pitido corto (puntos de control, mecheros, meta): seno limpio con caída rápida. */
+  pitido(frecuencia = 880, duracion = 0.12, volumen = 0.16): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = frecuencia;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(volumen, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + duracion);
+    osc.connect(g).connect(this.maestro);
+    osc.start(t);
+    osc.stop(t + duracion + 0.02);
+  }
+
+  /** Fanfarria corta de tres notas (meta, los 20 mecheros). */
+  fanfarria(): void {
+    if (!this.ctx) return;
+    const notas = [660, 880, 1320];
+    notas.forEach((f, i) => window.setTimeout(() => this.pitido(f, 0.22, 0.18), i * 110));
+  }
+
   claxon(): void {
     if (!this.ctx || !this.maestro) return;
     const ctx = this.ctx;

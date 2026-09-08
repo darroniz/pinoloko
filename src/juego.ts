@@ -511,6 +511,7 @@ export class Juego {
         this.contador.sumar('saltos');
         this.contador.maximo('vueloMaximo', this.tiempoAire);
         this.hud.avisar(this.tiempoAire > 0.8 ? `¡Vuelo de ${this.tiempoAire.toFixed(1)} s! +${euros} €` : `¡Salto! +${euros} €`, 1.6);
+        this.audio.pitido(this.tiempoAire > 0.8 ? 1100 : 800, 0.18, 0.18);
         this.particulas.emitir(this.vehiculo.estado.x, 0.3, this.vehiculo.estado.z, 10, this.colorPolvo, 3);
       }
       this.tiempoAire = 0;
@@ -541,7 +542,7 @@ export class Juego {
         b.circuito.mostrarRuta(c.ruta);
         const mejor = this.records.mejor(b.ficha.id, i);
         this.hud.avisar(mejor === null ? `¡Carrera! ${c.ruta.puntos.length} puntos por los pasajes` : `¡Carrera! Récord: ${formatearTiempo(mejor)}`, 2.2);
-        this.audio.claxon();
+        this.audio.pitido(660, 0.25, 0.2);
       });
       return;
     }
@@ -549,14 +550,14 @@ export class Juego {
     const r = this.carrera.actualizar(pos.x, pos.z, dt, b.grafo);
     if (r === 'punto') {
       this.hud.avisar(`${this.carrera.indice}/${ruta.puntos.length}`, 0.9);
-      this.audio.golpe(3);
+      this.audio.pitido(990, 0.14, 0.2);
     } else if (r === 'meta') {
       const dinero = premio(this.carrera.tiempo, ruta.puntos.length);
       const record = this.records.registrar(b.ficha.id, this.indiceCarrera, this.carrera.tiempo);
       this.ganar(dinero);
       this.contador.sumar('carreras');
       this.hud.avisar(`¡Meta! ${formatearTiempo(this.carrera.tiempo)}${record ? ' · ¡RÉCORD!' : ''} · +${dinero} €`, 3);
-      this.audio.claxon();
+      this.audio.fanfarria();
       b.circuito.mostrarRuta(null);
       this.hud.ponerCarrera(null);
       this.enfriamientoCarrera = 8;
@@ -724,7 +725,7 @@ export class Juego {
         this.ganar(10);
         this.hud.ponerMecheros(b.mecheros.cuantos, TOTAL_MECHEROS);
         this.hud.avisar(b.mecheros.cuantos === TOTAL_MECHEROS ? `¡Los 20 mecheros! Eres el rey de ${b.ficha.nombre.split(' ·')[0]}` : `Mechero ${b.mecheros.cuantos}/${TOTAL_MECHEROS}`, 1.6);
-        this.audio.claxon();
+        if (b.mecheros.cuantos === TOTAL_MECHEROS) this.audio.fanfarria(); else this.audio.pitido(1320, 0.15);
       }
       this.actualizarCarrera(jugadorPos, dt);
       this.actualizarSaltos(dt);

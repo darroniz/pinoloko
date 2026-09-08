@@ -3,7 +3,7 @@
 import type { ModeloScooter } from '../fisica/scooter';
 import { Contador, Garaje, resumen } from '../estadisticas';
 
-export type Pestana = 'garaje' | 'estadisticas' | 'creditos';
+export type Pestana = 'garaje' | 'estadisticas' | 'ayuda' | 'creditos';
 
 export interface OpcionesMenu {
   modelos: ModeloScooter[];
@@ -13,6 +13,18 @@ export interface OpcionesMenu {
   alNuevaPartida: () => void;
   alCerrar: () => void;
 }
+
+const AYUDA = `
+<div class="fila"><span>Moverse</span><strong>WASD / flechas · joystick</strong></div>
+<div class="fila"><span>Frenar y derrapar</span><strong>ESPACIO · FRENO</strong></div>
+<div class="fila"><span>Subir, bajar, coger el 13</span><strong>E · SUBIR / BAJAR / EL 13</strong></div>
+<div class="fila"><span>Claxon (asusta a la gente)</span><strong>H · PIII</strong></div>
+<div class="fila"><span>Volver a la parada</span><strong>R</strong></div>
+<div class="fila"><span>Menú y pausa</span><strong>ESC · ☰</strong></div>
+<p class="peque" style="margin-top:10px">Roba motos aparcadas y coches en marcha (¡y el 13!). Derriba conos, macetas, terrazas y cajas del
+mercado para ganar dinero y armar lío. Las estrellas son la Policía Local: los coches patrulla no entran en los
+pasajes, las motos sí. Pasa en moto por una pancarta a cuadros para correr contra el reloj. Las rampas de los
+pasajes son para volar. Busca los 20 mecheros de cada barrio. A pie y en una parada, el 13 te lleva al otro barrio.</p>`;
 
 const CREDITOS = `
 <p><strong>Pinoloko</strong> es un juego personal de Ismael Darroniz, hecho de noche por una
@@ -45,7 +57,7 @@ export class Menu {
     document.body.appendChild(this.panel);
     this.cuerpo = this.panel.querySelector('.cuerpo')!;
     this.pestanas = this.panel.querySelector('.pestanas')!;
-    for (const [id, texto] of [['garaje', 'GARAJE'], ['estadisticas', 'ESTADÍSTICAS'], ['creditos', 'CRÉDITOS']] as const) {
+    for (const [id, texto] of [['garaje', 'GARAJE'], ['estadisticas', 'ESTADÍSTICAS'], ['ayuda', 'CÓMO SE JUEGA'], ['creditos', 'CRÉDITOS']] as const) {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = texto;
@@ -83,6 +95,7 @@ export class Menu {
     for (const b of this.pestanas.children) b.classList.toggle('activa', (b as HTMLElement).dataset['pestana'] === pestana);
     if (pestana === 'garaje') this.cuerpo.innerHTML = this.htmlGaraje();
     else if (pestana === 'estadisticas') this.cuerpo.innerHTML = this.htmlEstadisticas();
+    else if (pestana === 'ayuda') this.cuerpo.innerHTML = AYUDA;
     else this.cuerpo.innerHTML = CREDITOS;
   }
 

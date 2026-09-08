@@ -9,8 +9,12 @@ import { RAPIER as R } from '../fisica/mundo';
 import { ALTO, ANCHO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaCoche } from '../fisica/coche';
 import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
+import { geometriaBus } from '../cinematica';
+
+export type TipoTrafico = 'coche' | 'bus';
 
 export interface CocheTrafico {
+  tipo: TipoTrafico;
   cuerpo: RAPIER.RigidBody;
   malla: THREE.Mesh;
   color: string;
@@ -24,13 +28,20 @@ export interface CocheTrafico {
   parado: number;
   /** Con cuerpo físico solo cerca del jugador; lejos, se mueve sobre el carril sin simular. */
   activo: boolean;
+  /** Solo el bus: segundos que le quedan parado en la parada, y enfriamiento hasta la siguiente. */
+  enParada: number;
+  entreParadas: number;
 }
+
+/** Caja de colisión y escala del bus del 13 (el coche usa las constantes de coche.ts). */
+export const BUS_LARGO = 10.5, BUS_ANCHO = 2.5, BUS_ESCALA = 0.92;
 
 const RADIO_ACTIVO = 120;
 
 const CARRIL = 1.7;
 const VELOCIDAD_CRUCERO = 8;
 const VELOCIDAD_CRUCE = 3.5;
+const VELOCIDAD_BUS = 6.5;
 
 export class Trafico {
   readonly grupo = new THREE.Group();
@@ -39,29 +50,30 @@ export class Trafico {
   private q = new THREE.Quaternion();
   private eje = new THREE.Vector3(0, 1, 0);
 
-  constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number) {
+  constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number, buses = 0, private readonly paradas: { x: number; z: number }[] = []) {
     const candidatos: number[] = [];
     for (let i = 0; i < grafo.nodos.length; i++) if (grafo.vecinos(i, 'rodada').length > 0) candidatos.push(i);
-    for (let i = 0; i < cuantos && candidatos.length; i++) {
+    for (let i = 0; i < cuantos + buses && candidatos.length; i++) {
       const origen = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
       const destino = grafo.siguienteAlAzar(origen, -1, 'rodada', this.rnd);
       if (destino === origen) continue;
-      this.crear(origen, destino, this.rnd() * 0.8);
+      this.crear(origen, destino, this.rnd() * 0.8, i < buses ? 'bus' : 'coche');
     }
   }
 
-  private crear(origen: number, destino: number, t: number): void {
-    const color = COLORES_COCHE[Math.floor(this.rnd() * COLORES_COCHE.length)]!;
+  private crear(origen: number, destino: number, t: number, tipo: TipoTrafico): void {
+    const color = tipo === 'bus' ? '#f4f4f4' : COLORES_COCHE[Math.floor(this.rnd() * COLORES_COCHE.length)]!;
     const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.dynamic().lockRotations().setLinearDamping(2));
+    const [ancho, largo] = tipo === 'bus' ? [BUS_ANCHO, BUS_LARGO] : [ANCHO, LARGO];
     this.fisica.world.createCollider(
-      R.ColliderDesc.cuboid(ANCHO / 2, ALTO / 2, LARGO / 2).setDensity(6).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
+      R.ColliderDesc.cuboid(ancho / 2, ALTO / 2, largo / 2).setDensity(tipo === 'bus' ? 9 : 6).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
       cuerpo,
     );
-    const malla = new THREE.Mesh(geometriaCoche(color), MATERIAL_COCHE);
-    malla.scale.setScalar(1.35);
+    const malla = new THREE.Mesh(tipo === 'bus' ? geometriaBus() : geometriaCoche(color), MATERIAL_COCHE);
+    malla.scale.setScalar(tipo === 'bus' ? BUS_ESCALA : 1.35);
     malla.castShadow = true;
     this.grupo.add(malla);
-    const c: CocheTrafico = { cuerpo, malla, color, origen, destino, t, velocidad: VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, activo: true };
+    const c: CocheTrafico = { tipo, cuerpo, malla, color, origen, destino, t, velocidad: tipo === 'bus' ? VELOCIDAD_BUS : VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, activo: true, enParada: 0, entreParadas: 5 };
     this.lista.push(c);
     this.colocar(c);
   }
@@ -74,7 +86,8 @@ export class Trafico {
     const l = Math.hypot(dx, dz) || 1;
     const ux = dx / l, uz = dz / l;
     const rx = -uz, rz = ux; // derecha respecto a la marcha
-    return { x: ax + dx * t + rx * CARRIL, z: az + dz * t + rz * CARRIL, rumbo: Math.atan2(ux, -uz) };
+    const carril = c.tipo === 'bus' ? CARRIL + 0.4 : CARRIL;
+    return { x: ax + dx * t + rx * carril, z: az + dz * t + rz * carril, rumbo: Math.atan2(ux, -uz) };
   }
 
   /** Coloca el coche de golpe (al nacer o al cambiar de arista). */
@@ -155,7 +168,14 @@ export class Trafico {
       const fx = Math.sin(c.rumbo), fz = -Math.cos(c.rumbo);
 
       // ¿Algo delante? El jugador o el coche de delante en un cono de 9 m.
-      let objetivo = c.t > 0.8 || c.t < 0.12 ? VELOCIDAD_CRUCE : VELOCIDAD_CRUCERO;
+      const crucero = c.tipo === 'bus' ? VELOCIDAD_BUS : VELOCIDAD_CRUCERO;
+      let objetivo = c.t > 0.8 || c.t < 0.12 ? VELOCIDAD_CRUCE : crucero;
+      // El bus para unos segundos en cada parada que pilla a mano.
+      if (c.tipo === 'bus') {
+        c.entreParadas -= dt;
+        if (c.enParada > 0) { c.enParada -= dt; objetivo = 0; }
+        else if (c.entreParadas <= 0 && this.paradas.some((p) => (p.x - c.x) ** 2 + (p.z - c.z) ** 2 < 100)) { c.enParada = 3; c.entreParadas = 20; }
+      }
       const bloqueado = (px: number, pz: number, radio: number): boolean => {
         const dx = px - c.x, dz = pz - c.z;
         const adelante = dx * fx + dz * fz;
@@ -164,7 +184,7 @@ export class Trafico {
       };
       if (bloqueado(jugador.x, jugador.z, 8)) objetivo = 0;
       for (const o of this.lista) if (o !== c && bloqueado(o.x, o.z, 9)) { objetivo = 0; break; }
-      if (objetivo === 0) c.parado += dt; else c.parado = 0;
+      if (objetivo === 0 && c.enParada <= 0) c.parado += dt; else c.parado = 0;
       // Si lleva mucho parado (atasco con otro coche), arranca despacio para deshacerlo.
       if (c.parado > 4) objetivo = 2;
 

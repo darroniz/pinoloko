@@ -29,7 +29,7 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       con la fruta por el aire, sillas y mesas de terraza que saltan en piezas. Push.
 - [x] **Bloque 7 (hecho a la 01:32)** — Service worker: jugar sin conexión, actualización limpia
       al publicar. Push.
-- [ ] **Bloque 8 (02:40-03:30)** — El 13 circulando de verdad por las calles rodadas (y
+- [x] **Bloque 8 (hecho a la 01:48)** — El 13 circulando de verdad por las calles rodadas (y
       robable), vecinos sentados en las terrazas. Push.
 - [ ] **Bloque 9 (03:30-04:20)** — Lo que quede del roadmap y pulido de lo de la noche
       (ajustes por sondas, textos, `docs/ASSETS_PENDIENTES.md`). Push.

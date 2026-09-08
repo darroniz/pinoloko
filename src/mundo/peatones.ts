@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
 
-export type EstadoPeaton = 'pasear' | 'huir' | 'caido' | 'levantarse';
+export type EstadoPeaton = 'pasear' | 'huir' | 'caido' | 'levantarse' | 'sentado';
 
 export interface Vecino {
   x: number;
@@ -57,6 +57,15 @@ export function pasoVecino(
   }
   if (v.estado === 'levantarse') {
     if (v.tiempo <= 0) { v.estado = 'huir'; v.tiempo = 3; }
+    return null;
+  }
+  // Sentado en la terraza: no se mueve hasta que la moto viene lanzada; entonces se levanta y corre.
+  if (v.estado === 'sentado') {
+    if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > 4) {
+      v.estado = 'huir';
+      v.tiempo = 2 + rnd() * 2;
+      if (v.insultado <= 0 && d2 < 36) { v.insultado = 6; return 'insulto'; }
+    }
     return null;
   }
   if (v.estado === 'pasear' && d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > 4) {
@@ -132,7 +141,7 @@ export class Vecinos {
   private ejeX = new THREE.Vector3(1, 0, 0);
   private q2 = new THREE.Quaternion();
 
-  constructor(private readonly grafo: GrafoBarrio, cuantos: number) {
+  constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = []) {
     const geoCuerpo = new THREE.CapsuleGeometry(0.28, 0.6, 3, 8).translate(0, 0.72, 0);
     const geoCabeza = new THREE.SphereGeometry(0.24, 8, 6).translate(0, 1.42, 0);
     for (const c of COLORES_ROPA) {
@@ -150,7 +159,16 @@ export class Vecinos {
 
     const candidatos: number[] = [];
     for (let i = 0; i < grafo.nodos.length; i++) if (grafo.vecinos(i, 'peatonal').length > 0) candidatos.push(i);
-    for (let i = 0; i < cuantos && candidatos.length; i++) {
+    // Una parte del barrio está sentada en las terrazas (como mucho un tercio).
+    const sentados = Math.min(asientos.length, Math.floor(cuantos / 3));
+    for (let i = 0; i < sentados; i++) {
+      const a = asientos[i]!;
+      const nodo = grafo.masCercano(a.x, a.z, 'peatonal');
+      const v = crearVecino(grafo, Math.max(0, nodo), this.rnd);
+      v.x = a.x; v.z = a.z; v.rumbo = a.rumbo; v.estado = 'sentado';
+      this.lista.push(v);
+    }
+    for (let i = sentados; i < cuantos && candidatos.length; i++) {
       const nodo = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
       this.lista.push(crearVecino(grafo, nodo, this.rnd));
     }
@@ -159,7 +177,7 @@ export class Vecinos {
   /** Un bocinazo: los que estén a menos de `radio` salen corriendo. */
   asustar(x: number, z: number, radio: number): void {
     for (const v of this.lista) {
-      if (v.estado !== 'pasear') continue;
+      if (v.estado !== 'pasear' && v.estado !== 'sentado') continue;
       if ((v.x - x) ** 2 + (v.z - z) ** 2 < radio * radio) { v.estado = 'huir'; v.tiempo = 1.5 + this.rnd() * 1.5; }
     }
   }
@@ -191,6 +209,8 @@ export class Vecinos {
       } else if (v.estado === 'levantarse') {
         this.q2.setFromAxisAngle(this.ejeX, -Math.PI / 4);
         this.q.multiply(this.q2);
+      } else if (v.estado === 'sentado') {
+        this.p.y = -0.38; // las piernas "dentro" de la silla
       }
       const bote = v.estado === 'pasear' || v.estado === 'huir' ? Math.abs(Math.sin(v.fase)) * 0.06 : 0;
       this.p.y += bote;

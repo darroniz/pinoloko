@@ -28,7 +28,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Coches aparcados y del tráfico que se pueden robar y conducir (más pesados, derrape largo).
 - [x] Tráfico por el grafo rodado: circulan por su derecha, frenan en cruces y ante obstáculos.
 - [x] ~~Semáforos~~: no hay ninguno en la caja del Mercado (OSM). Pasos de cebra pintados.
-- [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano).
+- [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano, sentados en las terrazas).
+- [x] El 13 de Tussam circulando por las calles rodadas, parando en las paradas, y robable.
 - [x] Ciclo día/noche (10 minutos por día, sol que gira, hora en el HUD).
 - [x] Faros de los vehículos de noche.
 - [x] Ventanas encendidas de noche (fachadas que miran a la cámara, encendidas al azar).

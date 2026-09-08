@@ -60,6 +60,28 @@ export interface AjustesCoche {
   agarreDerrape: number;
 }
 
+/** Apariencia alternativa (el bus del 13): geometría, escala visual y caja de colisión. */
+export interface AparienciaCoche {
+  geometria: THREE.BufferGeometry;
+  escala: number;
+  largo: number;
+  ancho: number;
+  nombre: string;
+}
+
+/** El 13 de Tussam: pesado, lento de reacción y con un radio de giro de autobús. */
+export const BUS: AjustesCoche = {
+  aceleracion: 5,
+  velocidadMaxima: 14,
+  velocidadMarchaAtras: 3,
+  frenado: 11,
+  rozamiento: 0.5,
+  giroParado: 0.7,
+  giroMaximo: 1.4,
+  agarre: 9,
+  agarreDerrape: 2.0,
+};
+
 export const UTILITARIO: AjustesCoche = {
   aceleracion: 8,
   velocidadMaxima: 21,
@@ -104,18 +126,19 @@ export class Coche {
   private giroActual = 0;
   private velocidadPrevia = new THREE.Vector3();
 
-  constructor(fisica: MundoFisico, x: number, z: number, rumbo: number, color: string, readonly ajustes: AjustesCoche = UTILITARIO) {
+  constructor(fisica: MundoFisico, x: number, z: number, rumbo: number, color: string, readonly ajustes: AjustesCoche = UTILITARIO, readonly apariencia: AparienciaCoche | null = null) {
     this.color = color;
     this.rumbo = rumbo;
     this.cuerpo = fisica.world.createRigidBody(
       R.RigidBodyDesc.dynamic().setTranslation(x, ALTO / 2 + 0.05, z).lockRotations().setLinearDamping(0.1).setCcdEnabled(true),
     );
+    const largo = apariencia?.largo ?? LARGO, ancho = apariencia?.ancho ?? ANCHO;
     fisica.world.createCollider(
-      R.ColliderDesc.cuboid(ANCHO / 2, ALTO / 2, LARGO / 2).setRestitution(0.4).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setDensity(3),
+      R.ColliderDesc.cuboid(ancho / 2, ALTO / 2, largo / 2).setRestitution(0.4).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setDensity(apariencia ? 5 : 3),
       this.cuerpo,
     );
-    this.malla = new THREE.Mesh(geometriaCoche(color), MATERIAL_COCHE);
-    this.malla.scale.setScalar(ESCALA_VISUAL);
+    this.malla = new THREE.Mesh(apariencia?.geometria ?? geometriaCoche(color), MATERIAL_COCHE);
+    this.malla.scale.setScalar(apariencia?.escala ?? ESCALA_VISUAL);
     this.malla.castShadow = true;
     this.aplicarRotacion();
     this.cuerpo.sleep();

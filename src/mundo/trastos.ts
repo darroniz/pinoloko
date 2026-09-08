@@ -193,6 +193,8 @@ export const ROMPIBLES: Partial<Record<TipoTrasto, string[]>> = {
 export class Trastos {
   readonly grupo = new THREE.Group();
   readonly lista: Trasto[] = [];
+  /** Sillas de terraza donde puede sentarse un vecino (posición y hacia dónde mira). */
+  readonly asientos: { x: number; z: number; rumbo: number }[] = [];
   private tmpQ = new THREE.Quaternion();
   private geometrias = new Map<string, THREE.BufferGeometry[]>();
 
@@ -321,8 +323,8 @@ export class Trastos {
           const ang = rnd() * Math.PI * 2;
           const mx = poi.x + Math.cos(ang) * (3 + rnd() * 3), mz = poi.z + Math.sin(ang) * (3 + rnd() * 3);
           if (!colocar('mesa', mx, mz, 0, 1.0)) continue;
-          colocar('silla', mx + 0.8, mz, Math.PI / 2, 0.5);
-          colocar('silla', mx - 0.8, mz, -Math.PI / 2, 0.5);
+          if (colocar('silla', mx + 0.8, mz, Math.PI / 2, 0.5)) this.asientos.push({ x: mx + 0.8, z: mz, rumbo: -Math.PI / 2 });
+          if (colocar('silla', mx - 0.8, mz, -Math.PI / 2, 0.5)) this.asientos.push({ x: mx - 0.8, z: mz, rumbo: Math.PI / 2 });
         }
       } else if (poi.clase === 'marketplace') {
         // Cajas de fruta amontonadas alrededor del mercado.

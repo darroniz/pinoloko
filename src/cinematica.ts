@@ -5,7 +5,11 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 const DURACION = 4.5;
 
-function geometriaBus(): THREE.BufferGeometry {
+let geoBus: THREE.BufferGeometry | null = null;
+
+/** El bus de Tussam (blanco, franja roja, ventanas): lo usa la cinemática y el tráfico. */
+export function geometriaBus(): THREE.BufferGeometry {
+  if (geoBus) return geoBus;
   const piezas: THREE.BufferGeometry[] = [];
   const pintar = (g: THREE.BufferGeometry, c: string): THREE.BufferGeometry => {
     const col = new THREE.Color(c);
@@ -23,6 +27,8 @@ function geometriaBus(): THREE.BufferGeometry {
   for (const z of [-4, 4]) for (const x of [-1.1, 1.1]) piezas.push(pintar(new THREE.CylinderGeometry(0.5, 0.5, 0.35, 10).rotateZ(Math.PI / 2).translate(x, 0.5, z), '#2b2b2f'));
   const g = mergeGeometries(piezas, false);
   g.computeVertexNormals();
+  g.computeBoundingSphere();
+  geoBus = g;
   return g;
 }
 

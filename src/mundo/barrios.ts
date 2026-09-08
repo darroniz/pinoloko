@@ -7,8 +7,8 @@ export interface FichaBarrio {
   nombre: string;
   /** Texto del cartel de la parada: a dónde te lleva el 13 desde aquí. */
   destino13: string;
-  /** Cuántos vecinos, coches de tráfico, motos y coches aparcados. */
-  poblacion: { vecinos: number; trafico: number; motos: number; coches: number };
+  /** Cuántos vecinos, coches de tráfico, autobuses del 13, motos y coches aparcados. */
+  poblacion: { vecinos: number; trafico: number; buses: number; motos: number; coches: number };
   /** Frase de bienvenida al bajar del bus. */
   bienvenida: string;
   /** Trozo del nombre de la parada (`bus_stop` de OSM) donde te deja el 13 y donde reapareces. */
@@ -20,7 +20,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
     id: 'pino-montano',
     nombre: 'Pino Montano · Mercado',
     destino13: 'alameda',
-    poblacion: { vecinos: 110, trafico: 14, motos: 14, coches: 12 },
+    poblacion: { vecinos: 110, trafico: 14, buses: 1, motos: 14, coches: 12 },
     bienvenida: 'Pino Montano. En casa.',
     paradaLlegada: 'Mercado',
   },
@@ -28,7 +28,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
     id: 'alameda',
     nombre: 'La Alameda',
     destino13: 'pino-montano',
-    poblacion: { vecinos: 160, trafico: 10, motos: 18, coches: 10 },
+    poblacion: { vecinos: 160, trafico: 10, buses: 1, motos: 18, coches: 10 },
     bienvenida: 'La Alameda. Territorio de modernos.',
     paradaLlegada: 'Alameda de Hércules',
   },

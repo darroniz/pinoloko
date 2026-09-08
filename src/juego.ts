@@ -6,7 +6,9 @@ import { Controles } from './control/entrada';
 import { PASO_FISICA } from './fisica/mundo';
 import { MODELOS, Scooter } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
-import { Coche } from './fisica/coche';
+import { BUS, Coche } from './fisica/coche';
+import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO } from './mundo/trafico';
+import { geometriaBus } from './cinematica';
 import { viaMasCercana } from './mundo/grafo';
 import { COLORES } from './mundo/nivel';
 import { dentroDePoligono } from './mundo/geometria';
@@ -36,7 +38,7 @@ declare global {
     __pv_jugando: boolean;
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: () => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: () => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -213,6 +215,13 @@ export class Juego {
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
       rampas: () => this.barrio.rampas.posiciones.map(([x, z], i) => ({ x, z, rumbo: this.barrio.rampas.rumbos[i] ?? 0 })),
       viajar: async () => { await this.viajar(this.barrio.ficha.destino13); return this.barrio.ficha.id; },
+      robarBus: () => {
+        const bus = this.barrio.trafico.lista.find((c) => c.tipo === 'bus');
+        if (!bus) return false;
+        if (!this.aPie) this.bajarse();
+        this.peaton.aparecer(bus.x + 2.5, bus.z, 0);
+        return this.subirse() && !!this.coche?.apariencia;
+      },
       robarCoche: () => {
         const c = this.barrio.trafico.lista[0];
         if (!c) return false;
@@ -223,7 +232,7 @@ export class Juego {
     };
     window.__pv_info = () => {
       const b = this.barrio;
-      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, rotos: b.trastos.lista.filter((t) => t.roto).length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
+      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, sentados: b.vecinos.lista.filter((v) => v.estado === 'sentado').length, buses: b.trafico.lista.filter((c) => c.tipo === 'bus').length, rotos: b.trastos.lista.filter((t) => t.roto).length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
     };
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
@@ -315,7 +324,7 @@ export class Juego {
     if (this.aPie) return;
     const v = this.vehiculo;
     const e = v.estado;
-    const lado = v.direccion.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).multiplyScalar(this.coche ? 2.2 : 1.2);
+    const lado = v.direccion.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2).multiplyScalar(this.coche ? (this.coche.apariencia ? 2.8 : 2.2) : 1.2);
     v.montar(false);
     this.peaton.aparecer(e.x + lado.x, e.z + lado.z, e.rumbo);
     this.aPie = true;
@@ -342,14 +351,17 @@ export class Juego {
     const dTrafico = delTrafico ? (delTrafico.x - p.x) ** 2 + (delTrafico.z - p.z) ** 2 : Infinity;
 
     if (delTrafico && dTrafico < mejorD && dTrafico < mejorDc) {
-      // Robo en marcha: el coche sale del tráfico y pasa a ser un coche de verdad.
-      const c = new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color);
+      // Robo en marcha: el coche (o el 13) sale del tráfico y pasa a ser un vehículo de verdad.
+      const esBus = delTrafico.tipo === 'bus';
+      const c = esBus
+        ? new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color, BUS, { geometria: geometriaBus(), escala: BUS_ESCALA, largo: BUS_LARGO, ancho: BUS_ANCHO, nombre: 'el 13' })
+        : new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color);
       b.trafico.quitar(delTrafico);
       b.coches.push(c);
       b.grupo.add(c.malla);
       mejorCoche = c;
       mejorDc = 0;
-      this.hud.avisar(['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
+      this.hud.avisar(esBus ? '¡El 13 es mío! Todos al fondo' : ['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
       this.busqueda.fechoria('robo_coche');
       this.contador.sumar('cochesRobados');
     }
@@ -799,7 +811,7 @@ export class Juego {
     const tramo = Math.hypot(pos.x - this.ultimaPos.x, pos.z - this.ultimaPos.z);
     if (this.jugando && !this.pausado && tramo < 30) this.contador.sumar('metros', tramo);
     this.ultimaPos.set(pos.x, 0, pos.z);
-    this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? 72 : 66;
+    this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? (this.coche.apariencia ? 84 : 72) : 66;
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
     this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);
     if (this.jugando) this.cielo.actualizar(dt);

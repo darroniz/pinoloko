@@ -25,6 +25,14 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       las puertas, ventanas encendidas de noche, controles policiales. Push.
 - [x] **Bloque 5 (hecho a la 01:40)** — Carreras por los pasajes contra el reloj (checkpoints)
       y rampas para saltar. Push.
+- [x] **Bloque 6 (hecho a la 01:35)** — Roturas de verdad: macetas en cascos, cajas del mercado
+      con la fruta por el aire, sillas y mesas de terraza que saltan en piezas. Push.
+- [ ] **Bloque 7 (02:00-02:40)** — Service worker: jugar sin conexión, actualización limpia
+      al publicar. Push.
+- [ ] **Bloque 8 (02:40-03:30)** — El 13 circulando de verdad por las calles rodadas (y
+      robable), vecinos sentados en las terrazas. Push.
+- [ ] **Bloque 9 (03:30-04:20)** — Lo que quede del roadmap y pulido de lo de la noche
+      (ajustes por sondas, textos, `docs/ASSETS_PENDIENTES.md`). Push.
 - [ ] **Cierre (04:25-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Plan de la noche del 2026-09-08 (primera sesión, 00:15 → 04:45)

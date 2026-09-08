@@ -12,6 +12,8 @@ export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' 
 
 export interface Trasto {
   tipo: TipoTrasto;
+  /** Roto en trozos: la malla se esconde y el cuerpo desaparece. */
+  roto?: boolean;
   /** Solo existe mientras la moto anda cerca; lejos, la pose vive en la malla. */
   cuerpo: RAPIER.RigidBody | null;
   malla: THREE.Object3D;
@@ -180,6 +182,14 @@ function fundir(grupo: THREE.Object3D): THREE.BufferGeometry {
 
 const MATERIAL_TRASTOS = new THREE.MeshLambertMaterial({ vertexColors: true });
 
+/** Qué se rompe en trozos y de qué colores salen. */
+export const ROMPIBLES: Partial<Record<TipoTrasto, string[]>> = {
+  maceta: ['#c8683f', '#c8683f', '#c8683f', '#b85a35', '#4f9b4a', '#4f9b4a', '#3f7f4a', '#e84a7a'],
+  caja: ['#c99a5b', '#c99a5b', '#b8894c', '#f4732b', '#f4732b', '#f4732b', '#d93b3b', '#f4732b'],
+  silla: ['#d93b3b', '#d93b3b', '#b9bcc4', '#b9bcc4', '#b9bcc4'],
+  mesa: ['#f7f3ea', '#f7f3ea', '#f7f3ea', '#b9bcc4', '#b9bcc4'],
+};
+
 export class Trastos {
   readonly grupo = new THREE.Group();
   readonly lista: Trasto[] = [];
@@ -233,10 +243,21 @@ export class Trastos {
     t.cuerpo = null;
   }
 
+  /** Rompe un trasto: esconde la malla y quita el cuerpo. Devuelve la velocidad que llevaba. */
+  romper(t: Trasto): { vx: number; vz: number } {
+    const v = t.cuerpo ? t.cuerpo.linvel() : { x: 0, z: 0 };
+    if (t.cuerpo) { this.fisica.world.removeRigidBody(t.cuerpo); t.cuerpo = null; }
+    t.malla.visible = false;
+    t.roto = true;
+    t.derribado = true;
+    return { vx: v.x, vz: v.z };
+  }
+
   /** Activa los trastos cercanos a (x, z) y duerme los lejanos. Llamar cada medio segundo. */
   gestionarRadio(x: number, z: number): void {
     const r2a = RADIO_ACTIVAR * RADIO_ACTIVAR, r2d = RADIO_DORMIR * RADIO_DORMIR, r2v = RADIO_VISIBLE * RADIO_VISIBLE;
     for (const t of this.lista) {
+      if (t.roto) continue;
       const p = t.malla.position;
       const d2 = (p.x - x) ** 2 + (p.z - z) ** 2;
       t.malla.visible = d2 < r2v;

@@ -1,0 +1,31 @@
+import { chromium } from 'playwright-core';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { join, extname } from 'node:path';
+const DIST = '/home/idarroniz/pinoloko/dist';
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
+const srv = createServer(async (req, res) => { let r = new URL(req.url, 'http://x').pathname; if (r.endsWith('/')) r += 'index.html'; try { res.writeHead(200, { 'content-type': MIME[extname(r)] ?? 'application/octet-stream' }); res.end(await readFile(join(DIST, r))); } catch { res.writeHead(404); res.end(); } });
+await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+const barrio = process.argv[2] ?? 'alameda';
+const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+await p.goto(`http://127.0.0.1:${srv.address().port}/?barrio=${barrio}`, { waitUntil: 'load' });
+await p.waitForFunction(() => window.__pv_listo === true, null, { timeout: 120000 });
+await p.click('#boton-jugar');
+await new Promise((r) => setTimeout(r, 2000));
+const stats = await p.evaluate(() => {
+  const out = {};
+  const tris = (o) => { const g = o.geometry; if (!g) return 0; const n = g.index ? g.index.count / 3 : g.getAttribute('position').count / 3; return o.isInstancedMesh ? n * o.count : o.isLineSegments ? 0 : n; };
+  const cam = window.__pv_escena.children.find((c) => c.isPerspectiveCamera);
+  window.__pv_escena.traverse((o) => {
+    if (!o.geometry) return;
+    let top = o; while (top.parent && top.parent !== window.__pv_escena && top.parent.type === 'Group' && !top.parent.name) top = top.parent;
+    let nombre = o.name || top.name || (top.parent && top.parent.name) || top.type;
+    if (!o.visible) return;
+    const key = nombre.replace(/-\d+$/, '');
+    out[key] = (out[key] || 0) + tris(o);
+  });
+  return out;
+});
+console.log(barrio, JSON.stringify(Object.entries(stats).sort((a, c) => c[1] - a[1]).slice(0, 14)));
+await b.close(); srv.close();

@@ -541,6 +541,7 @@ export class Juego {
       this.contador.sumar('segundos', dt);
       // Paso de física variable: 1/60 s a 60 fps, dos subpasos a 30 fps, y por debajo el
       // paso crece hasta 1/20 s para que el tiempo de juego siga siendo real (hasta 20 fps).
+      performance.mark('u0');
       this.acumulador += dt;
       const pasos = Math.min(2, Math.max(1, Math.ceil(this.acumulador / PASO_FISICA)));
       const paso = Math.min(PASO_MAXIMO, this.acumulador / pasos);
@@ -560,6 +561,8 @@ export class Juego {
         for (const c of b.coches) { if (c === this.coche && !this.aPie) c.despuesDelPaso(); else c.reposo(); }
         if (this.aPie) this.peaton.sincronizar();
       }
+      performance.mark('u1');
+      performance.measure('u-fisica', 'u0', 'u1');
       const e = this.vehiculo.estado;
       if (e.golpe > 0 && !this.aPie) {
         this.camara.sacudir(e.golpe * 0.06);
@@ -577,7 +580,10 @@ export class Juego {
       // Vecinos: pasean, huyen, insultan y se caen si los atropellas.
       const jugadorPos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
       const rapidez = this.aPie ? this.peaton.velocidad : Math.abs(e.velocidad);
+      performance.mark('u2');
       const eventos = b.vecinos.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
+      performance.mark('u3');
+      performance.measure('u-vecinos', 'u2', 'u3');
       this.tiempoInsulto -= dt;
       if (eventos.insulto && this.tiempoInsulto <= 0) { this.hud.avisar(eventos.insulto, 1.8); this.tiempoInsulto = 2.5; }
       if (eventos.atropellos > 0) {
@@ -592,6 +598,8 @@ export class Juego {
         this.busqueda.fechoria('atropello', eventos.atropellos);
       }
       this.actualizarPolicia(jugadorPos, rapidez, dt);
+      performance.mark('u4');
+      performance.measure('u-policia', 'u3', 'u4');
       const mechero = b.mecheros.actualizar(jugadorPos.x, jugadorPos.z, dt);
       if (mechero >= 0) {
         this.ganar(10);
@@ -635,7 +643,10 @@ export class Juego {
       }
 
       // Trastos derribados: dinero, racha y frase de barrio.
+      performance.mark('u5');
       const derribados = b.trastos.actualizar(jugadorPos.x, jugadorPos.z);
+      performance.mark('u6');
+      performance.measure('u-trastos', 'u5', 'u6');
       if (derribados.length) {
         this.tiempoRacha = 3;
         for (const t of derribados) {
@@ -664,6 +675,7 @@ export class Juego {
       this.particulas.actualizar(dt);
     }
 
+    performance.mark('u7');
     const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
     const v = this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel();
     // Recorrido: se acumula lo andado o rodado, sin contar teletransportes (parada, trincao).
@@ -699,5 +711,7 @@ export class Juego {
     this.audio.silenciarMotor(this.aPie);
     this.tiempoGuardado += dt;
     if (this.tiempoGuardado > 5) { this.tiempoGuardado = 0; this.guardar(); }
+    performance.mark('u8');
+    performance.measure('u-resto', 'u7', 'u8');
   }
 }

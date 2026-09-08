@@ -3,7 +3,7 @@
 // hacia la cámara (que nunca gira, así que la inclinación es fija) y, si el local está dentro
 // de un edificio, va sobre la azotea, que es lo que se ve desde arriba.
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mallasPorLoseta } from './losetas';
 import type { Nivel, Poi } from './tipos';
 import { dentroDePoligono } from './geometria';
 
@@ -31,7 +31,7 @@ export class Rotulos {
     lienzo.width = CELDA_ANCHO * COLUMNAS;
     lienzo.height = alto;
     const ctx = lienzo.getContext('2d');
-    const piezas: THREE.BufferGeometry[] = [];
+    const piezas: { geometria: THREE.BufferGeometry; x: number; z: number }[] = [];
     pois.forEach((poi, i) => {
       if (i >= Math.floor(alto / CELDA_ALTO) * COLUMNAS) return;
       const col = i % COLUMNAS, fila = Math.floor(i / COLUMNAS);
@@ -47,16 +47,15 @@ export class Rotulos {
       const edificio = nivel.edificios.find((e) => dentroDePoligono(poi.x, poi.z, e.poligono));
       const y = edificio ? edificio.altura + 0.4 + altoCartel / 2 : 4;
       g.rotateX(-INCLINACION).translate(poi.x, y, poi.z);
-      piezas.push(g);
+      piezas.push({ geometria: g, x: poi.x, z: poi.z });
     });
     const textura = new THREE.CanvasTexture(lienzo);
     textura.colorSpace = THREE.SRGBColorSpace;
     textura.minFilter = THREE.LinearMipmapLinearFilter;
-    textura.anisotropy = 4;
+    // Sin anisotropía: los carteles ya miran a la cámara y en render por software cuesta.
     const material = new THREE.MeshBasicMaterial({ map: textura, transparent: true, alphaTest: 0.2, side: THREE.DoubleSide });
-    const malla = new THREE.Mesh(mergeGeometries(piezas, false), material);
-    malla.frustumCulled = false;
-    this.grupo.add(malla);
+    // Por losetas, para que el recorte de frustum deje fuera los rótulos que no se ven.
+    this.grupo.add(mallasPorLoseta(piezas, material, { nombre: 'rotulos' }));
   }
 
   /** Pinta la celda del rótulo: tablero redondeado del color del gremio y el nombre en blanco. */

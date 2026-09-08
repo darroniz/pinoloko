@@ -369,3 +369,59 @@ que cruzar un pasaje lleno de gente a bocinazos tenga gracia.
   velocidad. A pie se ve a Wifly; en coche se ve la calle.
 - **Daño más blando:** un golpe a fondo quita unos 12 puntos en vez de 25. Reventar la moto
   tiene que costar una mala tarde, no cuatro esquinas.
+
+## 2026-09-09 — El 13 sin streaming: un `Barrio` que se destruye y se recrea
+
+**Cada barrio es un objeto `Barrio`** (grupo de escena + mundo de Rapier + población: trastos,
+vecinos, tráfico, patrullas, mecheros, paradas, rótulos, ventanas). Viajar en el 13 es destruir
+el objeto entero (geometrías, texturas y `world.free()`) y construir el otro; la moto y Wifly se
+recrean en el mundo nuevo. Lo que persiste vive en `Juego`: dinero, cielo (hora), estadísticas,
+garaje, HUD. Comprobado que no hay fugas: tras ida y vuelta, mismas geometrías y una textura.
+
+**Se llega siempre a pie a la parada de llegada** (`paradaLlegada` de la ficha, por trozo del
+nombre de la `bus_stop` de OSM), con la moto que llevabas aparcada al lado. El punto de reaparición
+(trincado, tecla R) es la calle rodada más cercana a esa parada, así que "el Mercado" en Pino
+Montano y "la Alameda de Hércules" en la Alameda sin código especial.
+
+**La cinemática no espera al bus de vuelta:** son 4,5 s del bus saliendo con cámara baja y
+fundido a negro; al negro se carga el barrio (2-3 s en la Pi) y se levanta el velo. No hay bus
+"llegando" al otro lado porque no aporta y dobla la cinemática.
+
+**Bug heredado:** el commit de la noche anterior que metió el día y la noche borró sin querer
+el bloque que atendía a `controles.accion` (E / SUBIR-BAJAR), y `reaparecer` (R) nunca llegó a
+leerse en `juego.ts` aunque la nota dijera que existía. Arreglado esta noche; ahora la
+verificación pulsa E en las sondas.
+
+## 2026-09-09 — Perfiles de barrio en el generador y la Alameda de cal y albero
+
+Los colores y las plantas por defecto salen del **perfil** del barrio en `tools/genera_nivel.py`
+(`PERFILES`), no de constantes globales: la Alameda va con paleta de casco antiguo (cal, albero,
+ocre, terracota), tres plantas por defecto y 3,2 m por planta. Pino Montano regenerado con su
+perfil sale byte a byte igual que antes. La Alameda trae 103 `natural=tree` reales (la hilera de
+la Alameda de Hércules) y ahora se plantan donde están antes que los procedurales.
+
+## 2026-09-09 — Rótulos en un atlas, sobre la azotea del local
+
+Los nombres de bares y comercios se pintan en **un solo canvas** (celdas de 256x48, ocho por
+fila) y cada rótulo es un plano con las UV de su celda, fundidos por losetas. Están
+**inclinados 58° hacia la cámara** (que nunca gira, así que la inclinación es fija) y, cuando el
+POI cae dentro de un edificio (casi siempre: OSM pone el nodo del comercio dentro de la huella),
+el cartel va **sobre la azotea**, que es lo que la cámara ve. Sin anisotropía: en render por
+software costaba y los carteles ya miran a la cámara.
+
+## 2026-09-09 — El gate de rendimiento: relativo entre barrios y mejor de dos ventanas
+
+**Los petos de azotea solo en bloques de cuatro plantas o más.** En el casco antiguo (879 casas de
+dos y tres plantas con huellas irregulares) eran 8.400 cajas, cien mil triángulos que desde 66 m
+no se distinguían. Las azoteas de la Alameda bajan de 196k a 105k triángulos y el barrio pasa de
+rendir la mitad que Pino Montano en la Pi a rendir igual.
+
+**El segundo barrio se mide igual que el primero** (3 s de calentamiento, dos ventanas de 10 s) y
+el listón es **relativo**: al menos la mitad de frames que el barrio inicial. Un umbral absoluto
+(los "40 frames en 5 s" de la primera versión) aprobaba o suspendía según qué más estuviera
+haciendo la Pi. Y la mediana del `update()` también se queda con la **mejor de las dos ventanas**:
+la misma build daba 5,7 y 8,7 ms en pasadas seguidas.
+
+Lección de proceso apuntada: encadenar `npm run verificar | tail && git push` publica aunque la
+verificación falle, porque el código de salida es el de `tail`. Ahora se guarda el código de
+salida y solo se publica si es cero.

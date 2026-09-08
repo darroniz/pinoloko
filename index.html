@@ -33,11 +33,17 @@
     <button id="boton-freno" type="button" aria-label="Freno">FRENO</button>
     <button id="boton-accion" type="button" aria-label="Acción">SUBIR</button>
     <button id="boton-claxon" type="button" aria-label="Claxon">PIII</button>
+    <button id="boton-menu" type="button" aria-label="Menú">☰</button>
     <div id="portada">
       <img src="/marca/logo.png" alt="Pinoloko" />
       <p>Pino Montano desde arriba. Coge la Jog RR, haz el cafre, escapa de la Local y busca los 20 mecheros.</p>
       <button id="boton-jugar" type="button">JUGAR</button>
-      <p class="ayuda">Teclado: WASD / flechas para ir, ESPACIO para frenar y derrapar, E para subir o bajar, H claxon, R para volver a la parada. Coge el 13 a pie en una parada para cambiar de barrio.<br />Móvil: joystick, FRENO y SUBIR/BAJAR.</p>
+      <div class="extras">
+        <button type="button" data-menu="garaje">GARAJE</button>
+        <button type="button" data-menu="estadisticas">ESTADÍSTICAS</button>
+        <button type="button" data-menu="creditos">CRÉDITOS</button>
+      </div>
+      <p class="ayuda">Teclado: WASD / flechas para ir, ESPACIO para frenar y derrapar, E para subir o bajar, H claxon, R para volver a la parada, ESC menú. Coge el 13 a pie en una parada para cambiar de barrio.<br />Móvil: joystick, FRENO y SUBIR/BAJAR.</p>
       <p class="creditos">Mapa: © colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL)</p>
     </div>
     <script type="module" src="/src/main.ts"></script>

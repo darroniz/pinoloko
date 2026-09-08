@@ -175,6 +175,11 @@ export class Scooter {
     }
   }
 
+  /** Quita el cuerpo del mundo físico (la malla la retira quien la añadió). */
+  destruir(fisica: MundoFisico): void {
+    fisica.world.removeRigidBody(this.cuerpo);
+  }
+
   teletransportar(x: number, z: number, rumbo: number): void {
     this.cuerpo.setTranslation({ x, y: RADIO + 0.1, z }, true);
     this.cuerpo.setLinvel({ x: 0, y: 0, z: 0 }, true);

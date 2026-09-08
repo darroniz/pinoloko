@@ -55,8 +55,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 ## 6. Freestyle completo
 - [x] "Recoge los 20 mecheros" (repartidos por pasajes, mercado y bares; se guardan).
 - [ ] Carreras por los pasajes y saltos con rampas.
-- [ ] Garaje de motos y estadísticas.
-- [ ] Menú principal y pantalla de créditos (con atribución a OpenStreetMap).
+- [x] Garaje de motos (las robadas se quedan; eliges con cuál sales) y estadísticas acumuladas.
+- [x] Menú (portada y ESC / ☰ en partida, con pausa), créditos con atribución a OpenStreetMap, nueva partida.
 - [ ] Comercios y bares del barrio con el `name` real de las etiquetas de OSM.
 
 ## 7. Pulido

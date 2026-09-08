@@ -19,7 +19,7 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
 - [x] **Bloque 2 (hecho a las 00:45)** — La Alameda con su propia paleta (casco antiguo: albero,
       blanco y cal), afinar población y rendimiento con 891 edificios.
       `docs/COMO_ANADIR_UN_BARRIO.md`. Push.
-- [ ] **Bloque 3 (02:10-03:00)** — Hito 6: menú principal con créditos (OSM), estadísticas
+- [x] **Bloque 3 (hecho a la 01:00)** — Hito 6: menú principal con créditos (OSM), estadísticas
       de la partida y garaje (motos que has robado, elegir con cuál sales). Push.
 - [ ] **Bloque 4 (03:00-03:45)** — Rótulos con el `name` real de bares y comercios sobre
       las puertas, ventanas encendidas de noche, controles policiales. Push.

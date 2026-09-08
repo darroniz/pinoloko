@@ -23,6 +23,8 @@ import { TOTAL_MECHEROS } from './mundo/mecheros';
 import { Barrio } from './mundo/barrio';
 import { BARRIO_INICIAL, BARRIOS } from './mundo/barrios';
 import { Cinematica13 } from './cinematica';
+import { Contador, Garaje } from './estadisticas';
+import { Menu, type Pestana } from './ui/menu';
 
 declare global {
   interface Window {
@@ -95,6 +97,11 @@ export class Juego {
   private botonAccion = document.getElementById('boton-accion')!;
   private tiempoInsulto = 0;
   private enParada = false;
+  private contador = new Contador();
+  private garaje = new Garaje();
+  private menu: Menu;
+  private pausado = false;
+  private ultimaPos = new THREE.Vector3();
   readonly calidad: Calidad;
 
   constructor() {
@@ -116,6 +123,21 @@ export class Juego {
       document.getElementById('boton-claxon')!,
     );
     window.addEventListener('resize', () => this.redimensionar());
+    this.menu = new Menu({
+      modelos: MODELOS,
+      garaje: this.garaje,
+      contador: this.contador,
+      alElegirMoto: (i) => this.cambiarMoto(i),
+      alNuevaPartida: () => this.nuevaPartida(),
+      alCerrar: () => { this.pausado = false; },
+    });
+    document.getElementById('boton-menu')!.addEventListener('click', () => this.abrirMenu());
+    for (const b of document.querySelectorAll<HTMLElement>('#portada [data-menu]')) b.addEventListener('click', () => this.menu.abrir(b.dataset['menu'] as Pestana));
+    window.addEventListener('keydown', (e) => {
+      if (e.code !== 'Escape') return;
+      if (this.menu.abierto) this.menu.cerrar();
+      else if (this.jugando) this.abrirMenu();
+    });
     window.__pv_frames = 0;
     window.__pv_listo = false;
     window.__pv_jugando = false;
@@ -160,7 +182,7 @@ export class Juego {
     this.dinero = partida?.dinero ?? 0;
     if (partida?.hora !== undefined) this.cielo.hora = partida.hora;
     this.cielo.actualizar(0);
-    await this.cargarBarrio(id, mismoBarrio ? partida : null);
+    await this.cargarBarrio(id, mismoBarrio ? partida : null, partida?.modelo ?? this.garaje.elegida);
     if (mismoBarrio && partida?.aPie) this.bajarse();
     this.hud.ponerDinero(this.dinero);
 
@@ -192,7 +214,7 @@ export class Juego {
    * Destruye el barrio actual (si lo hay) y carga otro. Wifly aparece donde diga `donde`
    * (la partida guardada) o, si no, en la parada de llegada del 13 con su moto al lado.
    */
-  private async cargarBarrio(id: string, donde: { x: number; z: number; rumbo: number; modelo?: number } | null): Promise<void> {
+  private async cargarBarrio(id: string, donde: { x: number; z: number; rumbo: number } | null, indiceModelo: number): Promise<void> {
     const ficha = BARRIOS[id] ?? BARRIOS[BARRIO_INICIAL]!;
     if (this.barrio) {
       this.barrio.destruir(this.escena);
@@ -204,7 +226,7 @@ export class Juego {
     this.motosRobadas.clear();
     this.barrio = await Barrio.cargar(ficha, this.calidad, this.escena);
     const inicio = donde ?? this.barrio.arranque;
-    const modelo = MODELOS[donde?.modelo ?? 0] ?? MODELOS[0];
+    const modelo = MODELOS[indiceModelo] ?? MODELOS[0];
     this.scooter = new Scooter(this.barrio.fisica, inicio.x, inicio.z, inicio.rumbo, modelo);
     this.scooter.montar(true);
     this.barrio.scooters.unshift(this.scooter);
@@ -227,7 +249,8 @@ export class Juego {
     if (this.cargandoBarrio) return;
     this.cargandoBarrio = true;
     try {
-      await this.cargarBarrio(destino, null);
+      await this.cargarBarrio(destino, null, MODELOS.indexOf(this.scooter.modelo));
+      this.contador.sumar('viajes13');
       // Te bajas a pie junto a la parada; la moto se queda aparcada al lado por si la quieres.
       const parada = this.barrio.paradaLlegada;
       if (parada) {
@@ -308,6 +331,7 @@ export class Juego {
       mejorDc = 0;
       this.hud.avisar(['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
       this.busqueda.fechoria('robo_coche');
+      this.contador.sumar('cochesRobados');
     }
     if (mejorCoche && mejorCoche.rota && mejorDc < mejorD) { this.hud.avisar('Ese coche está para el desguace', 1.4); return false; }
     if (mejorMoto && mejorMoto.rota && (!mejorCoche || mejorD < mejorDc)) { this.hud.avisar('Esa moto ha petado', 1.4); return false; }
@@ -317,8 +341,10 @@ export class Juego {
     } else if (mejorMoto) {
       if (!this.motosRobadas.has(mejorMoto)) {
         this.motosRobadas.add(mejorMoto);
-        this.hud.avisar(`${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
         this.busqueda.fechoria('robo_moto');
+        this.contador.sumar('motosRobadas');
+        const nueva = this.garaje.desbloquear(MODELOS.indexOf(mejorMoto.modelo));
+        this.hud.avisar(nueva ? `${mejorMoto.modelo.nombre}: ¡mía! Nueva en el garaje` : `${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
       }
       this.scooter = mejorMoto;
       this.scooter.montar(true);
@@ -372,6 +398,8 @@ export class Juego {
     this.barrio.patrullas.retirarTodas();
     this.dinero = Math.max(0, Math.floor(this.dinero * 0.8));
     this.hud.ponerDinero(this.dinero);
+    this.contador.sumar('trincados');
+    this.contador.maximo('rachaMaxima', this.racha);
     this.racha = 0;
     this.hud.ponerRacha(0);
     this.audio.claxon();
@@ -399,6 +427,7 @@ export class Juego {
     this.audio.arrancar();
     window.__pv_jugando = true;
     this.hud.avisar('Dale caña, Wifly', 2.5);
+    document.body.classList.add('jugando');
     this.botonAccion.textContent = this.aPie ? 'SUBIR' : 'BAJAR';
   }
 
@@ -411,6 +440,50 @@ export class Juego {
     if (!this.scooter || this.cargandoBarrio || this.cine.activa) return;
     const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
     guardarPartida({ x: pos.x, z: pos.z, rumbo: this.scooter.estado.rumbo, dinero: this.dinero, aPie: this.aPie, modelo: MODELOS.indexOf(this.scooter.modelo), hora: this.cielo.hora, barrio: this.barrio.ficha.id });
+    this.contador.guardar();
+  }
+
+  /** Dinero que entra: al bolsillo y a la estadística de total ganado. */
+  private ganar(cantidad: number): void {
+    this.dinero += cantidad;
+    this.contador.sumar('dineroTotal', cantidad);
+    this.hud.ponerDinero(this.dinero);
+  }
+
+  private abrirMenu(pestana?: Pestana): void {
+    if (this.cine.activa || this.cargandoBarrio) return;
+    this.pausado = true;
+    this.audio.silenciarMotor(true);
+    this.guardar();
+    this.menu.abrir(pestana);
+  }
+
+  /** Cambia la moto de Wifly por otra del garaje, en el mismo sitio y en el mismo estado. */
+  private cambiarMoto(indice: number): void {
+    const modelo = MODELOS[indice];
+    if (!modelo || modelo === this.scooter.modelo) return;
+    const vieja = this.scooter;
+    const e = vieja.estado;
+    const montado = !this.aPie && !this.coche;
+    const nueva = new Scooter(this.barrio.fisica, e.x, e.z, e.rumbo, modelo);
+    this.barrio.scooters.splice(this.barrio.scooters.indexOf(vieja), 1, nueva);
+    this.barrio.grupo.remove(vieja.malla);
+    vieja.destruir(this.barrio.fisica);
+    this.barrio.grupo.add(nueva.malla);
+    this.motosRobadas.delete(vieja);
+    this.motosRobadas.add(nueva);
+    this.reventado.delete(vieja);
+    this.scooter = nueva;
+    nueva.montar(montado);
+    this.hud.avisar(`${modelo.nombre}: lista`, 1.6);
+  }
+
+  /** Borra partida, mecheros y estadísticas (el garaje se queda) y recarga. */
+  private nuevaPartida(): void {
+    try {
+      for (const clave of Object.keys(localStorage)) if (clave.startsWith('pinoloko.') && !clave.startsWith('pinoloko.garaje')) localStorage.removeItem(clave);
+    } catch { /* sin almacenamiento */ }
+    location.href = location.pathname;
   }
 
   private frame(tiempo: number): void {
@@ -453,8 +526,9 @@ export class Juego {
       return;
     }
     const b = this.barrio;
-    if (this.jugando) {
+    if (this.jugando && !this.pausado) {
       this.atenderAcciones();
+      this.contador.sumar('segundos', dt);
       // Paso de física variable: 1/60 s a 60 fps, dos subpasos a 30 fps, y por debajo el
       // paso crece hasta 1/20 s para que el tiempo de juego siga siendo real (hasta 20 fps).
       this.acumulador += dt;
@@ -499,8 +573,8 @@ export class Juego {
       if (eventos.atropellos > 0) {
         this.racha += eventos.atropellos;
         this.tiempoRacha = 3;
-        this.dinero += 25 * eventos.atropellos;
-        this.hud.ponerDinero(this.dinero);
+        this.ganar(25 * eventos.atropellos);
+        this.contador.sumar('atropellos', eventos.atropellos);
         this.hud.ponerRacha(this.racha);
         this.hud.avisar(['¡Atropello!', '¡Al suelo, vecino!', '¡Uy, uy, uy!', '¡Que era el del quinto!'][Math.floor(Math.random() * 4)]!, 1.5);
         this.camara.sacudir(0.35);
@@ -510,8 +584,7 @@ export class Juego {
       this.actualizarPolicia(jugadorPos, rapidez, dt);
       const mechero = b.mecheros.actualizar(jugadorPos.x, jugadorPos.z, dt);
       if (mechero >= 0) {
-        this.dinero += 10;
-        this.hud.ponerDinero(this.dinero);
+        this.ganar(10);
         this.hud.ponerMecheros(b.mecheros.cuantos, TOTAL_MECHEROS);
         this.hud.avisar(b.mecheros.cuantos === TOTAL_MECHEROS ? `¡Los 20 mecheros! Eres el rey de ${b.ficha.nombre.split(' ·')[0]}` : `Mechero ${b.mecheros.cuantos}/${TOTAL_MECHEROS}`, 1.6);
         this.audio.claxon();
@@ -529,6 +602,7 @@ export class Juego {
           this.camara.sacudir(1.2);
           this.audio.golpe(20);
           this.hud.avisar(this.coche ? '¡El coche ha reventado!' : `¡La ${v instanceof Scooter ? v.modelo.nombre : 'moto'} ha petado!`, 2.2);
+          this.contador.sumar('reventones');
           this.busqueda.fechoria('trasto', 4);
           this.bajarse();
         }
@@ -556,21 +630,22 @@ export class Juego {
         for (const t of derribados) {
           this.racha++;
           const multiplicador = Math.min(5, 1 + Math.floor(this.racha / 3));
-          this.dinero += t.valor * multiplicador;
+          this.ganar(t.valor * multiplicador);
           const frases = FRASES[t.tipo];
           const frase = frases[Math.floor(Math.random() * frases.length)]!;
           this.hud.avisar(multiplicador > 1 ? `${frase}  ×${multiplicador}` : frase, 1.6);
           const p = t.malla.position;
           this.particulas.emitir(p.x, p.y + 0.3, p.z, 8, this.colorPolvo, 3);
         }
-        this.hud.ponerDinero(this.dinero);
         this.hud.ponerRacha(this.racha);
         this.busqueda.fechoria('trasto', derribados.length);
+        this.contador.sumar('trastos', derribados.length);
       }
       if (this.tiempoRacha > 0) {
         this.tiempoRacha -= dt;
         if (this.tiempoRacha <= 0 && this.racha > 0) {
           if (this.racha >= 6) this.hud.avisar(`Lío armado: ${this.racha} trastos`, 2.2);
+          this.contador.maximo('rachaMaxima', this.racha);
           this.racha = 0;
           this.hud.ponerRacha(0);
         }
@@ -580,6 +655,10 @@ export class Juego {
 
     const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
     const v = this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel();
+    // Recorrido: se acumula lo andado o rodado, sin contar teletransportes (parada, trincao).
+    const tramo = Math.hypot(pos.x - this.ultimaPos.x, pos.z - this.ultimaPos.z);
+    if (this.jugando && !this.pausado && tramo < 30) this.contador.sumar('metros', tramo);
+    this.ultimaPos.set(pos.x, 0, pos.z);
     this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? 72 : 66;
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
     this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);

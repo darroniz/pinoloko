@@ -40,3 +40,10 @@ body.tactil #joystick, body.tactil #boton-freno, body.tactil #boton-accion, body
 #trincao p { max-width: 320px; font-size: 16px; }
 #hud-hora { position: fixed; top: max(50px, calc(env(safe-area-inset-top) + 40px)); left: 14px; font-size: 13px; font-weight: 700; color: rgba(255,250,240,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.4); pointer-events: none; }
 #hud-mecheros { position: fixed; top: max(72px, calc(env(safe-area-inset-top) + 62px)); left: 14px; font-size: 13px; font-weight: 700; color: rgba(255,250,240,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.4); pointer-events: none; }
+
+/* Cinemática del 13 */
+#velo { position: fixed; inset: 0; background: #000; opacity: 0; transition: opacity 0.9s; pointer-events: none; z-index: 6; }
+#velo.negro { opacity: 1; }
+#rotulo-bus { position: fixed; left: 50%; bottom: 14%; transform: translateX(-50%); color: #fff; font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 2px 0 #000, 0 0 18px rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.6s; pointer-events: none; z-index: 7; white-space: nowrap; }
+#rotulo-bus.visible { opacity: 1; }
+body.en-bus #joystick, body.en-bus #boton-freno, body.en-bus #boton-accion, body.en-bus #boton-claxon, body.en-bus #hud, body.en-bus #estrellas, body.en-bus #hud-mecheros { display: none; }

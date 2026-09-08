@@ -67,6 +67,23 @@ try {
   if (frames < 120) { ok = false; console.log('FALLO: pocos frames'); }
   if (medianaUpdate < 0 || medianaUpdate > 8) { ok = false; console.log('FALLO: update lento'); }
   await pagina.screenshot({ path: 'logs/captura.png' });
+  // El 13: viaje al otro barrio y vuelta, sin errores y con el bucle vivo en el barrio nuevo.
+  const salida = await pagina.evaluate(() => window.__pv_prueba.barrio());
+  const t0 = Date.now();
+  const llegada = await pagina.evaluate(() => window.__pv_prueba.viajar());
+  console.log(`el 13: ${salida} → ${llegada} en ${((Date.now() - t0) / 1000).toFixed(1)} s`);
+  if (llegada === salida) { ok = false; console.log('FALLO: el 13 no ha cambiado de barrio'); }
+  await new Promise((r) => setTimeout(r, 2000));
+  const f2 = await pagina.evaluate(() => window.__pv_frames);
+  await pagina.keyboard.down('w');
+  await new Promise((r) => setTimeout(r, 5000));
+  await pagina.keyboard.up('w');
+  const f3 = await pagina.evaluate(() => window.__pv_frames);
+  console.log(`frames en 5 s en ${llegada}: ${f3 - f2} (mínimo 40)`);
+  if (f3 - f2 < 40) { ok = false; console.log('FALLO: pocos frames en el barrio nuevo'); }
+  await pagina.screenshot({ path: 'logs/captura-viaje.png' });
+  const vuelta = await pagina.evaluate(() => window.__pv_prueba.viajar());
+  if (vuelta !== salida) { ok = false; console.log('FALLO: el 13 no vuelve'); }
 } catch (e) {
   ok = false; console.log('FALLO:', e.message);
 }

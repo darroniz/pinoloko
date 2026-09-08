@@ -5,7 +5,6 @@ import type { Nivel, Punto } from './tipos';
 import { azar, dentroDePoligono, muestrearPolilinea } from './geometria';
 
 export const TOTAL_MECHEROS = 20;
-const CLAVE = 'pinoloko.mecheros.v1';
 
 export class Mecheros {
   readonly grupo = new THREE.Group();
@@ -13,8 +12,11 @@ export class Mecheros {
   readonly recogidos = new Set<number>();
   private mallas: THREE.Mesh[] = [];
   private tiempo = 0;
+  private readonly clave: string;
 
-  constructor(nivel: Nivel) {
+  /** Los mecheros se guardan por barrio; Pino Montano conserva la clave de la primera versión. */
+  constructor(nivel: Nivel, barrio = 'pino-montano') {
+    this.clave = barrio === 'pino-montano' ? 'pinoloko.mecheros.v1' : `pinoloko.mecheros.${barrio}.v1`;
     const rnd = azar(2020);
     const candidatos: Punto[] = [];
     for (const via of nivel.vias) {
@@ -31,7 +33,7 @@ export class Mecheros {
       this.posiciones.push(c);
     }
     try {
-      const guardado = JSON.parse(localStorage.getItem(CLAVE) ?? '[]') as number[];
+      const guardado = JSON.parse(localStorage.getItem(this.clave) ?? '[]') as number[];
       for (const i of guardado) this.recogidos.add(i);
     } catch { /* sin guardado */ }
 
@@ -54,7 +56,7 @@ export class Mecheros {
   }
 
   private guardar(): void {
-    try { localStorage.setItem(CLAVE, JSON.stringify([...this.recogidos])); } catch { /* nada */ }
+    try { localStorage.setItem(this.clave, JSON.stringify([...this.recogidos])); } catch { /* nada */ }
   }
 
   /** Anima los visibles y devuelve el índice del mechero recogido este frame, o -1. */

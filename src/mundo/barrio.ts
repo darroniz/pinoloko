@@ -1,0 +1,149 @@
+// Un barrio cargado: su escena, su mundo físico y todo lo que vive en él. Cambiar de barrio
+// es destruir este objeto y crear otro; el jugador (moto, Wifly) se recrea en el nuevo mundo.
+import * as THREE from 'three';
+import { MundoFisico } from '../fisica/mundo';
+import { Coche, COLORES_COCHE } from '../fisica/coche';
+import { MODELOS, Scooter } from '../fisica/scooter';
+import { construirArboles, construirAzoteas } from './azoteas';
+import { GrafoBarrio } from './grafo';
+import { cargarNivel, construirBarrio } from './nivel';
+import { Mecheros } from './mecheros';
+import { Paradas } from './paradas';
+import { Vecinos } from './peatones';
+import { Trafico } from './trafico';
+import { Trastos } from './trastos';
+import type { Nivel, Poi } from './tipos';
+import { Patrullas } from '../policia/patrullas';
+import type { FichaBarrio } from './barrios';
+import { rutaNivel } from './barrios';
+import type { Calidad } from '../juego';
+
+export class Barrio {
+  readonly grupo = new THREE.Group();
+  readonly grafo: GrafoBarrio;
+  readonly trastos: Trastos;
+  readonly vecinos: Vecinos;
+  readonly trafico: Trafico;
+  readonly patrullas: Patrullas;
+  readonly mecheros: Mecheros;
+  readonly paradas: Paradas;
+  readonly scooters: Scooter[] = [];
+  readonly coches: Coche[] = [];
+  readonly arranque: { x: number; z: number; rumbo: number };
+
+  private constructor(readonly ficha: FichaBarrio, readonly nivel: Nivel, readonly fisica: MundoFisico, calidad: Calidad, escena: THREE.Scene) {
+    this.grafo = new GrafoBarrio(nivel.grafo);
+    const construido = construirBarrio(nivel, { bordes: calidad === 'alta', ligero: calidad === 'baja' });
+    this.grupo.add(construido.grupo, construirAzoteas(nivel));
+    const arboles = construirArboles(nivel);
+    this.grupo.add(arboles.grupo);
+    fisica.crearSueloYLimites(nivel.tamano[0], nivel.tamano[1]);
+    fisica.crearEdificios(construido.colisionEdificios.vertices, construido.colisionEdificios.indices);
+
+    this.trastos = new Trastos(fisica);
+    this.trastos.poblar(nivel, arboles.posiciones);
+    this.grupo.add(this.trastos.grupo);
+    this.vecinos = new Vecinos(this.grafo, ficha.poblacion.vecinos);
+    this.grupo.add(this.vecinos.grupo);
+    this.trafico = new Trafico(fisica, this.grafo, ficha.poblacion.trafico);
+    this.grupo.add(this.trafico.grupo);
+    this.patrullas = new Patrullas(fisica, this.grafo);
+    this.grupo.add(this.patrullas.grupo);
+    this.mecheros = new Mecheros(nivel, ficha.id);
+    this.grupo.add(this.mecheros.grupo);
+    this.paradas = new Paradas(nivel);
+    this.grupo.add(this.paradas.grupo);
+
+    // Arranque: en la calle rodada más cercana a la parada donde te deja el 13 (o al centro
+    // de la caja si no hay parada), mirando a lo largo de ella.
+    const llegada = this.paradaLlegada;
+    const nodoInicio = this.grafo.masCercano(llegada?.x ?? 0, llegada?.z ?? 0, 'rodada');
+    const [ix, iz] = this.grafo.nodos[nodoInicio] ?? [0, 0];
+    const vecino = this.grafo.vecinos(nodoInicio, 'rodada')[0];
+    const [vx, vz] = vecino ? this.grafo.nodos[vecino.nodo]! : [ix, iz - 1];
+    this.arranque = { x: ix, z: iz, rumbo: Math.atan2(vx - ix, -(vz - iz)) };
+
+    this.aparcarScooters(ficha.poblacion.motos);
+    this.aparcarCoches(ficha.poblacion.coches);
+    escena.add(this.grupo);
+  }
+
+  static async cargar(ficha: FichaBarrio, calidad: Calidad, escena: THREE.Scene): Promise<Barrio> {
+    const [nivel, fisica] = await Promise.all([cargarNivel(rutaNivel(ficha.id)), MundoFisico.crear()]);
+    return new Barrio(ficha, nivel, fisica, calidad, escena);
+  }
+
+  /** Motos aparcadas para robar: junto a bares, mercado, farmacias, bancos, colegios. */
+  private aparcarScooters(cuantas: number): void {
+    const rnd = (n: number) => ((Math.sin(n * 12.9898) * 43758.5453) % 1 + 1) % 1;
+    const sitios = this.nivel.pois.filter((p) => ['bar', 'cafe', 'restaurant', 'marketplace', 'supermarket', 'pharmacy', 'bank', 'library', 'school'].includes(p.clase));
+    let i = 0;
+    for (const sitio of sitios) {
+      if (i >= cuantas) break;
+      const nodo = this.grafo.masCercano(sitio.x, sitio.z, 'peatonal');
+      const [nx, nz] = this.grafo.nodos[nodo] ?? [sitio.x, sitio.z];
+      const x = nx + (rnd(i) - 0.5) * 3, z = nz + (rnd(i + 50) - 0.5) * 3;
+      if (Math.hypot(x - this.arranque.x, z - this.arranque.z) < 6) continue;
+      if (this.scooters.some((m) => Math.hypot(m.estado.x - x, m.estado.z - z) < 3)) continue;
+      const moto = new Scooter(this.fisica, x, z, rnd(i + 100) * Math.PI * 2, MODELOS[(i + 1) % MODELOS.length]!);
+      this.scooters.push(moto);
+      this.grupo.add(moto.malla);
+      i++;
+    }
+  }
+
+  /** Coches aparcados en el arcén de las calles rodadas. */
+  private aparcarCoches(cuantos: number): void {
+    const rnd = (n: number) => ((Math.sin(n * 78.233) * 43758.5453) % 1 + 1) % 1;
+    let i = 0;
+    for (const via of this.nivel.vias) {
+      if (via.clase !== 'rodada' || via.tipo === 'service' || i >= cuantos) continue;
+      if (rnd(via.id) > 0.45) continue;
+      const [ax, az] = via.puntos[0]!;
+      const [bx, bz] = via.puntos[1] ?? via.puntos[0]!;
+      const dx = bx - ax, dz = bz - az;
+      const l = Math.hypot(dx, dz) || 1;
+      if (l < 12) continue;
+      const ux = dx / l, uz = dz / l;
+      const lado = via.ancho / 2 + 1.3;
+      const x = ax + ux * (5 + rnd(via.id + 1) * (l - 10)) - uz * lado;
+      const z = az + uz * (5 + rnd(via.id + 1) * (l - 10)) + ux * lado;
+      const coche = new Coche(this.fisica, x, z, Math.atan2(ux, -uz), COLORES_COCHE[Math.floor(rnd(via.id + 2) * COLORES_COCHE.length)]!);
+      this.coches.push(coche);
+      this.grupo.add(coche.malla);
+      i++;
+    }
+  }
+
+  /** La parada del 13 donde te deja el bus (por trozo del nombre; si no, la más cercana al centro). */
+  get paradaLlegada(): Poi | null {
+    const buscada = this.ficha.paradaLlegada.toLowerCase();
+    return this.paradas.lista.find((p) => p.nombre.toLowerCase().includes(buscada)) ?? this.paradas.masCercana(0, 0);
+  }
+
+  /** Dirección de la calle rodada más cercana a un punto (para orientar el bus). */
+  direccionCalle(x: number, z: number): { x: number; z: number } {
+    let mejor = { d: Infinity, x: 0, z: -1 };
+    for (const via of this.nivel.vias) {
+      if (via.clase !== 'rodada') continue;
+      for (let i = 0; i + 1 < via.puntos.length; i++) {
+        const [ax, az] = via.puntos[i]!;
+        const [bx, bz] = via.puntos[i + 1]!;
+        const l = Math.hypot(bx - ax, bz - az) || 1;
+        const d = Math.hypot((ax + bx) / 2 - x, (az + bz) / 2 - z);
+        if (d < mejor.d) mejor = { d, x: (bx - ax) / l, z: (bz - az) / l };
+      }
+    }
+    return { x: mejor.x, z: mejor.z };
+  }
+
+  destruir(escena: THREE.Scene): void {
+    escena.remove(this.grupo);
+    this.grupo.traverse((o) => {
+      if (o instanceof THREE.Mesh || o instanceof THREE.InstancedMesh || o instanceof THREE.LineSegments) {
+        o.geometry.dispose();
+      }
+    });
+    this.fisica.world.free();
+  }
+}

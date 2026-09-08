@@ -4,6 +4,29 @@ Un párrafo por sesión nocturna, el más reciente arriba. Corto, para leer en e
 
 ---
 
+## Plan de la noche del 2026-09-09 (segunda sesión, 00:15 → 04:45)
+
+Objetivo: **hito 5 entero (El 13 y la Alameda)** y comerme cuanto pueda del 6.
+Lo primero, un bug gordo: el commit de la noche anterior que metió el día y la noche
+borró sin querer el trozo que atendía a la tecla E / botón SUBIR-BAJAR (y la R nunca llegó
+a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
+
+- [x] **Bloque 1 (hecho a las 00:35)** — Arreglar E y R. Refactor: cada barrio es un objeto
+      `Barrio` (escena + física + población) que se destruye y recrea. Paradas del 13 en las
+      `bus_stop` de OSM, cinemática del bus con cámara baja, viaje a la Alameda y vuelta,
+      barrio guardado en la partida, mecheros por barrio. Tests del registro de barrios y de
+      las paradas. Verificación con viaje incluido. Push.
+- [ ] **Bloque 2 (01:30-02:10)** — La Alameda con su propia paleta (casco antiguo: albero,
+      blanco y cal), afinar población y rendimiento con 891 edificios.
+      `docs/COMO_ANADIR_UN_BARRIO.md`. Push.
+- [ ] **Bloque 3 (02:10-03:00)** — Hito 6: menú principal con créditos (OSM), estadísticas
+      de la partida y garaje (motos que has robado, elegir con cuál sales). Push.
+- [ ] **Bloque 4 (03:00-03:45)** — Rótulos con el `name` real de bares y comercios sobre
+      las puertas, ventanas encendidas de noche, controles policiales. Push.
+- [ ] **Bloque 5 (03:45-04:25)** — Carreras por los pasajes contra el reloj (checkpoints)
+      y rampas para saltar. Push.
+- [ ] **Cierre (04:25-04:45)** — roadmap, decisiones, notas, verificación final y push.
+
 ## Plan de la noche del 2026-09-08 (primera sesión, 00:15 → 04:45)
 
 Objetivo: **hito 1 entero** (Moverse) publicado y jugable en el móvil.

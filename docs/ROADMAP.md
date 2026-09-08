@@ -48,8 +48,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Escapar bajando el nivel; "¡Trincao!" y reaparición en el Mercado (no hay comisaría en la caja).
 
 ## 5. El 13
-- [ ] Parada de bus y cinemática del viaje.
-- [ ] La Alameda como segundo barrio.
+- [x] Parada de bus (las `bus_stop` de OSM) y cinemática del viaje con cámara baja.
+- [x] La Alameda como segundo barrio (caja de 500 m alrededor de la Alameda de Hércules).
 - [ ] Sistema de zonas documentado en `docs/COMO_ANADIR_UN_BARRIO.md`.
 
 ## 6. Freestyle completo

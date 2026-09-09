@@ -2,6 +2,7 @@
 // portada y, en partida, con Escape / botón ☰ (el juego se pausa mientras está abierto).
 import type { ModeloScooter } from '../fisica/scooter';
 import { Contador, Garaje, resumen } from '../estadisticas';
+import type { Calidad } from '../juego';
 import { LOGROS, type Logros } from '../logros';
 
 export type Pestana = 'garaje' | 'logros' | 'estadisticas' | 'ayuda' | 'creditos';
@@ -14,6 +15,8 @@ export interface OpcionesMenu {
   alElegirMoto: (indice: number) => void;
   alNuevaPartida: () => void;
   alCerrar: () => void;
+  calidad: Calidad;
+  alElegirCalidad: (c: Calidad) => void;
 }
 
 const AYUDA = `
@@ -24,6 +27,7 @@ const AYUDA = `
 <div class="fila"><span>Volver a la parada</span><strong>R</strong></div>
 <div class="fila"><span>Menú y pausa</span><strong>ESC · ☰</strong></div>
 <div class="fila"><span>Plegar el minimapa</span><strong>M · tocarlo</strong></div>
+<div class="fila"><span>Foto para compartir</span><strong>P · 📷</strong></div>
 <p class="peque" style="margin-top:10px">Roba motos aparcadas y coches en marcha (¡y el 13!). Derriba conos, macetas, terrazas y cajas del
 mercado para ganar dinero y armar lío. Las estrellas son la Policía Local: los coches patrulla no entran en los
 pasajes, las motos sí. Pasa en moto por una pancarta a cuadros para correr contra el reloj. Las rampas de los
@@ -74,6 +78,8 @@ export class Menu {
       if (window.confirm('¿Empezar de cero? Se pierden posición, dinero, mecheros y estadísticas. El garaje se queda.')) this.op.alNuevaPartida();
     });
     this.cuerpo.addEventListener('click', (e) => {
+      const c = (e.target as HTMLElement).closest<HTMLElement>('[data-calidad]');
+      if (c && c.dataset['calidad'] !== this.op.calidad) { this.op.alElegirCalidad(c.dataset['calidad'] as Calidad); return; }
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-moto]');
       if (!b) return;
       const i = Number(b.dataset['moto']);
@@ -100,7 +106,7 @@ export class Menu {
     if (pestana === 'garaje') this.cuerpo.innerHTML = this.htmlGaraje();
     else if (pestana === 'logros') this.cuerpo.innerHTML = this.htmlLogros();
     else if (pestana === 'estadisticas') this.cuerpo.innerHTML = this.htmlEstadisticas();
-    else if (pestana === 'ayuda') this.cuerpo.innerHTML = AYUDA;
+    else if (pestana === 'ayuda') this.cuerpo.innerHTML = AYUDA + this.htmlCalidad();
     else this.cuerpo.innerHTML = CREDITOS;
   }
 
@@ -122,6 +128,12 @@ export class Menu {
       </button>`;
     });
     return `<p class="peque">Las motos que robas se quedan en el garaje. Elige con cuál sales.</p>${filas.join('')}`;
+  }
+
+  /** Selector de calidad gráfica: cambiarla recarga el juego (el barrio se construye según ella). */
+  private htmlCalidad(): string {
+    const botones = (['alta', 'media', 'baja'] as const).map((c) => `<button type="button" class="calidad ${c === this.op.calidad ? 'elegida' : ''}" data-calidad="${c}">${c.toUpperCase()}</button>`);
+    return `<div class="fila" style="margin-top:12px;align-items:center"><span>Gráficos<br><span class="peque">Si va a tirones, baja</span></span><span class="calidades">${botones.join('')}</span></div>`;
   }
 
   private htmlLogros(): string {

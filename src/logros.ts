@@ -31,6 +31,7 @@ export const LOGROS: Logro[] = [
   { id: 'atropellos', nombre: 'Que era el del quinto', descripcion: 'Atropella a 25 vecinos', cumple: (e) => e.atropellos >= 25 },
   { id: 'gol', nombre: '¡Gooool!', descripcion: 'Mete un gol en una pachanga', cumple: (e) => e.goles >= 1 },
   { id: 'pichichi', nombre: 'Pichichi del pasaje', descripcion: 'Diez goles', cumple: (e) => e.goles >= 10 },
+  { id: 'sevici', nombre: 'Carril bici', descripcion: 'Tira a 5 del Sevici', cumple: (e) => e.ciclistas >= 5 },
   { id: 'reventon', nombre: 'Petó la Jog', descripcion: 'Revienta un vehículo', cumple: (e) => e.reventones >= 1 },
 ];
 

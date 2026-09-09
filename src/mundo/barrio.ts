@@ -21,6 +21,7 @@ import { Trastos } from './trastos';
 import { Semaforos } from './semaforos';
 import { Encargos } from './encargos';
 import { Pachangas } from './pachangas';
+import { Sevici } from './sevici';
 import { localesConNombre, type Local } from '../recados';
 import type { Nivel } from './tipos';
 import { Patrullas } from '../policia/patrullas';
@@ -46,6 +47,7 @@ export class Barrio {
   readonly locales: Local[];
   readonly encargos: Encargos;
   readonly pachangas: Pachangas;
+  readonly sevici: Sevici;
   /** Carreras del barrio: nodo de salida y su ruta fija. */
   readonly carreras: { salida: number; ruta: RutaCarrera }[] = [];
   readonly scooters: Scooter[] = [];
@@ -122,6 +124,8 @@ export class Barrio {
     const evitar: [number, number][] = [[this.arranque.x, this.arranque.z], ...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), ...conEncargo.map((l) => [l.x, l.z] as [number, number]), ...this.paradas.lista.map((p) => [p.x, p.z] as [number, number])];
     this.pachangas = new Pachangas(fisica, nivel, 4, evitar);
     this.grupo.add(this.pachangas.grupo);
+    this.sevici = new Sevici(nivel, ficha.poblacion.sevici);
+    this.grupo.add(this.sevici.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
     this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);

@@ -520,3 +520,32 @@ balón se va a más de 45 m del campo, vuelve al centro.
 **Vibración** (`navigator.vibrate`) en golpes fuertes, atropellos, reventones y goles; `?vibrar=0`
 la apaga. **Repetición**: al reventar un vehículo, 2,2 s de cámara baja orbitando el punto (la
 segunda excepción a la cámara alta, junto al 13); el juego sigue corriendo debajo.
+
+## 2026-09-10 — Calidad gráfica elegible, y lo que dice la auditoría de draw calls
+
+Tres calidades: **alta** (sombras de 1024, antialias, DPR hasta 1,5, bordes en los edificios),
+**media** (sombras de 512, sin antialias, DPR 1, sin bordes) y **baja** (sin sombras, DPR 0,5,
+sin aceras ni líneas). Se decide sola (sin GPU baja; táctil y pantalla pequeña media; el resto
+alta), se puede cambiar en la pestaña AYUDA del menú y se guarda en `pinoloko.calidad`. Cambiarla
+recarga, porque el barrio se construye distinto según ella. `?calidad=` sigue mandando sobre todo.
+
+La auditoría con `scripts/sonda-calls.mjs` (calidad alta, 390x844): **108-130 draw calls y
+49-60k triángulos por frame** en los tres barrios, de día y de noche, parado y en marcha. Eso es
+poco para un móvil de gama media; si va a tirones será por relleno (sombras y DPR), que es lo que
+baja la calidad media. `renderer.info` se copia justo después de la pasada principal porque la
+del minimapa lo pisaba (antes la sonda leía "6 calls").
+
+## 2026-09-10 — Sevici por el carril bici, campanas y modo foto
+
+**Sevici**: ciclistas sin física por las aristas cuya vía es `cycleway` (12 en el Mercado, algunas
+en Triana, ninguna en la caja de la Alameda: ahí no hay). Tocan el timbre si te tienen delante a
+menos de 7 m y se caen si los atropellas (30 €, calor de atropello, y a los tres segundos siguen).
+Bici verde con cesta gris y ciclista encima en una sola geometría instanciada.
+
+**Campanas**: a cada hora en punto, si hay un `place_of_worship` a menos de 200 m (Pino Montano
+tiene su parroquia en la caja), suena una campana FM sintetizada; tres a las doce y a las ocho.
+Solo de 8 a 21: de noche no tocan.
+
+**Foto** (P o el botón 📷): captura del canvas en el mismo frame (sin `preserveDrawingBuffer`
+solo vale ahí), franja abajo con el logo, calle, hora y barrio, atribución a OSM, y hoja de
+compartir del móvil (`navigator.share` con ficheros) o descarga si no la hay.

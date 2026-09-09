@@ -116,3 +116,11 @@ Formato:
 - Descripción para generarlo: bolsa de papel de bar/farmacia con asas, low-poly (~100
   triángulos), color kraft, exagerada de tamaño (1,3 m) para leerse desde arriba.
 - Formato y tamaño deseados: GLB, Y arriba.
+
+## Bici del Sevici con ciclista
+- Dónde se usa: `src/mundo/sevici.ts` (carriles bici).
+- Placeholder actual: dos ruedas, cuadro verde, cesta gris y ciclista de cápsula amarilla.
+- Descripción para generarlo: bicicleta de la bici pública de Sevilla (cuadro bajo, cesta
+  delantera, guardabarros), low-poly (~300 triángulos), con ciclista casual encima en pose de
+  pedalear. Colores planos.
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 1,8 m de largo.

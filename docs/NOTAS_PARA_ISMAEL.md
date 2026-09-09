@@ -22,11 +22,14 @@ dejar herramientas para que pruebes el rendimiento en el móvil.
 - [x] **Bloque 4 (hecho a las 00:45)** — El balón en el pasaje: niños jugando al fútbol con un balón
       de física que puedes chutar con la moto (gol = euros), vibración táctil en los golpes y
       repetición corta con cámara baja cuando revienta un vehículo. Push.
-- [ ] **Bloque 5 (03:10-03:50)** — Rendimiento móvil: auditoría de draw calls y triángulos por
+- [x] **Bloque 5 (hecho a las 00:50)** — Rendimiento móvil: auditoría de draw calls y triángulos por
       barrio, sombras y DPR por nivel de calidad elegible en el menú (se guarda), y lo que salga
       de la auditoría. Push.
-- [ ] **Bloque 6 (03:50-04:20)** — Si sobra: modo foto (botón que guarda una captura con el
-      logo) y consejos en la portada.
+- [x] **Bloque 6 (hecho a las 00:55)** — Modo foto (P o 📷: captura con logo y hoja de compartir).
+- [x] **Bloque 7 (hecho a la 01:00)** — Sevici por el carril bici (timbre y caída) y campanas de la parroquia.
+- [ ] **Bloque 8** — Helicóptero de la Local a cinco estrellas.
+- [ ] **Bloque 9** — Mercadillo junto al Mercado y furgonetas en el tráfico.
+- [ ] **Bloque 10** — Pistas la primera vez que juegas.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Plan de la noche del 2026-09-09 (segunda sesión, 00:15 → 04:45)

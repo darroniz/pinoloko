@@ -6,6 +6,8 @@ export class Hud {
   private aviso: HTMLElement;
   private temporizadorAviso = 0;
   private ultimaCalle = '';
+
+  get calleActual(): string { return this.ultimaCalle; }
   private racha: HTMLElement;
 
   constructor() {

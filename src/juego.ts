@@ -21,6 +21,7 @@ import { MarcasNeumatico } from './efectos/marcas';
 import { Particulas } from './efectos/particulas';
 import { MarcadorJugador } from './efectos/marcador';
 import { NivelBusqueda } from './policia/busqueda';
+import { Helicoptero } from './policia/helicoptero';
 import { Cielo } from './mundo/cielo';
 import { TOTAL_MECHEROS } from './mundo/mecheros';
 import { Barrio } from './mundo/barrio';
@@ -32,6 +33,7 @@ import { Carrera, Records, formatearTiempo, premio } from './carreras';
 import { Recadero, elegirDestino, premioRecado } from './recados';
 import { Logros } from './logros';
 import { Repeticion } from './efectos/repeticion';
+import { Foto } from './ui/foto';
 import { Menu, type Pestana } from './ui/menu';
 import { Minimapa } from './ui/minimapa';
 
@@ -43,26 +45,46 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
-export type Calidad = 'alta' | 'baja';
+export type Calidad = 'alta' | 'media' | 'baja';
+const CLAVE_CALIDAD = 'pinoloko.calidad';
 
 const SIN_ENTRADA = { eje: { x: 0, y: 0 }, freno: true, accion: false };
 const PASO_MAXIMO = 1 / 20;
 const RADIO_PARADA = 5;
 
-/** Sin GPU (SwiftShader, llvmpipe) o forzado por `?calidad=baja`: sin sombras y a DPR 1. */
+const esCalidad = (v: string | null): v is Calidad => v === 'alta' || v === 'media' || v === 'baja';
+
+/**
+ * Calidad gráfica: `?calidad=` manda, luego la elegida en el menú (guardada), y si no, se
+ * decide sola: sin GPU (SwiftShader, llvmpipe) baja; móvil (táctil y pantalla pequeña) media;
+ * el resto alta. Alta: sombras de 1024, antialias, DPR hasta 1,5 y bordes en los edificios.
+ * Media: sombras de 512, sin antialias, DPR 1 y sin bordes. Baja: sin sombras y a DPR 0,5.
+ */
 function detectarCalidad(): Calidad {
   const forzada = new URLSearchParams(location.search).get('calidad');
-  if (forzada === 'alta' || forzada === 'baja') return forzada;
+  if (esCalidad(forzada)) return forzada;
   const gl = document.createElement('canvas').getContext('webgl2') ?? document.createElement('canvas').getContext('webgl');
   if (!gl) return 'baja';
   const info = gl.getExtension('WEBGL_debug_renderer_info');
   const nombre = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
   if (/swiftshader|llvmpipe|software|mesa offscreen/i.test(nombre)) return 'baja';
-  return 'alta';
+  let guardada: string | null = null;
+  try { guardada = localStorage.getItem(CLAVE_CALIDAD); } catch { /* sin almacenamiento */ }
+  if (esCalidad(guardada)) return guardada;
+  const movil = navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) < 900;
+  return movil ? 'media' : 'alta';
+}
+
+/** Guarda la calidad elegida en el menú y recarga: el barrio se construye distinto según ella. */
+export function elegirCalidad(c: Calidad): void {
+  try { localStorage.setItem(CLAVE_CALIDAD, c); } catch { /* sin almacenamiento */ }
+  const url = new URL(location.href);
+  url.searchParams.delete('calidad');
+  location.href = url.toString();
 }
 
 export class Juego {
@@ -121,7 +143,11 @@ export class Juego {
   private logros = new Logros();
   private tiempoLogros = 0;
   private repeticion = new Repeticion();
+  private foto: Foto;
   private tiempoGolNinos = 0;
+  private horaCampanas = -1;
+  private helicoptero = new Helicoptero();
+  private tiempoTimbre = 0;
   /** `?vibrar=0` la apaga; la vibración solo existe en móviles. */
   private conVibracion = new URLSearchParams(location.search).get('vibrar') !== '0' && typeof navigator.vibrate === 'function';
   private menu: Menu;
@@ -129,6 +155,8 @@ export class Juego {
   /** `?minimapa=0` lo apaga del todo (para medir su coste en la sonda). */
   private sinMinimapa = new URLSearchParams(location.search).get('minimapa') === '0';
   private pausado = false;
+  /** Copia de `renderer.info.render` justo tras la pasada principal (la del minimapa la pisa). */
+  private infoRender = { calls: 0, triangles: 0 };
   private ultimaPos = new THREE.Vector3();
   private tiempoSemaforo = 0;
   private recadero = new Recadero();
@@ -139,7 +167,7 @@ export class Juego {
     this.lienzo = document.getElementById('lienzo') as HTMLCanvasElement;
     this.calidad = detectarCalidad();
     this.renderer = new THREE.WebGLRenderer({ canvas: this.lienzo, antialias: this.calidad === 'alta', powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(this.calidad === 'baja' ? 0.5 : Math.min(window.devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(this.calidad === 'baja' ? 0.5 : this.calidad === 'media' ? 1 : Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = this.calidad !== 'baja';
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -162,11 +190,16 @@ export class Juego {
       alElegirMoto: (i) => this.cambiarMoto(i),
       alNuevaPartida: () => this.nuevaPartida(),
       alCerrar: () => { this.pausado = false; },
+      calidad: this.calidad,
+      alElegirCalidad: (c) => { this.guardar(); elegirCalidad(c); },
     });
     document.getElementById('boton-menu')!.addEventListener('click', () => this.abrirMenu());
+    this.foto = new Foto(this.lienzo, () => `${this.hud.calleActual} · ${this.cielo.textoHora} · ${this.barrio.ficha.nombre.split(' ·')[0]}`, (t) => this.hud.avisar(t, 1.2));
+    document.getElementById('boton-foto')!.addEventListener('click', () => { if (this.jugando && !this.pausado) this.foto.pedir(); });
     for (const b of document.querySelectorAll<HTMLElement>('#portada [data-menu]')) b.addEventListener('click', () => this.menu.abrir(b.dataset['menu'] as Pestana));
     window.addEventListener('keydown', (e) => {
       if (e.code === 'KeyM' && this.jugando) { this.minimapa.alternar(); return; }
+      if (e.code === 'KeyP' && this.jugando && !this.pausado) { this.foto.pedir(); return; }
       if (e.code !== 'Escape') return;
       if (this.menu.abierto) this.menu.cerrar();
       else if (this.jugando) this.abrirMenu();
@@ -177,7 +210,7 @@ export class Juego {
   }
 
   async cargar(): Promise<void> {
-    this.escena.add(this.marcas.malla, this.particulas.puntos, this.trozos.malla, this.marcador.grupo, this.cine.bus);
+    this.escena.add(this.marcas.malla, this.particulas.puntos, this.trozos.malla, this.marcador.grupo, this.cine.bus, this.helicoptero.grupo);
 
     // Luz: hemisferio cálido y un sol con sombras suaves que sigue al jugador.
     const ambiente = new THREE.HemisphereLight('#ffffff', '#c9b69a', 0.85);
@@ -234,6 +267,8 @@ export class Juego {
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
+      helicoptero: () => ({ activo: this.helicoptero.activo, pos: this.helicoptero.grupo.children[0]?.position.toArray() }),
+      sevici: () => this.barrio.sevici.lista.map((c) => ({ x: Math.round(c.x * 10) / 10, z: Math.round(c.z * 10) / 10, estado: c.estado })),
       pachangas: () => this.barrio.pachangas.lista.map((p) => ({ x: p.x, z: p.z, goles: p.goles, porteria: p.porteria, balon: p.malla.position.toArray() })),
       recado: () => ({ estado: this.recadero.estado, destino: this.recadero.destino, restante: this.recadero.restante, cadena: this.recadero.cadena, puntos: this.barrio.encargos.puntos }),
       semaforos: () => this.barrio.semaforos.cruces.map((c) => ({ x: c.x, z: c.z, n: c.semaforos.length, luz: this.barrio.semaforos.luzDelante(c.x - Math.sin(c.eje) * 12, c.z + Math.cos(c.eje) * 12, c.eje, 20)?.luz ?? null })),
@@ -256,7 +291,7 @@ export class Juego {
     };
     window.__pv_info = () => {
       const b = this.barrio;
-      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.renderer.info.render }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, sentados: b.vecinos.lista.filter((v) => v.estado === 'sentado').length, buses: b.trafico.lista.filter((c) => c.tipo === 'bus').length, rotos: b.trastos.lista.filter((t) => t.roto).length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
+      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.infoRender }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, sentados: b.vecinos.lista.filter((v) => v.estado === 'sentado').length, buses: b.trafico.lista.filter((c) => c.tipo === 'bus').length, rotos: b.trastos.lista.filter((t) => t.roto).length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
     };
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
@@ -295,6 +330,7 @@ export class Juego {
     this.hud.ponerCalle(this.barrio.nivel.nombre);
     this.hud.ponerEstrellas(0);
     this.busqueda.limpiar();
+    this.helicoptero.retirar(true);
     this.minimapa.cargar(this.barrio.nivel);
   }
 
@@ -335,6 +371,8 @@ export class Juego {
     this.peaton.esconder();
     this.busqueda.limpiar();
     this.barrio.patrullas.retirarTodas();
+    this.helicoptero.retirar(true);
+    this.audio.actualizarHelicoptero(false, 0);
     this.hud.ponerEstrellas(0);
     this.audio.silenciarMotor(true);
     this.audio.actualizarSirena(false, 0, 1);
@@ -425,7 +463,7 @@ export class Juego {
     }
     const b = this.barrio;
     const cambio = this.busqueda.actualizar(dt);
-    if (cambio > 0) this.hud.avisar(this.busqueda.estrellas >= 3 ? '¡Las motos de la Local!' : '¡Que viene la Local!', 1.8);
+    if (cambio > 0) this.hud.avisar(this.busqueda.estrellas >= 5 ? '¡Cinco estrellas! Esto ya es la Feria' : this.busqueda.estrellas >= 3 ? '¡Las motos de la Local!' : '¡Que viene la Local!', 1.8);
     this.hud.ponerEstrellas(this.busqueda.estrellas);
 
     const dotacion = this.busqueda.dotacion;
@@ -438,6 +476,12 @@ export class Juego {
       lista.sort((a, c) => Math.hypot(c.x - pos.x, c.z - pos.z) - Math.hypot(a.x - pos.x, a.z - pos.z))[0];
     if (coches.length > dotacion.coches) { const p = lejana(coches); if (p) b.patrullas.retirar(p); }
     if (motos.length > dotacion.motos) { const p = lejana(motos); if (p) b.patrullas.retirar(p); }
+    // A cinco estrellas, el helicóptero: mientras su foco te tenga, el calor no baja.
+    if (this.busqueda.estrellas >= 5 && !this.helicoptero.activo) { this.helicoptero.aparecer(pos.x, pos.z); this.hud.avisar('¡El helicóptero de la Local!', 2.2); }
+    else if (this.busqueda.estrellas < 4 && this.helicoptero.activo) this.helicoptero.retirar();
+    const heli = this.helicoptero.actualizar({ x: pos.x, z: pos.z }, dt);
+    if (heli.iluminado) this.busqueda.visto();
+    this.audio.actualizarHelicoptero(this.helicoptero.activo, heli.cercania);
     // Controles: a partir de dos estrellas, uno cruzado por delante de ti cada pocos segundos.
     const controles = b.patrullas.lista.filter((p) => p.tipo === 'control');
     this.tiempoControl -= dt;
@@ -467,6 +511,8 @@ export class Juego {
     this.hud.ponerEstrellas(0);
     this.busqueda.limpiar();
     this.barrio.patrullas.retirarTodas();
+    this.helicoptero.retirar(true);
+    this.audio.actualizarHelicoptero(false, 0);
     this.dinero = Math.max(0, Math.floor(this.dinero * 0.8));
     this.hud.ponerDinero(this.dinero);
     this.contador.sumar('trincados');
@@ -546,6 +592,18 @@ export class Juego {
       }
       this.tiempoAire = 0;
     }
+  }
+
+  /** Campanas de la iglesia más cercana a cada hora en punto (si estás a menos de 200 m): una,
+   *  y tres a las doce y a las ocho, que son las de la misa. */
+  private actualizarCampanas(pos: THREE.Vector3): void {
+    const hora = Math.floor(this.cielo.hora) % 24;
+    if (hora === this.horaCampanas) return;
+    this.horaCampanas = hora;
+    let mejor = Infinity;
+    for (const p of this.barrio.nivel.pois) if (p.clase === 'place_of_worship') mejor = Math.min(mejor, Math.hypot(p.x - pos.x, p.z - pos.z));
+    if (mejor > 200 || hora < 8 || hora > 21) return;
+    this.audio.campanas(hora === 12 || hora === 20 ? 3 : 1, 0.05 + 0.2 * (1 - mejor / 200));
   }
 
   /** Vibración táctil corta (móvil): golpes, atropellos, reventones y goles. */
@@ -750,6 +808,8 @@ export class Juego {
     performance.measure('update', 'update-inicio', 'update-fin');
     performance.mark('render-inicio');
     this.renderer.render(this.escena, this.camara.camara);
+    this.infoRender.calls = this.renderer.info.render.calls;
+    this.infoRender.triangles = this.renderer.info.render.triangles;
     // Capa del minimapa encima, sin borrar lo pintado.
     this.minimapa.mostrar(this.jugando && !this.cine.activa && !this.cargandoBarrio && !this.sinMinimapa);
     if (this.minimapa.escena.children[0]?.visible) {
@@ -757,6 +817,7 @@ export class Juego {
       this.renderer.render(this.minimapa.escena, this.minimapa.camara);
       this.renderer.autoClear = true;
     }
+    this.foto.capturar();
     performance.mark('render-fin');
     performance.measure('render', 'render-inicio', 'render-fin');
     window.__pv_frames++;
@@ -868,6 +929,23 @@ export class Juego {
       this.actualizarSemaforos(jugadorPos, rapidez, dt);
       this.actualizarRecados(jugadorPos, dt);
       this.actualizarPachangas(jugadorPos, rapidez, dt);
+      // Sevici por el carril bici: timbre si te tienen delante y al suelo si los atropellas.
+      const sevici = b.sevici.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
+      this.tiempoTimbre -= dt;
+      if (sevici.timbre && this.tiempoTimbre <= 0) { this.tiempoTimbre = 1.5; this.audio.pitido(2200, 0.06, 0.08); setTimeout(() => this.audio.pitido(2200, 0.06, 0.08), 90); }
+      if (sevici.atropellos > 0) {
+        this.racha += sevici.atropellos;
+        this.tiempoRacha = 3;
+        this.ganar(30 * sevici.atropellos);
+        this.contador.sumar('ciclistas', sevici.atropellos);
+        this.hud.ponerRacha(this.racha);
+        this.hud.avisar(['¡El del Sevici al suelo!', '¡Por el carril bici no, illo!', '¡Menudo caballito ha hecho el ciclista!'][Math.floor(Math.random() * 3)]!, 1.6);
+        this.camara.sacudir(0.3);
+        this.vibrar(40);
+        this.audio.golpe(4);
+        this.busqueda.fechoria('atropello', sevici.atropellos);
+      }
+      this.actualizarCampanas(jugadorPos);
       // Daño: humo por debajo de 30 y reventón a 0 (Wifly sale despedido y la moto ya no arranca).
       if (!this.aPie) {
         const v = this.vehiculo;

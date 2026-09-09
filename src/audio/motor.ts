@@ -101,6 +101,36 @@ export class AudioJuego {
     this.sirenaGanancia!.gain.setTargetAtTime(activa ? 0.05 + cercania * 0.09 : 0, t, 0.15);
   }
 
+  private rotor: GainNode | null = null;
+  private rotorLfo: OscillatorNode | null = null;
+
+  /** Helicóptero: ruido grave con el volumen batido a 13 Hz (las palas). */
+  actualizarHelicoptero(activo: boolean, cercania: number): void {
+    if (!this.ctx || !this.maestro || !this.derrape?.buffer) return;
+    if (!this.rotor) {
+      const fuente = this.ctx.createBufferSource();
+      fuente.buffer = this.derrape.buffer;
+      fuente.loop = true;
+      const filtro = this.ctx.createBiquadFilter();
+      filtro.type = 'lowpass';
+      filtro.frequency.value = 180;
+      const batido = this.ctx.createGain();
+      batido.gain.value = 0.5;
+      this.rotorLfo = this.ctx.createOscillator();
+      this.rotorLfo.type = 'square';
+      this.rotorLfo.frequency.value = 13;
+      const profundidad = this.ctx.createGain();
+      profundidad.gain.value = 0.5;
+      this.rotorLfo.connect(profundidad).connect(batido.gain);
+      this.rotor = this.ctx.createGain();
+      this.rotor.gain.value = 0;
+      fuente.connect(filtro).connect(batido).connect(this.rotor).connect(this.maestro);
+      fuente.start();
+      this.rotorLfo.start();
+    }
+    this.rotor.gain.setTargetAtTime(activo ? 0.15 + cercania * 0.45 : 0, this.ctx.currentTime, 0.4);
+  }
+
   /** A pie no hay motor que oír. */
   silenciarMotor(si: boolean): void {
     if (si === this.silenciado || !this.ctx || !this.motorGanancia) return;
@@ -141,6 +171,32 @@ export class AudioJuego {
   }
 
   /** Fanfarria corta de tres notas (meta, los 20 mecheros). */
+  /** Campanas de la iglesia: `toques` golpes de campana sintetizada (FM), con el volumen que le den. */
+  campanas(toques: number, volumen = 0.2): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    for (let i = 0; i < toques; i++) {
+      const t = ctx.currentTime + i * 0.9;
+      const portadora = ctx.createOscillator();
+      portadora.type = 'sine';
+      portadora.frequency.value = 523;
+      const moduladora = ctx.createOscillator();
+      moduladora.type = 'sine';
+      moduladora.frequency.value = 523 * 1.4;
+      const indice = ctx.createGain();
+      indice.gain.setValueAtTime(600, t);
+      indice.gain.exponentialRampToValueAtTime(20, t + 1.6);
+      moduladora.connect(indice).connect(portadora.frequency);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(volumen, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+      portadora.connect(g).connect(this.maestro);
+      moduladora.start(t); portadora.start(t);
+      moduladora.stop(t + 2.3); portadora.stop(t + 2.3);
+    }
+  }
+
   fanfarria(): void {
     if (!this.ctx) return;
     const notas = [660, 880, 1320];

@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export type EstadoPeaton = 'pasear' | 'huir' | 'caido' | 'levantarse' | 'sentado';
 
@@ -28,6 +29,35 @@ export const INSULTOS = [
   '¡Ay mi madre!', '¡Pisha, frena un poco!', '¡Que te veo, Wifly!', '¡Eso se lo digo yo a tu madre!',
   '¡Vaya tela con el niño!', '¡Ni un respeto, ni un respeto!',
 ];
+
+export type Tribu = 'canis' | 'modernos' | 'trianeros';
+
+/** Cada tribu tiene su ropa, su gorro (o ninguno) y sus gritos. Los canis son los del barrio de Wifly. */
+export const TRIBUS: Record<Tribu, { ropa: string[]; gorro: 'gorra' | 'gorro' | null; insultos: string[] }> = {
+  canis: {
+    ropa: ['#1d3fa8', '#e63946', '#f5f5f5', '#111111', '#2a9d8f', '#f4a261'],
+    gorro: 'gorra',
+    insultos: INSULTOS,
+  },
+  modernos: {
+    ropa: ['#3d405b', '#e07a5f', '#81b29a', '#f2cc8f', '#2b2b2b', '#a8dadc'],
+    gorro: 'gorro',
+    insultos: [
+      '¡Tío, que casi me tiras el café de especialidad!', '¡Mi bici de piñón fijo!', '¡Que llevo la tote bag llena!',
+      '¡Uy, qué agresividad!', '¡Esto lo subo a stories!', '¡Aquí no se viene con moto, se viene en patinete!',
+      '¡Vuélvete a Pino Montano, illo!', '¡Qué poco cívico!', '¡Estaba en un podcast!',
+    ],
+  },
+  trianeros: {
+    ropa: ['#f8f1e4', '#8ecae6', '#d62828', '#0b3d91', '#f7b267', '#5c8a3c'],
+    gorro: null,
+    insultos: [
+      '¡Que esto es Triana, chiquillo!', '¡Al otro lado del puente, anda!', '¡Mi niño, que me matas!',
+      '¡Uy, uy, uy, que viene el cani!', '¡Ojú, qué susto, mi alma!', '¡Ni en Feria se ve esto!',
+      '¡Que tengo la cera puesta!', '¡A tu barrio, canijo!', '¡Vaya un tarambana!',
+    ],
+  },
+};
 
 const RADIO_HUIDA = 9;
 const RADIO_ATROPELLO = 1.1;
@@ -124,8 +154,6 @@ export function crearVecino(grafo: GrafoBarrio, nodo: number, rnd: () => number)
   };
 }
 
-const COLORES_ROPA = ['#e63946', '#2a9d8f', '#e9c46a', '#8ecae6', '#f4a261', '#9b5de5'];
-
 /** Los vecinos dibujados como instancias: cuerpo (cápsula) y cabeza, por color de ropa. */
 export class Vecinos {
   readonly grupo = new THREE.Group();
@@ -141,10 +169,24 @@ export class Vecinos {
   private ejeX = new THREE.Vector3(1, 0, 0);
   private q2 = new THREE.Quaternion();
 
-  constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = []) {
+  private gorros: THREE.InstancedMesh | null = null;
+  private readonly insultos: string[];
+
+  constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = [], tribu: Tribu = 'canis') {
     const geoCuerpo = new THREE.CapsuleGeometry(0.28, 0.6, 3, 8).translate(0, 0.72, 0);
     const geoCabeza = new THREE.SphereGeometry(0.24, 8, 6).translate(0, 1.42, 0);
-    for (const c of COLORES_ROPA) {
+    const t = TRIBUS[tribu];
+    this.insultos = t.insultos;
+    if (t.gorro === 'gorra') {
+      // Gorra plana: disco encima de la cabeza y visera hacia delante.
+      const copa = new THREE.CylinderGeometry(0.25, 0.26, 0.1, 8).translate(0, 1.62, 0);
+      const visera = new THREE.BoxGeometry(0.34, 0.04, 0.22).translate(0, 1.58, -0.3);
+      this.gorros = new THREE.InstancedMesh(mergeGeometries([copa, visera]), new THREE.MeshLambertMaterial({ color: '#111111' }), cuantos);
+    } else if (t.gorro === 'gorro') {
+      this.gorros = new THREE.InstancedMesh(new THREE.SphereGeometry(0.26, 8, 6).scale(1, 0.7, 1).translate(0, 1.5, 0), new THREE.MeshLambertMaterial({ color: '#c8a24a' }), cuantos);
+    }
+    if (this.gorros) { this.gorros.count = 0; this.gorros.frustumCulled = false; this.grupo.add(this.gorros); }
+    for (const c of t.ropa) {
       const im = new THREE.InstancedMesh(geoCuerpo, new THREE.MeshLambertMaterial({ color: c }), cuantos);
       im.count = 0;
       im.castShadow = true;
@@ -189,7 +231,7 @@ export class Vecinos {
     for (const v of this.lista) {
       const e = pasoVecino(v, this.grafo, jugador, dt, this.rnd);
       if (e === 'atropello') atropellos++;
-      else if (e === 'insulto' && !insulto) insulto = INSULTOS[Math.floor(this.rnd() * INSULTOS.length)]!;
+      else if (e === 'insulto' && !insulto) insulto = this.insultos[Math.floor(this.rnd() * this.insultos.length)]!;
     }
     this.dibujar(jugador.x, jugador.z);
     return { atropellos, insulto };
@@ -197,7 +239,7 @@ export class Vecinos {
 
   private dibujar(cx: number, cz: number): void {
     const cuentas = this.cuerpos.map(() => 0);
-    let nCabezas = 0;
+    let nCabezas = 0, nGorros = 0;
     for (const v of this.lista) {
       if ((v.x - cx) ** 2 + (v.z - cz) ** 2 > 130 * 130) continue;
       this.p.set(v.x, 0, v.z);
@@ -219,7 +261,10 @@ export class Vecinos {
       const im = this.cuerpos[v.color]!;
       im.setMatrixAt(cuentas[v.color]!++, this.m);
       this.cabezas.setMatrixAt(nCabezas++, this.m);
+      // Dos de cada tres llevan gorro (según el color de la ropa, que es fijo por vecino).
+      if (this.gorros && v.color % 3 !== 2) this.gorros.setMatrixAt(nGorros++, this.m);
     }
+    if (this.gorros) { this.gorros.count = nGorros; this.gorros.instanceMatrix.needsUpdate = true; }
     this.cuerpos.forEach((im, i) => { im.count = cuentas[i]!; im.instanceMatrix.needsUpdate = true; });
     this.cabezas.count = nCabezas;
     this.cabezas.instanceMatrix.needsUpdate = true;

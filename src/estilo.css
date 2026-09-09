@@ -26,7 +26,7 @@ body.tactil #joystick, body.tactil #boton-freno, body.tactil #boton-accion, body
 #boton-jugar { font-size: 24px; font-weight: 900; padding: 14px 48px; border: 0; border-radius: 16px; background: var(--tinta); color: #fff; box-shadow: 0 6px 0 #0f0a08; cursor: pointer; letter-spacing: 2px; }
 #boton-jugar:active { transform: translateY(4px); box-shadow: 0 2px 0 #0f0a08; }
 #portada.oculta { display: none; }
-#aviso { position: fixed; left: 50%; bottom: 18%; transform: translateX(-50%); background: rgba(43,35,32,0.85); color: #fff; padding: 8px 16px; border-radius: 10px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
+#aviso { position: fixed; left: 50%; bottom: 18%; transform: translateX(-50%); background: rgba(43,35,32,0.85); color: #fff; padding: 8px 16px; border-radius: 10px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity 0.3s; max-width: 88vw; text-align: center; }
 #aviso.visible { opacity: 1; }
 #racha { position: fixed; left: 50%; top: 18%; transform: translateX(-50%) rotate(-6deg); font-size: 34px; font-weight: 900; color: #e9553f; text-shadow: 3px 3px 0 #fff5e6; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; }
 #racha.visible { opacity: 1; transform: translateX(-50%) rotate(-6deg) scale(1.1); }
@@ -71,6 +71,9 @@ body.en-bus #boton-menu { display: none; }
 #menu .moto .stats { display: flex; gap: 8px; font-size: 11px; }
 #menu .moto .stats span { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 #menu .moto .stats i { display: block; height: 5px; border-radius: 3px; background: var(--acento); }
+#menu .logro { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(43,35,32,0.1); opacity: 0.55; }
+#menu .logro.hecho { opacity: 1; }
+#menu .logro .sello { font-size: 20px; color: var(--acento); text-align: center; }
 #menu .pie { display: flex; gap: 10px; padding: 12px 16px; background: #f2e3c2; }
 #menu .pie button { flex: 1; border: 0; border-radius: 12px; padding: 12px; font-weight: 900; letter-spacing: 1px; cursor: pointer; font-size: 14px; }
 #menu .pie .principal { background: var(--tinta); color: #fff; box-shadow: 0 4px 0 #0f0a08; }
@@ -79,7 +82,7 @@ body.en-bus #boton-menu { display: none; }
 #portada .extras button { border: 0; border-radius: 12px; padding: 10px 14px; font-weight: 800; font-size: 12px; letter-spacing: 1px; background: rgba(255,255,255,0.7); color: var(--tinta); box-shadow: 0 3px 0 rgba(0,0,0,0.12); cursor: pointer; }
 
 /* Carreras */
-#hud-carrera { position: fixed; top: max(50px, calc(env(safe-area-inset-top) + 40px)); left: 50%; transform: translateX(-50%); background: #ffd23f; color: #2b2320; font-weight: 900; font-size: 16px; padding: 5px 14px; border-radius: 12px; box-shadow: 0 3px 0 #a8842a; display: none; pointer-events: none; white-space: nowrap; }
+#hud-carrera { position: fixed; top: max(50px, calc(env(safe-area-inset-top) + 40px)); left: 50%; transform: translateX(-50%); background: #ffd23f; color: #2b2320; font-weight: 900; font-size: 16px; padding: 5px 14px; border-radius: 12px; box-shadow: 0 3px 0 #a8842a; display: none; pointer-events: none; max-width: 86vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #hud-carrera.visible { display: block; }
 body.en-bus #hud-carrera { display: none; }
 

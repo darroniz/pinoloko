@@ -30,6 +30,7 @@ import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
 import { Carrera, Records, formatearTiempo, premio } from './carreras';
 import { Recadero, elegirDestino, premioRecado } from './recados';
+import { Logros } from './logros';
 import { Menu, type Pestana } from './ui/menu';
 import { Minimapa } from './ui/minimapa';
 
@@ -116,6 +117,8 @@ export class Juego {
   private enAire = false;
   private contador = new Contador();
   private garaje = new Garaje();
+  private logros = new Logros();
+  private tiempoLogros = 0;
   private menu: Menu;
   private minimapa = new Minimapa();
   /** `?minimapa=0` lo apaga del todo (para medir su coste en la sonda). */
@@ -150,6 +153,7 @@ export class Juego {
       modelos: MODELOS,
       garaje: this.garaje,
       contador: this.contador,
+      logros: this.logros,
       alElegirMoto: (i) => this.cambiarMoto(i),
       alNuevaPartida: () => this.nuevaPartida(),
       alCerrar: () => { this.pausado = false; },
@@ -822,6 +826,8 @@ export class Juego {
       const mechero = b.mecheros.actualizar(jugadorPos.x, jugadorPos.z, dt);
       if (mechero >= 0) {
         this.ganar(10);
+        this.contador.sumar('mecheros');
+        if (b.mecheros.cuantos === TOTAL_MECHEROS) this.contador.sumar('barriosCompletos');
         this.hud.ponerMecheros(b.mecheros.cuantos, TOTAL_MECHEROS);
         this.hud.avisar(b.mecheros.cuantos === TOTAL_MECHEROS ? `¡Los 20 mecheros! Eres el rey de ${b.ficha.nombre.split(' ·')[0]}` : `Mechero ${b.mecheros.cuantos}/${TOTAL_MECHEROS}`, 1.6);
         if (b.mecheros.cuantos === TOTAL_MECHEROS) this.audio.fanfarria(); else this.audio.pitido(1320, 0.15);
@@ -904,6 +910,13 @@ export class Juego {
       }
       this.particulas.actualizar(dt);
       this.trozos.actualizar(dt);
+      // Logros: se comprueban cada dos segundos contra las estadísticas.
+      this.tiempoLogros -= dt;
+      if (this.tiempoLogros <= 0) {
+        this.tiempoLogros = 2;
+        const nuevos = this.logros.comprobar(this.contador.datos);
+        if (nuevos.length) { this.hud.avisar(`Logro: ${nuevos.map((l) => l.nombre).join(' · ')}`, 3); this.audio.fanfarria(); }
+      }
     }
 
     performance.mark('u7');
@@ -957,7 +970,7 @@ export class Juego {
       if (enParada !== this.enParada) {
         this.enParada = enParada;
         if (this.aPie) this.botonAccion.textContent = enParada ? 'EL 13' : 'SUBIR';
-        if (enParada && parada) this.hud.avisar(`${parada.nombre} · E: el 13 a ${BARRIOS[parada.destino]?.nombre.split(' ·')[0] ?? '?'}`, 2.4);
+        if (enParada && parada) this.hud.avisar(`${parada.nombre.split(' (')[0]} · E: el 13 a ${BARRIOS[parada.destino]?.nombre.split(' ·')[0] ?? '?'}`, 2.4);
       }
     }
     const acelerando = !this.aPie && Math.hypot(this.controles.eje.x, this.controles.eje.y) > 0.2 && !this.controles.freno;

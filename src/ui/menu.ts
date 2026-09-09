@@ -2,13 +2,15 @@
 // portada y, en partida, con Escape / botón ☰ (el juego se pausa mientras está abierto).
 import type { ModeloScooter } from '../fisica/scooter';
 import { Contador, Garaje, resumen } from '../estadisticas';
+import { LOGROS, type Logros } from '../logros';
 
-export type Pestana = 'garaje' | 'estadisticas' | 'ayuda' | 'creditos';
+export type Pestana = 'garaje' | 'logros' | 'estadisticas' | 'ayuda' | 'creditos';
 
 export interface OpcionesMenu {
   modelos: ModeloScooter[];
   garaje: Garaje;
   contador: Contador;
+  logros: Logros;
   alElegirMoto: (indice: number) => void;
   alNuevaPartida: () => void;
   alCerrar: () => void;
@@ -59,7 +61,7 @@ export class Menu {
     document.body.appendChild(this.panel);
     this.cuerpo = this.panel.querySelector('.cuerpo')!;
     this.pestanas = this.panel.querySelector('.pestanas')!;
-    for (const [id, texto] of [['garaje', 'GARAJE'], ['estadisticas', 'ESTADÍSTICAS'], ['ayuda', 'CÓMO SE JUEGA'], ['creditos', 'CRÉDITOS']] as const) {
+    for (const [id, texto] of [['garaje', 'GARAJE'], ['logros', 'LOGROS'], ['estadisticas', 'STATS'], ['ayuda', 'AYUDA'], ['creditos', 'CRÉDITOS']] as const) {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = texto;
@@ -96,6 +98,7 @@ export class Menu {
     this.actual = pestana;
     for (const b of this.pestanas.children) b.classList.toggle('activa', (b as HTMLElement).dataset['pestana'] === pestana);
     if (pestana === 'garaje') this.cuerpo.innerHTML = this.htmlGaraje();
+    else if (pestana === 'logros') this.cuerpo.innerHTML = this.htmlLogros();
     else if (pestana === 'estadisticas') this.cuerpo.innerHTML = this.htmlEstadisticas();
     else if (pestana === 'ayuda') this.cuerpo.innerHTML = AYUDA;
     else this.cuerpo.innerHTML = CREDITOS;
@@ -119,6 +122,12 @@ export class Menu {
       </button>`;
     });
     return `<p class="peque">Las motos que robas se quedan en el garaje. Elige con cuál sales.</p>${filas.join('')}`;
+  }
+
+  private htmlLogros(): string {
+    const tiene = this.op.logros.desbloqueados;
+    const filas = LOGROS.map((l) => `<div class="logro ${tiene.has(l.id) ? 'hecho' : ''}"><span class="sello">${tiene.has(l.id) ? '★' : '☆'}</span><span><strong>${l.nombre}</strong><br><span class="peque">${l.descripcion}</span></span></div>`);
+    return `<p class="peque">${tiene.size} de ${LOGROS.length}. Se consiguen haciendo el cafre por el barrio.</p>${filas.join('')}`;
   }
 
   private htmlEstadisticas(): string {

@@ -124,3 +124,24 @@ Formato:
   delantera, guardabarros), low-poly (~300 triángulos), con ciclista casual encima en pose de
   pedalear. Colores planos.
 - Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 1,8 m de largo.
+
+## Helicóptero de la Policía Local
+- Dónde se usa: `src/policia/helicoptero.ts` (a cinco estrellas).
+- Placeholder actual: esfera blanca con franja azul, cola de caja y rotor como disco translúcido.
+- Descripción para generarlo: helicóptero ligero de policía low-poly (~500 triángulos), blanco
+  con franja azul, visto sobre todo desde arriba (que el rotor y el techo se lean).
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 10 m de largo.
+
+## Puesto de mercadillo
+- Dónde se usa: `src/mundo/trastos.ts` (tipo `puesto`, junto al Mercado).
+- Placeholder actual: tablero con tres cajas de género, dos postes y toldo a rayas.
+- Descripción para generarlo: puesto de mercadillo con toldo a rayas rojas y blancas (y variantes
+  azul y verde), ropa colgada y género en la mesa, low-poly (~250 triángulos).
+- Formato y tamaño deseados: GLB, 2 m de ancho, Y arriba.
+
+## Furgoneta de reparto
+- Dónde se usa: `src/fisica/coche.ts` (`geometriaFurgoneta`), tráfico y robo.
+- Placeholder actual: cajas apiladas (bajos, caja alta y cabina) con ruedas.
+- Descripción para generarlo: furgoneta tipo Berlingo/Kangoo low-poly (~400 triángulos), blanca,
+  proporciones de juguete.
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 3,9 m de largo.

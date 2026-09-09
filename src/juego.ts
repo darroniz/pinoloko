@@ -31,9 +31,11 @@ import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
 import { Carrera, Records, formatearTiempo, premio } from './carreras';
 import { Recadero, elegirDestino, premioRecado } from './recados';
+import type { Mejora } from './taller';
 import { Logros } from './logros';
 import { Repeticion } from './efectos/repeticion';
 import { Foto } from './ui/foto';
+import { Taller, aplicarMejoras } from './taller';
 import { Menu, type Pestana } from './ui/menu';
 import { Minimapa } from './ui/minimapa';
 
@@ -45,7 +47,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -141,6 +143,7 @@ export class Juego {
   private contador = new Contador();
   private garaje = new Garaje();
   private logros = new Logros();
+  private taller = new Taller();
   private tiempoLogros = 0;
   private repeticion = new Repeticion();
   private foto: Foto;
@@ -195,6 +198,9 @@ export class Juego {
       alCerrar: () => { this.pausado = false; },
       calidad: this.calidad,
       alElegirCalidad: (c) => { this.guardar(); elegirCalidad(c); },
+      taller: this.taller,
+      dinero: () => this.dinero,
+      alComprar: (mejora) => this.comprarMejora(mejora),
     });
     document.getElementById('boton-menu')!.addEventListener('click', () => this.abrirMenu());
     this.foto = new Foto(this.lienzo, () => `${this.hud.calleActual} · ${this.cielo.textoHora} · ${this.barrio.ficha.nombre.split(' ·')[0]}`, (t) => this.hud.avisar(t, 1.2));
@@ -270,6 +276,8 @@ export class Juego {
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
+      dinero: (n: number) => { this.dinero = n; this.hud.ponerDinero(n); },
+      ajustes: () => ({ ...this.scooter.ajustes }),
       helicoptero: () => ({ activo: this.helicoptero.activo, pos: this.helicoptero.grupo.children[0]?.position.toArray() }),
       sevici: () => this.barrio.sevici.lista.map((c) => ({ x: Math.round(c.x * 10) / 10, z: Math.round(c.z * 10) / 10, estado: c.estado })),
       pachangas: () => this.barrio.pachangas.lista.map((p) => ({ x: p.x, z: p.z, goles: p.goles, porteria: p.porteria, balon: p.malla.position.toArray() })),
@@ -319,6 +327,7 @@ export class Juego {
     const inicio = donde ?? this.barrio.arranque;
     const modelo = MODELOS[indiceModelo] ?? MODELOS[0];
     this.scooter = new Scooter(this.barrio.fisica, inicio.x, inicio.z, inicio.rumbo, modelo);
+    this.aplicarTaller(this.scooter);
     this.scooter.montar(true);
     this.barrio.scooters.unshift(this.scooter);
     this.barrio.grupo.add(this.scooter.malla);
@@ -450,6 +459,7 @@ export class Juego {
         this.hud.avisar(nueva ? `${mejorMoto.modelo.nombre}: ¡mía! Nueva en el garaje` : `${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
       }
       this.scooter = mejorMoto;
+      this.aplicarTaller(this.scooter);
       this.scooter.montar(true);
       this.coche = null;
     } else return false;
@@ -805,6 +815,27 @@ export class Juego {
     this.menu.abrir(pestana);
   }
 
+  /** Compra en el taller una mejora para la moto elegida y la aplica si es la que llevas. */
+  private comprarMejora(mejora: Mejora): boolean {
+    const indice = this.garaje.elegida;
+    const coste = this.taller.comprar(indice, mejora, this.dinero);
+    if (coste < 0) { this.hud.avisar('No llega el dinero', 1.4); return false; }
+    this.dinero -= coste;
+    this.hud.ponerDinero(this.dinero);
+    this.contador.sumar('mejoras');
+    this.aplicarTaller(this.scooter);
+    this.guardar();
+    this.audio.pitido(1200, 0.12, 0.15);
+    return true;
+  }
+
+  /** Ajustes de la moto según lo comprado en el taller para su modelo. */
+  private aplicarTaller(moto: Scooter): void {
+    const indice = MODELOS.indexOf(moto.modelo);
+    moto.ajustes = aplicarMejoras(moto.modelo.ajustes, this.taller.niveles(indice));
+    this.audio.tono = 1 + 0.1 * this.taller.nivel(indice, 'escape');
+  }
+
   /** Cambia la moto de Wifly por otra del garaje, en el mismo sitio y en el mismo estado. */
   private cambiarMoto(indice: number): void {
     const modelo = MODELOS[indice];
@@ -821,6 +852,7 @@ export class Juego {
     this.motosRobadas.add(nueva);
     this.reventado.delete(vieja);
     this.scooter = nueva;
+    this.aplicarTaller(nueva);
     nueva.montar(montado);
     this.hud.avisar(`${modelo.nombre}: lista`, 1.6);
   }

@@ -3,6 +3,7 @@
 import type { ModeloScooter } from '../fisica/scooter';
 import { Contador, Garaje, resumen } from '../estadisticas';
 import type { Calidad } from '../juego';
+import { MEJORAS, NIVEL_MAXIMO, type Mejora, type Taller } from '../taller';
 import { LOGROS, type Logros } from '../logros';
 
 export type Pestana = 'garaje' | 'logros' | 'estadisticas' | 'ayuda' | 'creditos';
@@ -17,6 +18,10 @@ export interface OpcionesMenu {
   alCerrar: () => void;
   calidad: Calidad;
   alElegirCalidad: (c: Calidad) => void;
+  taller: Taller;
+  dinero: () => number;
+  /** Compra una mejora para la moto elegida; devuelve si ha podido. */
+  alComprar: (mejora: Mejora) => boolean;
 }
 
 const AYUDA = `
@@ -80,6 +85,8 @@ export class Menu {
     this.cuerpo.addEventListener('click', (e) => {
       const c = (e.target as HTMLElement).closest<HTMLElement>('[data-calidad]');
       if (c && c.dataset['calidad'] !== this.op.calidad) { this.op.alElegirCalidad(c.dataset['calidad'] as Calidad); return; }
+      const compra = (e.target as HTMLElement).closest<HTMLElement>('[data-mejora]');
+      if (compra) { if (this.op.alComprar(compra.dataset['mejora'] as Mejora)) this.mostrar('garaje'); return; }
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-moto]');
       if (!b) return;
       const i = Number(b.dataset['moto']);
@@ -127,7 +134,23 @@ export class Menu {
         </span>
       </button>`;
     });
-    return `<p class="peque">Las motos que robas se quedan en el garaje. Elige con cuál sales.</p>${filas.join('')}`;
+    return `<p class="peque">Las motos que robas se quedan en el garaje. Elige con cuál sales.</p>${filas.join('')}${this.htmlTaller()}`;
+  }
+
+  /** El taller: mejoras de la moto elegida, con su nivel y el precio del siguiente. */
+  private htmlTaller(): string {
+    const g = this.op.garaje;
+    const modelo = this.op.modelos[g.elegida];
+    if (!modelo) return '';
+    const dinero = this.op.dinero();
+    const filas = MEJORAS.map((m) => {
+      const nivel = this.op.taller.nivel(g.elegida, m.id);
+      const precio = this.op.taller.precio(g.elegida, m.id);
+      const puntos = Array.from({ length: NIVEL_MAXIMO }, (_, i) => `<i class="${i < nivel ? 'lleno' : ''}"></i>`).join('');
+      const boton = precio === null ? '<span class="tope">AL MÁXIMO</span>' : `<button type="button" data-mejora="${m.id}" ${dinero >= precio ? '' : 'disabled'}>${precio} €</button>`;
+      return `<div class="mejora"><span><strong>${m.nombre}</strong><br><span class="peque">${m.descripcion}</span></span><span class="niveles">${puntos}</span>${boton}</div>`;
+    });
+    return `<h3>El taller · ${modelo.nombre}</h3><p class="peque">Tienes ${dinero} €. Las mejoras son de cada moto.</p>${filas.join('')}`;
   }
 
   /** Selector de calidad gráfica: cambiarla recarga el juego (el barrio se construye según ella). */

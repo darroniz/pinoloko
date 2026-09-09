@@ -9,6 +9,8 @@ export class AudioJuego {
   private derrapeGanancia: GainNode | null = null;
   private maestro: GainNode | null = null;
   private rpm = 0;
+  /** Multiplicador del tono del motor (el tubarro del taller lo sube). */
+  tono = 1;
 
   arrancar(): void {
     if (this.ctx) { void this.ctx.resume(); return; }
@@ -67,7 +69,7 @@ export class AudioJuego {
     this.rpm += (objetivo - this.rpm) * Math.min(1, dt * 5);
     const t = this.ctx.currentTime;
     // El coche suena más grave y más redondo que el dos tiempos.
-    const grave = coche ? 0.55 : 1;
+    const grave = coche ? 0.55 : this.tono;
     this.motor.frequency.setTargetAtTime((38 + this.rpm * 95) * grave, t, 0.05);
     this.armonico?.frequency.setTargetAtTime((76 + this.rpm * 190) * grave, t, 0.05);
     this.motorFiltro.frequency.setTargetAtTime((300 + this.rpm * 900) * (coche ? 0.7 : 1), t, 0.05);

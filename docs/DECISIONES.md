@@ -549,3 +549,25 @@ Solo de 8 a 21: de noche no tocan.
 **Foto** (P o el botón 📷): captura del canvas en el mismo frame (sin `preserveDrawingBuffer`
 solo vale ahí), franja abajo con el logo, calle, hora y barrio, atribución a OSM, y hoja de
 compartir del móvil (`navigator.share` con ficheros) o descarga si no la hay.
+
+## 2026-09-10 — Helicóptero, mercadillo, furgonetas y pistas
+
+**Helicóptero** a cinco estrellas: orbita a 30 m sobre el jugador con un foco que lo persigue a
+9 m/s como mucho; mientras el foco te tiene (a menos de 7 m) el calor no baja, y con la moto a
+fondo y cambiando de dirección se le escapa. Vive en la escena, no en el barrio, para que no lo
+destruya un cambio de barrio (se retira de golpe al viajar, al trincarte o al bajar de cuatro
+estrellas se va volando). Sonido: ruido grave batido a 13 Hz.
+
+**Mercadillo**: nuevo trasto `puesto` (tablero, género, dos postes y toldo a rayas en tres
+colores), diez en hilera por el pasaje `pedestrian` más cercano al `marketplace`, a menos de
+80 m. Se rompe en trozos como las cajas. No he encontrado en OSM dónde se pone el mercadillo de
+verdad en Pino Montano, así que va pegado al Mercado.
+
+**Furgonetas**: una de cada cuatro entradas del tráfico es furgoneta de reparto (silueta alta,
+blanca el 70 % de las veces). Se roba como un coche y conserva su silueta (apariencia con la
+misma caja de colisión que el utilitario, densidad de bus).
+
+**Pistas**: la primera vez que pasa algo (parado cuatro segundos en la moto, a pie, primera
+estrella, tres estrellas, cerca de una bolsa, una pancarta, una pachanga, una rampa o un coche
+del tráfico) sale una frase que explica qué hacer. Se guardan en `pinoloko.pistas.v1` y NUEVA
+PARTIDA las borra. Sin tutorial ni pantalla de ayuda obligatoria: el barrio te lo va contando.

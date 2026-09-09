@@ -74,6 +74,14 @@ body.en-bus #boton-menu { display: none; }
 #menu .moto .stats { display: flex; gap: 8px; font-size: 11px; }
 #menu .moto .stats span { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 #menu .moto .stats i { display: block; height: 5px; border-radius: 3px; background: var(--acento); }
+#menu h3 { margin: 14px 0 4px; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
+#menu .mejora { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(43,35,32,0.1); }
+#menu .mejora .niveles { display: flex; gap: 3px; }
+#menu .mejora .niveles i { width: 9px; height: 9px; border-radius: 50%; background: rgba(43,35,32,0.15); }
+#menu .mejora .niveles i.lleno { background: var(--acento); }
+#menu .mejora button { border: 0; border-radius: 10px; padding: 8px 10px; font-weight: 800; font-size: 12px; background: var(--tinta); color: #fff; cursor: pointer; min-width: 64px; }
+#menu .mejora button:disabled { opacity: 0.4; cursor: default; }
+#menu .mejora .tope { font-size: 11px; font-weight: 800; opacity: 0.6; }
 #menu .calidades { display: flex; gap: 6px; }
 #menu .calidad { border: 2px solid rgba(43,35,32,0.2); background: #fff; color: var(--tinta); border-radius: 10px; padding: 8px 10px; font-weight: 800; font-size: 11px; cursor: pointer; }
 #menu .calidad.elegida { border-color: var(--acento); background: var(--acento); color: #fff; }

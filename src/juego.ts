@@ -47,7 +47,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -154,6 +154,7 @@ export class Juego {
   private tiempoParado = 0;
   private helicoptero = new Helicoptero();
   private tiempoTimbre = 0;
+  private tiempoPitidoTrafico = 0;
   /** `?vibrar=0` la apaga; la vibración solo existe en móviles. */
   private conVibracion = new URLSearchParams(location.search).get('vibrar') !== '0' && typeof navigator.vibrate === 'function';
   private menu: Menu;
@@ -276,6 +277,7 @@ export class Juego {
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
+      perros: () => this.barrio.perros.lista.map((p) => ({ x: Math.round(p.x * 10) / 10, z: Math.round(p.z * 10) / 10, estado: p.estado })),
       dinero: (n: number) => { this.dinero = n; this.hud.ponerDinero(n); },
       ajustes: () => ({ ...this.scooter.ajustes }),
       helicoptero: () => ({ activo: this.helicoptero.activo, pos: this.helicoptero.grupo.children[0]?.position.toArray() }),
@@ -1012,6 +1014,19 @@ export class Juego {
         this.busqueda.fechoria('atropello', sevici.atropellos);
       }
       this.actualizarCampanas(jugadorPos);
+      // Perros: te persiguen ladrando un rato si pasas cerca con la moto.
+      const perros = b.perros.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
+      if (perros.ladridos > 0) this.audio.ladrido();
+      // El tráfico pita si le cortas el paso más de dos segundos.
+      this.tiempoPitidoTrafico -= dt;
+      if (b.trafico.pitidos > 0) {
+        b.trafico.pitidos = 0;
+        if (this.tiempoPitidoTrafico <= 0) {
+          this.tiempoPitidoTrafico = 4;
+          this.audio.claxon();
+          this.hud.avisar(['¡Quita de en medio, illo!', '¡Que tengo prisa, niño!', '¡Aparta la moto, hombre!'][Math.floor(Math.random() * 3)]!, 1.5);
+        }
+      }
       // Daño: humo por debajo de 30 y reventón a 0 (Wifly sale despedido y la moto ya no arranca).
       if (!this.aPie) {
         const v = this.vehiculo;
@@ -1042,6 +1057,7 @@ export class Juego {
       // Faros de noche, pegados al vehículo que lleves; y las ventanas del barrio encendidas.
       this.faros.visible = this.cielo.esDeNoche && !this.aPie;
       b.ventanas.visible = this.cielo.esDeNoche;
+      b.farolasLuz.visible = this.cielo.esDeNoche;
       if (this.faros.visible) {
         const v = this.vehiculo;
         this.faros.position.set(v.estado.x, 0, v.estado.z);

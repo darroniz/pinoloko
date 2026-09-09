@@ -30,6 +30,8 @@ dejar herramientas para que pruebes el rendimiento en el móvil.
 - [x] **Bloque 8 (hecho a la 01:08)** — Helicóptero de la Local a cinco estrellas (foco que te persigue; si vas rápido lo pierdes).
 - [x] **Bloque 9 (hecho a la 01:12)** — Mercadillo junto al Mercado (diez puestos con toldo que se rompen) y furgonetas en el tráfico.
 - [x] **Bloque 10 (hecho a la 01:12)** — Pistas la primera vez que pasa cada cosa.
+- [x] **Bloque 11 (hecho a la 01:15)** — El taller: mejoras por moto para gastar el dinero.
+- [ ] **Bloque 12** — Farolas de noche, coches del tráfico que pitan si les cortas el paso, y perros por los pasajes.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Plan de la noche del 2026-09-09 (segunda sesión, 00:15 → 04:45)

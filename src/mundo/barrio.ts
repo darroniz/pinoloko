@@ -22,6 +22,8 @@ import { Semaforos } from './semaforos';
 import { Encargos } from './encargos';
 import { Pachangas } from './pachangas';
 import { Sevici } from './sevici';
+import { Perros } from './perros';
+import { construirFarolas } from './farolas';
 import { localesConNombre, type Local } from '../recados';
 import type { Nivel } from './tipos';
 import { Patrullas } from '../policia/patrullas';
@@ -48,6 +50,9 @@ export class Barrio {
   readonly encargos: Encargos;
   readonly pachangas: Pachangas;
   readonly sevici: Sevici;
+  readonly perros: Perros;
+  /** Charcos de luz de las farolas: solo visibles de noche. */
+  readonly farolasLuz: THREE.Group;
   /** Carreras del barrio: nodo de salida y su ruta fija. */
   readonly carreras: { salida: number; ruta: RutaCarrera }[] = [];
   readonly scooters: Scooter[] = [];
@@ -60,11 +65,14 @@ export class Barrio {
     this.grupo.add(construido.grupo, construirAzoteas(nivel));
     const arboles = construirArboles(nivel);
     this.grupo.add(arboles.grupo);
+    const farolas = construirFarolas(nivel, arboles.posiciones);
+    this.grupo.add(farolas.postes, farolas.luces);
+    this.farolasLuz = farolas.luces;
     fisica.crearSueloYLimites(nivel.tamano[0], nivel.tamano[1]);
     fisica.crearEdificios(construido.colisionEdificios.vertices, construido.colisionEdificios.indices);
 
     this.trastos = new Trastos(fisica);
-    this.trastos.poblar(nivel, arboles.posiciones);
+    this.trastos.poblar(nivel, [...arboles.posiciones, ...farolas.posiciones]);
     this.grupo.add(this.trastos.grupo);
     this.vecinos = new Vecinos(this.grafo, ficha.poblacion.vecinos, this.trastos.asientos, ficha.tribu);
     this.grupo.add(this.vecinos.grupo);
@@ -126,6 +134,8 @@ export class Barrio {
     this.grupo.add(this.pachangas.grupo);
     this.sevici = new Sevici(nivel, ficha.poblacion.sevici);
     this.grupo.add(this.sevici.grupo);
+    this.perros = new Perros(this.grafo, ficha.poblacion.perros);
+    this.grupo.add(this.perros.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
     this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);

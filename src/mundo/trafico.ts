@@ -33,6 +33,8 @@ export interface CocheTrafico {
   parado: number;
   /** Con cuerpo físico solo cerca del jugador; lejos, se mueve sobre el carril sin simular. */
   activo: boolean;
+  /** Segundos seguidos con el jugador cortándole el paso (a los dos y pico, pita). */
+  bloqueadoPorJugador: number;
   /** Solo el bus: segundos que le quedan parado en la parada, y enfriamiento hasta la siguiente. */
   enParada: number;
   entreParadas: number;
@@ -56,6 +58,8 @@ export class Trafico {
   private eje = new THREE.Vector3(0, 1, 0);
   /** Semáforos del barrio: los coches paran en rojo (y en ámbar si aún están lejos). */
   semaforos: Semaforos | null = null;
+  /** Bocinazos de este paso (coches a los que el jugador corta el paso); el juego lo lee y lo pone a cero. */
+  pitidos = 0;
 
   constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number, buses = 0, private readonly paradas: { x: number; z: number }[] = []) {
     const candidatos: number[] = [];
@@ -82,7 +86,7 @@ export class Trafico {
     malla.scale.setScalar(tipo === 'bus' ? BUS_ESCALA : 1.35);
     malla.castShadow = true;
     this.grupo.add(malla);
-    const c: CocheTrafico = { tipo, variante, cuerpo, malla, color, origen, destino, t, velocidad: tipo === 'bus' ? VELOCIDAD_BUS : VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, activo: true, enParada: 0, entreParadas: 5 };
+    const c: CocheTrafico = { tipo, variante, cuerpo, malla, color, origen, destino, t, velocidad: tipo === 'bus' ? VELOCIDAD_BUS : VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, bloqueadoPorJugador: 0, activo: true, enParada: 0, entreParadas: 5 };
     this.lista.push(c);
     this.colocar(c);
   }
@@ -191,7 +195,12 @@ export class Trafico {
         const lateral = Math.abs(-dx * fz + dz * fx);
         return adelante > 0 && adelante < radio && lateral < 2.2;
       };
-      if (bloqueado(jugador.x, jugador.z, 8)) objetivo = 0;
+      if (bloqueado(jugador.x, jugador.z, 8)) {
+        objetivo = 0;
+        c.bloqueadoPorJugador += dt;
+        if (c.bloqueadoPorJugador > 2.5) { c.bloqueadoPorJugador = -4; this.pitidos++; }
+      } else if (c.bloqueadoPorJugador > 0) c.bloqueadoPorJugador = 0;
+      else c.bloqueadoPorJugador = Math.min(0, c.bloqueadoPorJugador + dt);
       // Semáforo en rojo a menos de 7 m: se para (en ámbar solo si aún no ha llegado).
       const luz = this.semaforos?.luzDelante(c.x, c.z, c.rumbo, 7);
       if (luz && luz.distancia > 1.5 && (luz.luz === 'rojo' || (luz.luz === 'ambar' && luz.distancia > 4))) objetivo = 0;

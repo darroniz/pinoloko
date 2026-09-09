@@ -205,6 +205,28 @@ export class AudioJuego {
     notas.forEach((f, i) => window.setTimeout(() => this.pitido(f, 0.22, 0.18), i * 110));
   }
 
+  /** Ladrido: dos golpes cortos de onda cuadrada que bajan de tono. */
+  ladrido(): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    for (const inicio of [0, 0.13]) {
+      const t = ctx.currentTime + inicio;
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(320, t);
+      osc.frequency.exponentialRampToValueAtTime(160, t + 0.09);
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = 'lowpass';
+      filtro.frequency.value = 900;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+      osc.connect(filtro).connect(g).connect(this.maestro);
+      osc.start(t);
+      osc.stop(t + 0.11);
+    }
+  }
+
   claxon(): void {
     if (!this.ctx || !this.maestro) return;
     const ctx = this.ctx;

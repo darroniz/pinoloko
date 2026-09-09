@@ -571,3 +571,14 @@ misma caja de colisión que el utilitario, densidad de bus).
 estrella, tres estrellas, cerca de una bolsa, una pancarta, una pachanga, una rampa o un coche
 del tráfico) sale una frase que explica qué hacer. Se guardan en `pinoloko.pistas.v1` y NUEVA
 PARTIDA las borra. Sin tutorial ni pantalla de ayuda obligatoria: el barrio te lo va contando.
+
+## 2026-09-10 — El taller: en qué gastar el dinero
+
+Hasta hoy el dinero no servía para nada: se ganaba con los destrozos y se perdía al trincarte.
+Ahora hay **taller** dentro de la pestaña GARAJE: cuatro mejoras por moto (tubarro, variador,
+neumáticos, frenos) en tres niveles, con precios que suben (80-600 €). Multiplican los ajustes del
+modelo (`aplicarMejoras`): +7 % de punta por nivel de escape, +10 % de arranque por variador,
++8 % de agarre y +5 % de giro por neumáticos, +12 % de frenada por frenos. El tubarro además sube
+el tono del motor. Las mejoras son **por modelo** (la Jog tuneada no tunea la Zip) y se guardan
+en `pinoloko.taller.v1`, que NUEVA PARTIDA borra con el resto. Se aplican al crear la moto, al
+cambiarla desde el garaje y al subirte a una robada del mismo modelo.

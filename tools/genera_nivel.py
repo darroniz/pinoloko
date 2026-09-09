@@ -314,7 +314,11 @@ def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = No
     grafo_idx: dict[int, int] = {}
     grafo_nodos: list[list[float]] = []
     grafo_aristas: list[list] = []
-    cruces_semaforo = {nid for nid, n in nodos.items() if n.get("tags", {}).get("highway") == "traffic_signals"}
+    # Semáforos: los de cruce (highway=traffic_signals) y los de paso de peatones
+    # (crossing=traffic_signals), siempre que estén sobre una calle rodada.
+    en_rodada = {nid for w in vias.values() if w.get("tags", {}).get("highway") in VIAS_RODADAS for nid in w["nodes"]}
+    cruces_semaforo = {nid for nid, n in nodos.items() if nid in en_rodada
+                       and (n.get("tags", {}).get("highway") == "traffic_signals" or n.get("tags", {}).get("crossing") == "traffic_signals")}
 
     def idx_nodo(nid: int) -> int:
         if nid not in grafo_idx:
@@ -386,8 +390,8 @@ def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = No
               if e["type"] == "node" and e.get("tags", {}).get("amenity") == "bench"]
 
     semaforos = [list(proy.xz(n["lat"], n["lon"])) for nid, n in nodos.items() if nid in cruces_semaforo]
-    pasos_cebra = [list(proy.xz(n["lat"], n["lon"])) for n in nodos.values()
-                   if n.get("tags", {}).get("highway") == "crossing"]
+    pasos_cebra = [list(proy.xz(n["lat"], n["lon"])) for nid, n in nodos.items()
+                   if n.get("tags", {}).get("highway") == "crossing" and nid not in cruces_semaforo]
 
     zonas = []
     for w in vias.values():

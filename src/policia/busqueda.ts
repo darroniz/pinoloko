@@ -2,7 +2,7 @@
 // El "calor" sube con cada fechoría y baja con el tiempo si nadie te ve; las estrellas
 // son tramos del calor. Perder a las patrullas de vista acelera el enfriamiento.
 
-export type Fechoria = 'trasto' | 'atropello' | 'robo_moto' | 'robo_coche' | 'choque_patrulla' | 'huida';
+export type Fechoria = 'trasto' | 'atropello' | 'robo_moto' | 'robo_coche' | 'choque_patrulla' | 'huida' | 'semaforo';
 
 const CALOR: Record<Fechoria, number> = {
   trasto: 4,
@@ -11,6 +11,7 @@ const CALOR: Record<Fechoria, number> = {
   robo_coche: 35,
   choque_patrulla: 40,
   huida: 8,
+  semaforo: 12,
 };
 
 /** Umbrales de calor para cada estrella. */

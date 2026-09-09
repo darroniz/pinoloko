@@ -10,6 +10,7 @@ import { ALTO, ANCHO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaCoche } fro
 import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
 import { geometriaBus } from '../cinematica';
+import type { Semaforos } from './semaforos';
 
 export type TipoTrafico = 'coche' | 'bus';
 
@@ -49,6 +50,8 @@ export class Trafico {
   private rnd = azar(4242);
   private q = new THREE.Quaternion();
   private eje = new THREE.Vector3(0, 1, 0);
+  /** Semáforos del barrio: los coches paran en rojo (y en ámbar si aún están lejos). */
+  semaforos: Semaforos | null = null;
 
   constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number, buses = 0, private readonly paradas: { x: number; z: number }[] = []) {
     const candidatos: number[] = [];
@@ -183,8 +186,12 @@ export class Trafico {
         return adelante > 0 && adelante < radio && lateral < 2.2;
       };
       if (bloqueado(jugador.x, jugador.z, 8)) objetivo = 0;
+      // Semáforo en rojo a menos de 7 m: se para (en ámbar solo si aún no ha llegado).
+      const luz = this.semaforos?.luzDelante(c.x, c.z, c.rumbo, 7);
+      if (luz && luz.distancia > 1.5 && (luz.luz === 'rojo' || (luz.luz === 'ambar' && luz.distancia > 4))) objetivo = 0;
       for (const o of this.lista) if (o !== c && bloqueado(o.x, o.z, 9)) { objetivo = 0; break; }
-      if (objetivo === 0 && c.enParada <= 0) c.parado += dt; else c.parado = 0;
+      const enSemaforo = !!luz && luz.luz !== 'verde' && luz.distancia > 1.5;
+      if (objetivo === 0 && c.enParada <= 0 && !enSemaforo) c.parado += dt; else c.parado = 0;
       // Si lleva mucho parado (atasco con otro coche), arranca despacio para deshacerlo.
       if (c.parado > 4) objetivo = 2;
 

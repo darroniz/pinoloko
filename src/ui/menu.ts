@@ -25,7 +25,8 @@ const AYUDA = `
 <p class="peque" style="margin-top:10px">Roba motos aparcadas y coches en marcha (¡y el 13!). Derriba conos, macetas, terrazas y cajas del
 mercado para ganar dinero y armar lío. Las estrellas son la Policía Local: los coches patrulla no entran en los
 pasajes, las motos sí. Pasa en moto por una pancarta a cuadros para correr contra el reloj. Las rampas de los
-pasajes son para volar. Busca los 20 mecheros de cada barrio. A pie y en una parada, el 13 te lleva al otro barrio.</p>`;
+pasajes son para volar. Las bolsas de papel en la puerta de los bares son encargos: cógelas en moto y llévalas a
+otro bar antes de que se acabe el tiempo; cada entrega encadena la siguiente con más premio. Busca los 20 mecheros de cada barrio. A pie y en una parada, el 13 te lleva al otro barrio.</p>`;
 
 const CREDITOS = `
 <p><strong>Pinoloko</strong> es un juego personal de Ismael Darroniz, hecho de noche por una

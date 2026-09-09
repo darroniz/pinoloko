@@ -462,3 +462,31 @@ aligerar" daba peor. `vcgencmd get_throttled` marcaba `0xe0000` (ha habido tope 
 estrangulamiento) y 73 °C tras una hora de Chromium sin parar. Ninguna sonda A/B es fiable en
 ese estado. Regla nueva: `verificar.mjs` imprime temperatura y estado de estrangulamiento al
 empezar, y si el gate falla con el flag activo, **se espera a que baje** antes de tocar código.
+
+## 2026-09-10 — Semáforos de OSM: pocos, pero de verdad
+
+El generador ya exportaba `semaforos`, pero solo los `highway=traffic_signals` y con eso salían
+cero en el Mercado y dos en Triana. Ahora cuenta también los pasos con `crossing=traffic_signals`
+siempre que estén sobre una calle rodada: 2 en Sembradores (Mercado), 11 en Triana (Pagés del
+Corro con San Jacinto, San Jacinto con Pureza, Pagés del Corro con Clara de Jesús Montero), 0 en la
+Alameda. Se agrupan por cercanía (32 m) en **cruces** con dos ejes que se turnan: 9 s de verde,
+2 de ámbar, ciclo de 22 s, con desfase por cruce. El poste va en la acera derecha según se llega,
+con la cabeza entera del color de la luz (desde 66 m una lucecita no se ve; una caja de medio
+metro sí). El tráfico para a 7 m de un rojo (y no cuenta como atasco: antes de esto, cuatro
+segundos parado hacían que el coche arrancara "para deshacer el atasco"). Las patrullas no
+respetan semáforos: van con sirena. Saltárselo en rojo a más de 3 m/s son 12 de calor y una
+frase; a pie no cuenta.
+
+## 2026-09-10 — El Recadero: encargos entre locales con nombre real
+
+Minijuego, no misión: no hay historia ni diálogo, es el "taxi" de los GTA con bolsas de papel.
+Los **locales** son los POIs con nombre de las clases bar, cafetería, panadería, kiosco, farmacia,
+supermercado y mercado; la **puerta** es el nodo del grafo más cercano al POI, porque el nodo de
+OSM cae casi siempre dentro del edificio. Tres locales por barrio tienen bolsa (a más de 110 m
+entre sí y lejos de la parada, de las pancartas de carrera y de las motos aparcadas); pasar por
+la bolsa en vehículo arranca el encargo hacia otro local a 90-320 m en línea recta, con
+`12 + distancia/5` segundos. Entregar encadena el siguiente desde ese mismo local con un 25 % más
+de premio por eslabón (tope ×3); se pierde la cadena al agotarse el tiempo, al bajarse, al
+trincarte o al caer al río. En Pino Montano casi todos los locales con nombre son farmacias y el
+mercado (OSM no tiene los bares del barrio con nombre): encargos de farmacia, que también es muy
+de barrio. El destino sale en el minimapa como objetivo cuando no hay carrera en curso.

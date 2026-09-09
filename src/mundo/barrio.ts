@@ -18,6 +18,9 @@ import { generarRuta, type RutaCarrera } from '../carreras';
 import { Vecinos } from './peatones';
 import { Trafico } from './trafico';
 import { Trastos } from './trastos';
+import { Semaforos } from './semaforos';
+import { Encargos } from './encargos';
+import { localesConNombre, type Local } from '../recados';
 import type { Nivel } from './tipos';
 import { Patrullas } from '../policia/patrullas';
 import type { FichaBarrio } from './barrios';
@@ -37,6 +40,10 @@ export class Barrio {
   readonly ventanas: THREE.Group;
   readonly circuito: Circuito;
   readonly rampas: Rampas;
+  readonly semaforos: Semaforos;
+  /** Locales con nombre real (puerta en la calle) y los que tienen encargo para repartir. */
+  readonly locales: Local[];
+  readonly encargos: Encargos;
   /** Carreras del barrio: nodo de salida y su ruta fija. */
   readonly carreras: { salida: number; ruta: RutaCarrera }[] = [];
   readonly scooters: Scooter[] = [];
@@ -59,6 +66,9 @@ export class Barrio {
     this.grupo.add(this.vecinos.grupo);
     this.trafico = new Trafico(fisica, this.grafo, ficha.poblacion.trafico, ficha.poblacion.buses, nivel.pois.filter((p) => p.clase === 'bus_stop'));
     this.grupo.add(this.trafico.grupo);
+    this.semaforos = new Semaforos(nivel);
+    this.trafico.semaforos = this.semaforos;
+    this.grupo.add(this.semaforos.grupo);
     this.patrullas = new Patrullas(fisica, this.grafo);
     this.grupo.add(this.patrullas.grupo);
     this.mecheros = new Mecheros(nivel, ficha.id);
@@ -93,6 +103,19 @@ export class Barrio {
     }
     this.circuito = new Circuito(this.grafo, this.carreras.map((c) => c.salida));
     this.grupo.add(this.circuito.grupo);
+    // Recadero: locales con nombre; el encargo se coge en tres de ellos, repartidos por el barrio.
+    this.locales = localesConNombre(nivel.pois, (p) => this.grafo.nodos[this.grafo.masCercano(p.x, p.z)] ?? [p.x, p.z]);
+    const conEncargo: Local[] = [];
+    for (const l of [...this.locales].sort((a, b) => Math.hypot(a.x - this.arranque.x, a.z - this.arranque.z) - Math.hypot(b.x - this.arranque.x, b.z - this.arranque.z))) {
+      if (conEncargo.length >= 3) break;
+      if (Math.hypot(l.x - this.arranque.x, l.z - this.arranque.z) < 25) continue;
+      if (conEncargo.some((c) => Math.hypot(c.x - l.x, c.z - l.z) < 110)) continue;
+      if (this.carreras.some((c) => { const [x, z] = this.grafo.nodos[c.salida] ?? [0, 0]; return Math.hypot(x - l.x, z - l.z) < 12; })) continue;
+      if (this.scooters.some((m) => Math.hypot(m.estado.x - l.x, m.estado.z - l.z) < 3.5)) continue;
+      conEncargo.push(l);
+    }
+    this.encargos = new Encargos(conEncargo);
+    this.grupo.add(this.encargos.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
     this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);

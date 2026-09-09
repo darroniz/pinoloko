@@ -29,6 +29,7 @@ import { BARRIO_INICIAL, BARRIOS } from './mundo/barrios';
 import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
 import { Carrera, Records, formatearTiempo, premio } from './carreras';
+import { Recadero, elegirDestino, premioRecado } from './recados';
 import { Menu, type Pestana } from './ui/menu';
 import { Minimapa } from './ui/minimapa';
 
@@ -40,7 +41,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -121,6 +122,9 @@ export class Juego {
   private sinMinimapa = new URLSearchParams(location.search).get('minimapa') === '0';
   private pausado = false;
   private ultimaPos = new THREE.Vector3();
+  private tiempoSemaforo = 0;
+  private recadero = new Recadero();
+  private enfriamientoRecado = 0;
   readonly calidad: Calidad;
 
   constructor() {
@@ -221,6 +225,8 @@ export class Juego {
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
+      recado: () => ({ estado: this.recadero.estado, destino: this.recadero.destino, restante: this.recadero.restante, cadena: this.recadero.cadena, puntos: this.barrio.encargos.puntos }),
+      semaforos: () => this.barrio.semaforos.cruces.map((c) => ({ x: c.x, z: c.z, n: c.semaforos.length, luz: this.barrio.semaforos.luzDelante(c.x - Math.sin(c.eje) * 12, c.z + Math.cos(c.eje) * 12, c.eje, 20)?.luz ?? null })),
       rampas: () => this.barrio.rampas.posiciones.map(([x, z], i) => ({ x, z, rumbo: this.barrio.rampas.rumbos[i] ?? 0 })),
       viajar: async (destino?: string) => { await this.viajar(destino ?? this.barrio.ficha.destinos13[0]!); return this.barrio.ficha.id; },
       robarBus: () => {
@@ -258,6 +264,7 @@ export class Juego {
     this.coche = null;
     this.aPie = false;
     if (this.carrera.estado === 'en_curso') { this.carrera.abandonar(); this.hud.ponerCarrera(null); }
+    this.recadero.abandonar();
     this.reventado.clear();
     this.motosRobadas.clear();
     this.barrio = await Barrio.cargar(ficha, this.calidad, this.escena);
@@ -339,6 +346,7 @@ export class Juego {
     this.peaton.aparecer(e.x + lado.x, e.z + lado.z, e.rumbo);
     this.aPie = true;
     this.abandonarCarrera('Carrera abandonada');
+    this.abandonarRecado('Encargo abandonado');
     this.coche = null;
     this.botonAccion.textContent = 'SUBIR';
   }
@@ -444,6 +452,7 @@ export class Juego {
   private trincar(): void {
     this.tiempoTrincao = 3;
     this.abandonarCarrera(null);
+    this.abandonarRecado(null);
     this.hud.mostrarTrincao(true);
     this.hud.ponerEstrellas(0);
     this.busqueda.limpiar();
@@ -526,6 +535,78 @@ export class Juego {
         this.particulas.emitir(this.vehiculo.estado.x, 0.3, this.vehiculo.estado.z, 10, this.colorPolvo, 3);
       }
       this.tiempoAire = 0;
+    }
+  }
+
+  /** Semáforos: ciclan solos; pasar uno en rojo en vehículo y con prisa calienta a la Local. */
+  private actualizarSemaforos(pos: THREE.Vector3, rapidez: number, dt: number): void {
+    const s = this.barrio.semaforos;
+    if (!s.cruces.length) return;
+    s.actualizar(dt);
+    this.tiempoSemaforo -= dt;
+    if (this.aPie || rapidez < 3 || this.tiempoSemaforo > 0) return;
+    const luz = s.luzDelante(pos.x, pos.z, this.vehiculo.estado.rumbo, 2.5);
+    if (luz && luz.luz === 'rojo' && luz.distancia < 2.5) {
+      this.tiempoSemaforo = 6;
+      this.busqueda.fechoria('semaforo');
+      this.contador.sumar('semaforos');
+      this.hud.avisar(['¡Que está en rojo!', '¡El semáforo, Wifly!', '¡En rojo y a fondo!'][Math.floor(Math.random() * 3)]!, 1.6);
+    }
+  }
+
+  private abandonarRecado(aviso: string | null): void {
+    if (this.recadero.estado !== 'en_curso') return;
+    this.recadero.abandonar();
+    this.hud.ponerCarrera(null);
+    this.enfriamientoRecado = 5;
+    if (aviso) this.hud.avisar(aviso, 1.6);
+  }
+
+  /** Recadero: pasar en vehículo por la bolsa de un local arranca un encargo hacia otro local. */
+  private actualizarRecados(pos: THREE.Vector3, dt: number): void {
+    const b = this.barrio;
+    this.enfriamientoRecado = Math.max(0, this.enfriamientoRecado - dt);
+    const r = this.recadero;
+    if (r.estado === 'fuera') {
+      b.encargos.actualizar(dt, null, pos.x, pos.z);
+      if (this.aPie || this.enfriamientoRecado > 0 || this.carrera.estado === 'en_curso') return;
+      const origen = b.encargos.cercano(pos.x, pos.z, 4);
+      if (!origen) return;
+      const destino = elegirDestino(b.locales, origen, Math.random);
+      if (!destino) return;
+      r.empezar(origen, destino);
+      this.hud.avisar(`Encargo de ${origen.nombre}: llévalo a ${destino.nombre} en ${r.total} s`, 3);
+      this.audio.pitido(720, 0.2, 0.2);
+      return;
+    }
+    const resultado = r.actualizar(pos.x, pos.z, dt);
+    if (resultado === 'entregado') {
+      const euros = premioRecado(r.restante, r.total, r.cadena - 1);
+      this.ganar(euros);
+      this.contador.sumar('recados');
+      this.contador.maximo('cadenaRecados', r.cadena);
+      this.audio.fanfarria();
+      // Encadena: el local que recibe tiene otro encargo listo, con más premio.
+      const siguiente = r.destino && elegirDestino(b.locales, r.destino, Math.random);
+      if (siguiente && r.destino && !this.aPie) {
+        const desde = r.destino;
+        r.empezar(desde, siguiente);
+        this.hud.avisar(`¡Entregado! +${euros} € · Ahora a ${siguiente.nombre} (${r.total} s, cadena ×${r.cadena + 1})`, 3.2);
+      } else {
+        this.hud.avisar(`¡Entregado! +${euros} €`, 2.4);
+        this.hud.ponerCarrera(null);
+        r.cadena = 0;
+      }
+    } else if (resultado === 'tiempo') {
+      this.hud.avisar('Se te ha pasado el encargo', 2);
+      this.hud.ponerCarrera(null);
+      this.enfriamientoRecado = 5;
+      b.encargos.actualizar(dt, null, pos.x, pos.z);
+      return;
+    }
+    if (r.estado === 'en_curso' && r.destino) {
+      b.encargos.actualizar(dt, r.destino, pos.x, pos.z);
+      if (this.carrera.estado !== 'en_curso') this.hud.ponerCarrera(`Encargo · ${r.destino.nombre} · ${Math.ceil(r.restante)} s${r.cadena ? ` · ×${r.cadena + 1}` : ''}`);
     }
   }
 
@@ -747,6 +828,8 @@ export class Juego {
       }
       this.actualizarCarrera(jugadorPos, dt);
       this.actualizarSaltos(dt);
+      this.actualizarSemaforos(jugadorPos, rapidez, dt);
+      this.actualizarRecados(jugadorPos, dt);
       // Daño: humo por debajo de 30 y reventón a 0 (Wifly sale despedido y la moto ya no arranca).
       if (!this.aPie) {
         const v = this.vehiculo;
@@ -838,7 +921,8 @@ export class Juego {
     this.hud.ponerHora(this.cielo.textoHora);
     if (this.jugando && !this.sinMinimapa) {
       const rumbo = this.aPie ? Math.atan2(v.x, -v.z) : this.vehiculo.estado.rumbo;
-      const siguiente = this.carrera.estado === 'en_curso' ? b.grafo.nodos[this.carrera.siguiente] : undefined;
+      const destinoRecado: [number, number] | undefined = this.recadero.estado === 'en_curso' && this.recadero.destino ? [this.recadero.destino.x, this.recadero.destino.z] : undefined;
+      const siguiente = this.carrera.estado === 'en_curso' ? b.grafo.nodos[this.carrera.siguiente] : destinoRecado;
       this.minimapa.actualizar(dt, {
         jugador: { x: pos.x, z: pos.z, rumbo: this.aPie && Math.hypot(v.x, v.z) < 0.5 ? this.scooter.estado.rumbo : rumbo },
         paradas: b.paradas.lista,
@@ -863,6 +947,7 @@ export class Juego {
         this.audio.golpe(8);
         this.particulas.emitir(pos.x, 0.3, pos.z, 40, new THREE.Color('#9fd3e8'), 6);
         this.abandonarCarrera(null);
+        this.abandonarRecado(null);
         this.contador.sumar('chapuzones');
         this.volverAlArranque();
       }

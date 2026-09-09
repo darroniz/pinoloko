@@ -159,3 +159,10 @@ Formato:
 - Descripción para generarlo: farola urbana sevillana de brazo (las de fundición negras del
   centro para la Alameda y Triana; una de poste gris para Pino Montano), low-poly (~120 tris).
 - Formato y tamaño deseados: GLB, 6 m, Y arriba.
+
+## Camión de Lipasam
+- Dónde se usa: `src/fisica/coche.ts` (`geometriaCamion`), tráfico y robo.
+- Placeholder actual: cabina blanca y caja verde de cajas, seis ruedas, luz naranja encima.
+- Descripción para generarlo: camión de recogida de basura de carga trasera, low-poly (~500
+  triángulos), verde Lipasam con cabina blanca, proporciones de juguete.
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 7,5 m de largo.

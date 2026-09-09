@@ -33,6 +33,8 @@ export class Minimapa {
   private icono: THREE.Mesh;
   private zona: HTMLElement;
   private fondoTam = 580;
+  /** El barrio pintado (lo reutiliza la pestaña MAPA del menú). */
+  lienzo: HTMLCanvasElement | null = null;
   private margen = 40;
   private m = new THREE.Matrix4();
   private p = new THREE.Vector3();
@@ -152,6 +154,7 @@ export class Minimapa {
       ctx.fillStyle = e.tipo === 'bloque' ? '#c9b8a0' : e.color;
       poligono(e.poligono);
     }
+    this.lienzo = c;
     this.textura?.dispose();
     this.textura = new THREE.CanvasTexture(c);
     this.textura.colorSpace = THREE.SRGBColorSpace;

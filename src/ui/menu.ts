@@ -6,7 +6,20 @@ import type { Calidad } from '../juego';
 import { MEJORAS, NIVEL_MAXIMO, type Mejora, type Taller } from '../taller';
 import { LOGROS, type Logros } from '../logros';
 
-export type Pestana = 'garaje' | 'logros' | 'estadisticas' | 'ayuda' | 'creditos';
+export type Pestana = 'mapa' | 'garaje' | 'logros' | 'estadisticas' | 'ayuda' | 'creditos';
+
+/** Lo que el mapa del menú pinta encima del barrio. */
+export interface DatosMapa {
+  lienzo: HTMLCanvasElement | null;
+  nombre: string;
+  jugador: { x: number; z: number };
+  paradas: { x: number; z: number; nombre: string }[];
+  bolsas: { x: number; z: number }[];
+  pancartas: { x: number; z: number }[];
+  pachangas: { x: number; z: number }[];
+  rampas: { x: number; z: number }[];
+  mecheros: { recogidos: number; total: number };
+}
 
 export interface OpcionesMenu {
   modelos: ModeloScooter[];
@@ -20,6 +33,7 @@ export interface OpcionesMenu {
   alElegirCalidad: (c: Calidad) => void;
   taller: Taller;
   dinero: () => number;
+  mapa: () => DatosMapa;
   /** Compra una mejora para la moto elegida; devuelve si ha podido. */
   alComprar: (mejora: Mejora) => boolean;
 }
@@ -70,7 +84,7 @@ export class Menu {
     document.body.appendChild(this.panel);
     this.cuerpo = this.panel.querySelector('.cuerpo')!;
     this.pestanas = this.panel.querySelector('.pestanas')!;
-    for (const [id, texto] of [['garaje', 'GARAJE'], ['logros', 'LOGROS'], ['estadisticas', 'STATS'], ['ayuda', 'AYUDA'], ['creditos', 'CRÉDITOS']] as const) {
+    for (const [id, texto] of [['mapa', 'MAPA'], ['garaje', 'GARAJE'], ['logros', 'LOGROS'], ['estadisticas', 'STATS'], ['ayuda', 'AYUDA'], ['creditos', 'CRÉDITOS']] as const) {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = texto;
@@ -110,7 +124,8 @@ export class Menu {
   private mostrar(pestana: Pestana): void {
     this.actual = pestana;
     for (const b of this.pestanas.children) b.classList.toggle('activa', (b as HTMLElement).dataset['pestana'] === pestana);
-    if (pestana === 'garaje') this.cuerpo.innerHTML = this.htmlGaraje();
+    if (pestana === 'mapa') this.pintarMapa();
+    else if (pestana === 'garaje') this.cuerpo.innerHTML = this.htmlGaraje();
     else if (pestana === 'logros') this.cuerpo.innerHTML = this.htmlLogros();
     else if (pestana === 'estadisticas') this.cuerpo.innerHTML = this.htmlEstadisticas();
     else if (pestana === 'ayuda') this.cuerpo.innerHTML = AYUDA + this.htmlCalidad();
@@ -151,6 +166,40 @@ export class Menu {
       return `<div class="mejora"><span><strong>${m.nombre}</strong><br><span class="peque">${m.descripcion}</span></span><span class="niveles">${puntos}</span>${boton}</div>`;
     });
     return `<h3>El taller · ${modelo.nombre}</h3><p class="peque">Tienes ${dinero} €. Las mejoras son de cada moto.</p>${filas.join('')}`;
+  }
+
+  /** El mapa del barrio entero con lo que hay que encontrar (menos los mecheros, que se buscan). */
+  private pintarMapa(): void {
+    const d = this.op.mapa();
+    this.cuerpo.innerHTML = `<p class="peque">${d.nombre} · Mecheros ${d.mecheros.recogidos}/${d.mecheros.total} (esos se buscan). Norte arriba.</p><canvas class="mapa"></canvas>
+      <div class="leyenda"><span><i style="background:#d7263d"></i>Parada del 13</span><span><i style="background:#ff8c42"></i>Encargo</span><span><i style="background:#2b2320"></i>Carrera</span><span><i style="background:#3fd36b"></i>Pachanga</span><span><i style="background:#f2c14e"></i>Rampa</span><span><i style="background:#1f6feb"></i>Tú</span></div>`;
+    const c = this.cuerpo.querySelector<HTMLCanvasElement>('canvas.mapa')!;
+    const lado = Math.min(this.cuerpo.clientWidth - 4, 420);
+    c.width = lado * 2;
+    c.height = lado * 2;
+    c.style.width = `${lado}px`;
+    c.style.height = `${lado}px`;
+    const ctx = c.getContext('2d');
+    if (!ctx || !d.lienzo) return;
+    ctx.drawImage(d.lienzo, 0, 0, c.width, c.height);
+    const k = c.width / d.lienzo.width;
+    const X = (x: number): number => (x + d.lienzo!.width / 2) * k;
+    const Z = (z: number): number => (z + d.lienzo!.height / 2) * k;
+    const punto = (x: number, z: number, color: string, r: number): void => {
+      ctx.beginPath();
+      ctx.arc(X(x), Z(z), r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#fffaf0';
+      ctx.stroke();
+    };
+    for (const r of d.rampas) punto(r.x, r.z, '#f2c14e', 5);
+    for (const p of d.pachangas) punto(p.x, p.z, '#3fd36b', 7);
+    for (const p of d.pancartas) punto(p.x, p.z, '#2b2320', 7);
+    for (const b of d.bolsas) punto(b.x, b.z, '#ff8c42', 7);
+    for (const p of d.paradas) punto(p.x, p.z, '#d7263d', 8);
+    punto(d.jugador.x, d.jugador.z, '#1f6feb', 9);
   }
 
   /** Selector de calidad gráfica: cambiarla recarga el juego (el barrio se construye según ella). */

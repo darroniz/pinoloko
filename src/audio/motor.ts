@@ -133,6 +133,54 @@ export class AudioJuego {
     this.rotor.gain.setTargetAtTime(activo ? 0.15 + cercania * 0.45 : 0, this.ctx.currentTime, 0.4);
   }
 
+  private bullicio: GainNode | null = null;
+  private tiempoPajaro = 1;
+  private tiempoGrillo = 0.3;
+
+  /** Ambiente: pájaros de día (blips agudos sueltos), grillos de noche y bullicio junto a los bares. */
+  actualizarAmbiente(noche: boolean, cercaBar: boolean, dt: number): void {
+    if (!this.ctx || !this.maestro || !this.derrape?.buffer) return;
+    const ctx = this.ctx;
+    if (!this.bullicio) {
+      // Bullicio: ruido por paso banda con el volumen ondulando, como voces lejanas.
+      const fuente = ctx.createBufferSource();
+      fuente.buffer = this.derrape.buffer;
+      fuente.loop = true;
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = 'bandpass';
+      filtro.frequency.value = 600;
+      filtro.Q.value = 1.2;
+      const onda = ctx.createGain();
+      onda.gain.value = 0.7;
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.9;
+      const profundidad = ctx.createGain();
+      profundidad.gain.value = 0.3;
+      lfo.connect(profundidad).connect(onda.gain);
+      this.bullicio = ctx.createGain();
+      this.bullicio.gain.value = 0;
+      fuente.connect(filtro).connect(onda).connect(this.bullicio).connect(this.maestro);
+      fuente.start();
+      lfo.start();
+    }
+    this.bullicio.gain.setTargetAtTime(cercaBar ? 0.06 : 0, ctx.currentTime, 0.8);
+    if (!noche) {
+      this.tiempoPajaro -= dt;
+      if (this.tiempoPajaro <= 0) {
+        this.tiempoPajaro = 1.5 + Math.random() * 4;
+        const base = 2200 + Math.random() * 1500;
+        for (let i = 0; i < 2 + Math.floor(Math.random() * 3); i++) this.pitido(base * (1 + (Math.random() - 0.5) * 0.2), 0.05, 0.025, ctx.currentTime + i * 0.11);
+      }
+    } else {
+      this.tiempoGrillo -= dt;
+      if (this.tiempoGrillo <= 0) {
+        this.tiempoGrillo = 0.5 + Math.random() * 0.6;
+        for (let i = 0; i < 3; i++) this.pitido(4300, 0.03, 0.012, ctx.currentTime + i * 0.06);
+      }
+    }
+  }
+
   /** A pie no hay motor que oír. */
   silenciarMotor(si: boolean): void {
     if (si === this.silenciado || !this.ctx || !this.motorGanancia) return;
@@ -157,10 +205,10 @@ export class AudioJuego {
   }
 
   /** Pitido corto (puntos de control, mecheros, meta): seno limpio con caída rápida. */
-  pitido(frecuencia = 880, duracion = 0.12, volumen = 0.16): void {
+  pitido(frecuencia = 880, duracion = 0.12, volumen = 0.16, cuando?: number): void {
     if (!this.ctx || !this.maestro) return;
     const ctx = this.ctx;
-    const t = ctx.currentTime;
+    const t = cuando ?? ctx.currentTime;
     const osc = ctx.createOscillator();
     osc.type = 'sine';
     osc.frequency.value = frecuencia;

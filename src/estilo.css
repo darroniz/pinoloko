@@ -74,6 +74,9 @@ body.en-bus #boton-menu { display: none; }
 #menu .moto .stats { display: flex; gap: 8px; font-size: 11px; }
 #menu .moto .stats span { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 #menu .moto .stats i { display: block; height: 5px; border-radius: 3px; background: var(--acento); }
+#menu canvas.mapa { display: block; border-radius: 12px; margin: 0 auto 8px; box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+#menu .leyenda { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11px; }
+#menu .leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; border: 1px solid #fffaf0; }
 #menu h3 { margin: 14px 0 4px; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
 #menu .mejora { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(43,35,32,0.1); }
 #menu .mejora .niveles { display: flex; gap: 3px; }

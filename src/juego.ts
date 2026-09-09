@@ -201,6 +201,21 @@ export class Juego {
       alElegirCalidad: (c) => { this.guardar(); elegirCalidad(c); },
       taller: this.taller,
       dinero: () => this.dinero,
+      mapa: () => {
+        const b = this.barrio;
+        const pos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
+        return {
+          lienzo: this.minimapa.lienzo,
+          nombre: b.ficha.nombre,
+          jugador: { x: pos.x, z: pos.z },
+          paradas: b.paradas.lista.map((p) => ({ x: p.x, z: p.z, nombre: p.nombre })),
+          bolsas: b.encargos.puntos.map((l) => ({ x: l.x, z: l.z })),
+          pancartas: b.carreras.map((c) => { const [x, z] = b.grafo.nodos[c.salida] ?? [0, 0]; return { x, z }; }),
+          pachangas: b.pachangas.lista.map((p) => ({ x: p.x, z: p.z })),
+          rampas: b.rampas.posiciones.map(([x, z]) => ({ x, z })),
+          mecheros: { recogidos: b.mecheros.cuantos, total: TOTAL_MECHEROS },
+        };
+      },
       alComprar: (mejora) => this.comprarMejora(mejora),
     });
     document.getElementById('boton-menu')!.addEventListener('click', () => this.abrirMenu());
@@ -606,6 +621,8 @@ export class Juego {
         this.contador.sumar('saltos');
         this.contador.maximo('vueloMaximo', this.tiempoAire);
         this.hud.avisar(this.tiempoAire > 0.8 ? `¡Vuelo de ${this.tiempoAire.toFixed(1)} s! +${euros} €` : `¡Salto! +${euros} €`, 1.6);
+        // Los vecinos de alrededor jalean el vuelo largo.
+        if (this.tiempoAire > 0.8 && this.barrio.vecinos.lista.some((v) => (v.x - this.vehiculo.estado.x) ** 2 + (v.z - this.vehiculo.estado.z) ** 2 < 20 * 20)) setTimeout(() => this.hud.avisar(['¡Olé, Wifly!', '¡Vaya salto, illo!', '¡Ese es mi niño!'][Math.floor(Math.random() * 3)]!, 1.6), 1700);
         this.audio.pitido(this.tiempoAire > 0.8 ? 1100 : 800, 0.18, 0.18);
         this.particulas.emitir(this.vehiculo.estado.x, 0.3, this.vehiculo.estado.z, 10, this.colorPolvo, 3);
       }
@@ -1016,6 +1033,9 @@ export class Juego {
         this.busqueda.fechoria('atropello', sevici.atropellos);
       }
       this.actualizarCampanas(jugadorPos);
+      // Ambiente: pájaros de día, grillos de noche y bullicio junto a las terrazas.
+      const bar = b.nivel.pois.some((p) => (p.clase === 'bar' || p.clase === 'cafe' || p.clase === 'restaurant') && (p.x - jugadorPos.x) ** 2 + (p.z - jugadorPos.z) ** 2 < 22 * 22);
+      this.audio.actualizarAmbiente(this.cielo.esDeNoche, bar, dt);
       // Perros: te persiguen ladrando un rato si pasas cerca con la moto.
       const perros = b.perros.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
       if (perros.ladridos > 0) this.audio.ladrido();

@@ -603,3 +603,19 @@ listón 120) sin tocar nada por frame. Un A/B con `scripts/sonda-ab.mjs` (la bui
 `git worktree` contra la nueva, dos rondas alternas) dio [81,109]/[64,144] contra
 [64,138]/[85,110]: la misma distribución, con la Pi a 80 °C. Se publicó. Regla: dos fallos
 seguidos se resuelven con el A/B, no adivinando; y nada de lint ni builds mientras mide.
+
+## 2026-09-10 — Caballito, abuelas con carrito, el camión de Lipasam y el minimapa apaisado
+
+**Caballito**: acelerando a fondo por debajo del 45 % de la punta, el chasis pivota sobre la
+rueda trasera hasta 0,38 rad (más con más variador). Solo visual: no cambia la física. Es lo que
+hace que arrancar en un semáforo "se sienta" como una 49 preparada.
+
+**Abuelas con carrito**: una de cada cinco vecinas (por índice de color) arrastra un carrito de
+la compra granate, instanciado aparte, solo cuando pasea o huye (sentada no).
+
+**Camión de Lipasam**: un tipo más de tráfico (`camion`), uno por barrio, a 5 m/s, cabina blanca
+y caja verde de 7,5 m. Se roba como el 13 (ajustes `CAMION`: más lento y con giro de tráiler) y
+la cámara se aleja igual que con el bus (por el largo de la apariencia, no por el nombre).
+
+**Minimapa en apaisado**: con el móvil tumbado el disco va a la izquierda bajo el nombre de la
+calle, porque a la derecha se pisaba con SUBIR/BAJAR. En vertical sigue bajo ☰ y 📷.

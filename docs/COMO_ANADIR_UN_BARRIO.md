@@ -51,7 +51,8 @@ triana: {
   id: 'triana',
   nombre: 'Triana',
   destinos13: ['alameda', 'pino-montano'], // a dónde lleva el 13 desde aquí (una parada por destino, por turnos)
-  poblacion: { vecinos: 140, trafico: 12, motos: 16, coches: 10 },
+  poblacion: { vecinos: 140, trafico: 12, buses: 1, motos: 16, coches: 10, sevici: 8, perros: 6 },
+  tribu: 'trianeros',                   // 'canis' | 'modernos' | 'trianeros': pinta y gritos de los vecinos
   bienvenida: 'Triana. La otra orilla.',
   paradaLlegada: 'Plaza de Cuba',       // trozo del nombre de la bus_stop donde te deja el bus
 },
@@ -64,7 +65,11 @@ triana: {
   turnos: con dos destinos y tres paradas, la primera y la tercera van al primero. El aviso al
   acercarte a la parada dice a dónde va. Con un solo destino, todas van al mismo sitio.
 - Ajusta `poblacion` a ojo: la Alameda lleva más vecinos y menos tráfico que Pino Montano porque
-  es peatonal.
+  es peatonal. `sevici` son ciclistas por los `cycleway` de la caja (si no hay, pon 0); `perros`,
+  perros callejeros por los pasajes; `buses`, cuántos 13 circulan. Siempre hay además un camión
+  de Lipasam y una de cada cuatro entradas de tráfico es furgoneta.
+- `tribu` decide la ropa y el gorro de los vecinos y qué te gritan (`TRIBUS` en
+  `src/mundo/peatones.ts`). Para un barrio de pijos habría que añadir una tribu nueva ahí.
 
 Recuerda enlazar el barrio desde otro: algún `destinos13` tiene que apuntar a él. El test
 comprueba que desde cualquier barrio se llega a todos.
@@ -96,4 +101,10 @@ npm run lint && npm run test && npm run build && npm run verificar
   `building:levels` o `height`, y si no, por el perfil.
 - Calles rodadas vs. pasajes por `highway` (ver `VIAS_RODADAS` y `VIAS_PEATONALES`).
 - Árboles: los `natural=tree` de OSM donde están; el resto se plantan procedimentalmente.
-- Pasos de cebra, paradas, POIs con `name` (bares, comercios) y zonas verdes.
+- Pasos de cebra, semáforos (`highway=traffic_signals` y `crossing=traffic_signals` sobre calle
+  rodada, agrupados en cruces con ciclo propio), paradas, POIs con `name` (bares, comercios) y
+  zonas verdes.
+- Lo que el barrio coloca solo al construirse: dos carreras, seis rampas, veinte mecheros, tres
+  bolsas de encargo en locales con nombre, hasta cuatro pachangas (campitos `pitch`/`playground`
+  o pasajes anchos), el mercadillo junto al `marketplace` si lo hay, terrazas en los bares,
+  farolas por las calles rodadas y semáforos donde OSM los tenga.

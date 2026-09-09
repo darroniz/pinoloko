@@ -490,3 +490,33 @@ de premio por eslabón (tope ×3); se pierde la cadena al agotarse el tiempo, al
 trincarte o al caer al río. En Pino Montano casi todos los locales con nombre son farmacias y el
 mercado (OSM no tiene los bares del barrio con nombre): encargos de farmacia, que también es muy
 de barrio. El destino sale en el minimapa como objetivo cuando no hay carrera en curso.
+
+## 2026-09-10 — Tribus por barrio y logros
+
+Cada `FichaBarrio` lleva una **tribu** (`canis`, `modernos`, `trianeros`) que decide la ropa de
+los vecinos, si llevan gorra plana (canis), gorro de lana (modernos) o nada (trianeros), y qué
+te gritan. Es la guerra canis-pijos del brief en su versión freestyle: solo pinta y frases, sin
+bandos ni misiones. Los pijos de verdad (Los Remedios, Nervión) llegarán con sus barrios; Triana
+va de castiza y la Alameda de moderna, que es lo que son. Dos de cada tres vecinos llevan gorro
+(según su índice de color, que es fijo, para no parpadear).
+
+**Logros** (`src/logros.ts`): 22 metas sacadas de las estadísticas acumuladas, se comprueban cada
+dos segundos y se guardan en `pinoloko.logros.v1`. Van en su pestaña del menú. Para que "los 20
+mecheros de un barrio" y "30 mecheros" fueran logros ha hecho falta contar mecheros en las
+estadísticas (antes solo se guardaban por barrio).
+
+## 2026-09-10 — Pachangas: el balón es un cuerpo de verdad
+
+Niños jugando al fútbol en los campitos (`leisure=pitch`, `playground`) y, si no hay, en los
+pasajes `pedestrian` de 5 m o más: cuatro por barrio, a más de 60 m entre sí y lejos de la
+parada, las pancartas y las bolsas. El balón es una esfera dinámica de Rapier (55 cm de radio:
+uno real desde 66 m es un píxel) con CCD para que la moto no lo atraviese; la portería tiene
+postes y red con colisión, así que el balón se queda dentro. Los niños no tienen cuerpo: corren al
+balón, lo chutan hacia la portería con un desvío grande, y **se apartan** si vienes lanzado.
+No se les atropella: es la línea del tono. Gol del jugador (si tocó el balón en los últimos 4 s)
+son 40 € y fanfarria; los de los niños solo un aviso de vez en cuando si andas cerca. Si el
+balón se va a más de 45 m del campo, vuelve al centro.
+
+**Vibración** (`navigator.vibrate`) en golpes fuertes, atropellos, reventones y goles; `?vibrar=0`
+la apaga. **Repetición**: al reventar un vehículo, 2,2 s de cámara baja orbitando el punto (la
+segunda excepción a la cámara alta, junto al 13); el juego sigue corriendo debajo.

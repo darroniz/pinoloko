@@ -22,11 +22,12 @@ export interface Estadisticas {
   cadenaRecados: number;
   mecheros: number;
   barriosCompletos: number;
+  goles: number;
 }
 
 export const ESTADISTICAS_VACIAS: Estadisticas = {
   segundos: 0, metros: 0, trastos: 0, atropellos: 0, dineroTotal: 0, trincados: 0,
-  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0, carreras: 0, saltos: 0, vueloMaximo: 0, chapuzones: 0, semaforos: 0, recados: 0, cadenaRecados: 0, mecheros: 0, barriosCompletos: 0,
+  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0, carreras: 0, saltos: 0, vueloMaximo: 0, chapuzones: 0, semaforos: 0, recados: 0, cadenaRecados: 0, mecheros: 0, barriosCompletos: 0, goles: 0,
 };
 
 const CLAVE_STATS = 'pinoloko.estadisticas.v1';
@@ -98,6 +99,7 @@ export function resumen(e: Estadisticas): [string, string][] {
     ['Semáforos en rojo', String(e.semaforos)],
     ['Mecheros recogidos', String(e.mecheros)],
     ['Encargos entregados', String(e.recados)],
+    ['Goles', String(e.goles)],
     ['Mejor cadena de encargos', String(e.cadenaRecados)],
   ];
 }

@@ -93,3 +93,26 @@ Formato:
 - Descripción para generarlo: coche y scooter de la Policía Local de Sevilla (blanco y azul, con
   el escudo y "POLICÍA LOCAL" en el lateral), low-poly, colores planos, luces en el techo.
 - Formato y tamaño deseados: GLB, escala real, -Z hacia delante.
+
+## Balón, portería y niños de la pachanga
+- Dónde se usa: `src/mundo/pachangas.ts` (campitos y pasajes anchos).
+- Placeholder actual: esfera a cuadros blanca y negra (55 cm), portería de cilindros blancos con
+  red translúcida, niños como cápsulas pequeñas con camiseta roja o azul.
+- Descripción para generarlo: balón de reglamento estilo "Tango" low-poly (~200 triángulos),
+  portería de barrio de tubo blanco con red, y dos niños de 1,1 m (uno con camiseta del Betis y
+  otro del Sevilla, sin escudos) en pose de correr. Colores planos.
+- Formato y tamaño deseados: GLB, Y arriba.
+
+## Semáforo
+- Dónde se usa: `src/mundo/semaforos.ts` (cruces con `traffic_signals` de OSM).
+- Placeholder actual: poste gris con brazo y una caja de 0,5 × 1 m que cambia de color entera.
+- Descripción para generarlo: semáforo urbano español de tres luces con visera, low-poly
+  (~150 triángulos), con las tres luces como materiales separados para encenderlas desde código.
+- Formato y tamaño deseados: GLB, 3,4 m de alto, Y arriba.
+
+## Bolsa de encargo
+- Dónde se usa: `src/mundo/encargos.ts` (puerta de los locales con recado).
+- Placeholder actual: caja marrón con asa de toro, girando y flotando sobre un anillo naranja.
+- Descripción para generarlo: bolsa de papel de bar/farmacia con asas, low-poly (~100
+  triángulos), color kraft, exagerada de tamaño (1,3 m) para leerse desde arriba.
+- Formato y tamaño deseados: GLB, Y arriba.

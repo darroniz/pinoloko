@@ -10,16 +10,16 @@ Sin feedback nuevo en `FEEDBACK.md` y el roadmap con los siete hitos casi vacío
 noche va de **hacer el barrio más vivo y más cafre**, siempre dentro del modo freestyle, y de
 dejar herramientas para que pruebes el rendimiento en el móvil.
 
-- [ ] **Bloque 1 (00:25-01:05)** — Semáforos de verdad desde OSM (`highway=traffic_signals`:
+- [x] **Bloque 1 (hecho a las 00:30)** — Semáforos de verdad desde OSM (`highway=traffic_signals`:
       19 en Triana, 4 en el Mercado): postes con ciclo rojo/verde, tráfico que para en rojo y
       saltárselo en rojo calienta a la Local. Tests del ciclo. Push.
-- [ ] **Bloque 2 (01:05-01:50)** — Minijuego "Recadero": coger un encargo en un bar con nombre
+- [x] **Bloque 2 (hecho a las 00:30, con el 1)** — Minijuego "Recadero": coger un encargo en un bar con nombre
       real y llevarlo a otro contra el reloj, en moto, con flecha en el minimapa. Por barrio,
       con dinero según lo rápido. Push.
-- [ ] **Bloque 3 (01:50-02:30)** — Canis contra pijos: vecinos con pinta y frases según el
+- [x] **Bloque 3 (hecho a las 00:36)** — Canis contra pijos: vecinos con pinta y frases según el
       barrio (chándal en Pino Montano, polo y jersey a los hombros en Triana, la Alameda a su
       rollo) y pestaña de LOGROS en el menú. Push.
-- [ ] **Bloque 4 (02:30-03:10)** — El balón en el pasaje: niños jugando al fútbol con un balón
+- [x] **Bloque 4 (hecho a las 00:45)** — El balón en el pasaje: niños jugando al fútbol con un balón
       de física que puedes chutar con la moto (gol = euros), vibración táctil en los golpes y
       repetición corta con cámara baja cuando revienta un vehículo. Push.
 - [ ] **Bloque 5 (03:10-03:50)** — Rendimiento móvil: auditoría de draw calls y triángulos por

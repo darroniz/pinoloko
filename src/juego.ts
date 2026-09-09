@@ -31,6 +31,7 @@ import { Contador, Garaje } from './estadisticas';
 import { Carrera, Records, formatearTiempo, premio } from './carreras';
 import { Recadero, elegirDestino, premioRecado } from './recados';
 import { Logros } from './logros';
+import { Repeticion } from './efectos/repeticion';
 import { Menu, type Pestana } from './ui/menu';
 import { Minimapa } from './ui/minimapa';
 
@@ -42,7 +43,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -119,6 +120,10 @@ export class Juego {
   private garaje = new Garaje();
   private logros = new Logros();
   private tiempoLogros = 0;
+  private repeticion = new Repeticion();
+  private tiempoGolNinos = 0;
+  /** `?vibrar=0` la apaga; la vibración solo existe en móviles. */
+  private conVibracion = new URLSearchParams(location.search).get('vibrar') !== '0' && typeof navigator.vibrate === 'function';
   private menu: Menu;
   private minimapa = new Minimapa();
   /** `?minimapa=0` lo apaga del todo (para medir su coste en la sonda). */
@@ -229,6 +234,7 @@ export class Juego {
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
+      pachangas: () => this.barrio.pachangas.lista.map((p) => ({ x: p.x, z: p.z, goles: p.goles, porteria: p.porteria, balon: p.malla.position.toArray() })),
       recado: () => ({ estado: this.recadero.estado, destino: this.recadero.destino, restante: this.recadero.restante, cadena: this.recadero.cadena, puntos: this.barrio.encargos.puntos }),
       semaforos: () => this.barrio.semaforos.cruces.map((c) => ({ x: c.x, z: c.z, n: c.semaforos.length, luz: this.barrio.semaforos.luzDelante(c.x - Math.sin(c.eje) * 12, c.z + Math.cos(c.eje) * 12, c.eje, 20)?.luz ?? null })),
       rampas: () => this.barrio.rampas.posiciones.map(([x, z], i) => ({ x, z, rumbo: this.barrio.rampas.rumbos[i] ?? 0 })),
@@ -542,6 +548,29 @@ export class Juego {
     }
   }
 
+  /** Vibración táctil corta (móvil): golpes, atropellos, reventones y goles. */
+  private vibrar(ms: number): void {
+    if (!this.conVibracion) return;
+    try { navigator.vibrate(ms); } catch { /* sin vibración */ }
+  }
+
+  /** Pachangas: el balón y los niños tras la física; los goles del jugador dan dinero. */
+  private actualizarPachangas(pos: THREE.Vector3, rapidez: number, dt: number): void {
+    const r = this.barrio.pachangas.actualizar({ x: pos.x, z: pos.z, rapidez }, dt);
+    if (r.golesJugador > 0) {
+      this.ganar(40 * r.golesJugador);
+      this.contador.sumar('goles', r.golesJugador);
+      this.hud.avisar(['¡GOOOL de Wifly! +40 €', '¡Golazo por la escuadra! +40 €', '¡Gol! Los niños flipando +40 €'][Math.floor(Math.random() * 3)]!, 2.4);
+      this.audio.fanfarria();
+      this.vibrar(80);
+    }
+    this.tiempoGolNinos -= dt;
+    if (r.golesNinos > 0 && this.tiempoGolNinos <= 0) {
+      this.tiempoGolNinos = 12;
+      if (this.barrio.pachangas.lista.some((p) => Math.hypot(p.x - pos.x, p.z - pos.z) < 40)) this.hud.avisar('¡Gol de los niños del pasaje!', 1.6);
+    }
+  }
+
   /** Semáforos: ciclan solos; pasar uno en rojo en vehículo y con prisa calienta a la Local. */
   private actualizarSemaforos(pos: THREE.Vector3, rapidez: number, dt: number): void {
     const s = this.barrio.semaforos;
@@ -788,6 +817,7 @@ export class Juego {
       performance.measure('u-fisica', 'u0', 'u1');
       const e = this.vehiculo.estado;
       if (e.golpe > 0 && !this.aPie) {
+        if (e.golpe > 4) this.vibrar(Math.min(60, Math.round(e.golpe * 4)));
         this.camara.sacudir(e.golpe * 0.06);
         this.audio.golpe(e.golpe);
         this.particulas.emitir(e.x, 0.6, e.z, Math.min(30, Math.round(e.golpe * 2)), this.colorChispa, Math.min(9, e.golpe * 0.8));
@@ -817,6 +847,7 @@ export class Juego {
         this.hud.ponerRacha(this.racha);
         this.hud.avisar(['¡Atropello!', '¡Al suelo, vecino!', '¡Uy, uy, uy!', '¡Que era el del quinto!'][Math.floor(Math.random() * 4)]!, 1.5);
         this.camara.sacudir(0.35);
+        this.vibrar(40);
         this.audio.golpe(4);
         this.busqueda.fechoria('atropello', eventos.atropellos);
       }
@@ -836,6 +867,7 @@ export class Juego {
       this.actualizarSaltos(dt);
       this.actualizarSemaforos(jugadorPos, rapidez, dt);
       this.actualizarRecados(jugadorPos, dt);
+      this.actualizarPachangas(jugadorPos, rapidez, dt);
       // Daño: humo por debajo de 30 y reventón a 0 (Wifly sale despedido y la moto ya no arranca).
       if (!this.aPie) {
         const v = this.vehiculo;
@@ -851,7 +883,9 @@ export class Juego {
           this.hud.avisar(this.coche ? '¡El coche ha reventado!' : `¡La ${v instanceof Scooter ? v.modelo.nombre : 'moto'} ha petado!`, 2.2);
           this.contador.sumar('reventones');
           this.busqueda.fechoria('trasto', 4);
+          this.vibrar(150);
           this.bajarse();
+          this.repeticion.empezar(v.estado.x, v.estado.z, v.estado.rumbo);
         }
       }
       // Claxon: asusta a los vecinos de alrededor.
@@ -928,6 +962,7 @@ export class Juego {
     this.ultimaPos.set(pos.x, 0, pos.z);
     this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? (this.coche.apariencia ? 84 : 72) : 66;
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
+    if (this.repeticion.activa) this.repeticion.actualizar(dt, this.camara.camara);
     this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);
     if (this.jugando) this.cielo.actualizar(dt);
     this.cielo.colocarSol(pos.x, pos.z);

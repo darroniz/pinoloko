@@ -1,0 +1,30 @@
+// Sonda: pantalla apaisada (844x390), el camión de Lipasam en el tráfico y el caballito al arrancar.
+import { chromium } from 'playwright-core';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { join, extname } from 'node:path';
+const DIST = new URL('../dist/', import.meta.url).pathname;
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
+const srv = createServer(async (req, res) => { let r = new URL(req.url, 'http://x').pathname; if (r.endsWith('/')) r += 'index.html'; try { res.writeHead(200, { 'content-type': MIME[extname(r)] ?? 'application/octet-stream' }); res.end(await readFile(join(DIST, r))); } catch { res.writeHead(404); res.end(); } });
+await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+const url = `http://127.0.0.1:${srv.address().port}/?barrio=pino-montano`;
+const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true });
+p.on('console', (m) => { if (m.type() === 'error') console.log('ERR', m.text()); });
+p.on('pageerror', (e) => console.log('PAGEERR', String(e)));
+await p.goto(url, { waitUntil: 'load' });
+await p.waitForFunction(() => window.__pv_listo === true, null, { timeout: 120000 });
+await p.screenshot({ path: 'logs/captura-apaisada-portada.png' });
+await p.click('#boton-jugar');
+await p.evaluate(() => window.__pv_prueba.hora(12));
+await new Promise((r) => setTimeout(r, 1500));
+await p.screenshot({ path: 'logs/captura-apaisada.png' });
+console.log(JSON.stringify(await p.evaluate(() => { const i = window.__pv_info(); return { camiones: i.camiones, furgonetas: i.furgonetas, trafico: i.trafico, buses: i.buses }; })));
+// Caballito: a fondo desde parado, captura a los 0,7 s.
+await p.setViewportSize({ width: 390, height: 844 });
+await new Promise((r) => setTimeout(r, 500));
+await p.keyboard.down('w');
+await new Promise((r) => setTimeout(r, 700));
+await p.screenshot({ path: 'logs/captura-caballito.png' });
+await p.keyboard.up('w');
+await b.close(); srv.close();

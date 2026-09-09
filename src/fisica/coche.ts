@@ -81,6 +81,54 @@ export function geometriaFurgoneta(color: string): THREE.BufferGeometry {
   return g;
 }
 
+export const CAMION_LARGO = 7.5, CAMION_ANCHO = 2.4;
+let geoCamion: THREE.BufferGeometry | null = null;
+
+/** El camión de la basura de Lipasam: cabina blanca y caja verde con la tolva detrás. */
+export function geometriaCamion(): THREE.BufferGeometry {
+  if (geoCamion) return geoCamion;
+  const piezas: THREE.BufferGeometry[] = [];
+  const pintar = (g: THREE.BufferGeometry, c: string): THREE.BufferGeometry => {
+    const col = new THREE.Color(c);
+    const n = g.getAttribute('position').count;
+    const arr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b; }
+    g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+    g.deleteAttribute('uv');
+    return g.index ? g.toNonIndexed() : g;
+  };
+  piezas.push(pintar(new THREE.BoxGeometry(CAMION_ANCHO, 0.7, CAMION_LARGO).translate(0, 0.55, 0), '#5b5f66'));
+  piezas.push(pintar(new THREE.BoxGeometry(CAMION_ANCHO, 1.9, 1.9).translate(0, 1.85, -2.7), '#f4f4f4'));
+  piezas.push(pintar(new THREE.BoxGeometry(CAMION_ANCHO * 0.9, 0.7, 0.3).translate(0, 2.2, -3.6), '#9fd3e8'));
+  piezas.push(pintar(new THREE.BoxGeometry(CAMION_ANCHO, 2.1, 4.6).translate(0, 1.95, 0.9), '#3f8f4a'));
+  piezas.push(pintar(new THREE.BoxGeometry(CAMION_ANCHO * 0.9, 1.4, 0.6).translate(0, 1.4, 3.4), '#2e6e38'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(-0.8, 0.6, -CAMION_LARGO / 2), '#fff4c2'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(0.8, 0.6, -CAMION_LARGO / 2), '#fff4c2'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.5, 0.2, 0.3).translate(0, 3.1, -2.7), '#ffa500'));
+  for (const [x, z] of [[-1.05, -2.4], [1.05, -2.4], [-1.05, 1.6], [1.05, 1.6], [-1.05, 2.8], [1.05, 2.8]]) {
+    piezas.push(pintar(new THREE.CylinderGeometry(0.45, 0.45, 0.3, 10).rotateZ(Math.PI / 2).translate(x!, 0.45, z!), '#2b2b2f'));
+  }
+  const g = mergeGeometries(piezas, false);
+  g.computeVertexNormals();
+  g.computeBoundingSphere();
+  for (const p of piezas) p.dispose();
+  geoCamion = g;
+  return g;
+}
+
+/** El camión: más pesado y lento que el 13, gira como un tráiler. */
+export const CAMION: AjustesCoche = {
+  aceleracion: 4.5,
+  velocidadMaxima: 12,
+  velocidadMarchaAtras: 3,
+  frenado: 10,
+  rozamiento: 0.5,
+  giroParado: 0.6,
+  giroMaximo: 1.3,
+  agarre: 9,
+  agarreDerrape: 2.2,
+};
+
 export const MATERIAL_COCHE = new THREE.MeshLambertMaterial({ vertexColors: true });
 
 export interface AjustesCoche {

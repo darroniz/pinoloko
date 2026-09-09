@@ -81,11 +81,15 @@ export class Minimapa {
     this.camara.right = ancho;
     this.camara.top = alto;
     this.camara.updateProjectionMatrix();
-    const derecha = 12;
     const sat = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sat')) || 0;
-    const arriba = Math.max(132, 122 + sat);
-    this.grupo.position.set(ancho - derecha - RADIO, alto - arriba - RADIO, 0);
-    this.icono.position.set(ancho - derecha - 14, alto - arriba - 14, 0);
+    // Apaisado (móvil tumbado): a la izquierda bajo el nombre de la calle, que a la derecha
+    // están los botones de menú y foto y debajo los de acción. En vertical, bajo esos botones.
+    const apaisado = ancho > alto;
+    const arriba = apaisado ? 92 + sat : Math.max(132, 122 + sat);
+    const x = apaisado ? 14 + RADIO : ancho - 12 - RADIO;
+    this.grupo.position.set(x, alto - arriba - RADIO, 0);
+    this.icono.position.set(apaisado ? 14 + 14 : ancho - 12 - 14, alto - arriba - 14, 0);
+    this.zona.classList.toggle('apaisado', apaisado);
   }
 
   alternar(): void {

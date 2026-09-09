@@ -170,6 +170,8 @@ export class Vecinos {
   private q2 = new THREE.Quaternion();
 
   private gorros: THREE.InstancedMesh | null = null;
+  /** Carritos de la compra: los llevan una de cada cinco (las abuelas del barrio), delante. */
+  private carritos: THREE.InstancedMesh;
   private readonly insultos: string[];
 
   constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = [], tribu: Tribu = 'canis') {
@@ -186,6 +188,15 @@ export class Vecinos {
       this.gorros = new THREE.InstancedMesh(new THREE.SphereGeometry(0.26, 8, 6).scale(1, 0.7, 1).translate(0, 1.5, 0), new THREE.MeshLambertMaterial({ color: '#c8a24a' }), cuantos);
     }
     if (this.gorros) { this.gorros.count = 0; this.gorros.frustumCulled = false; this.grupo.add(this.gorros); }
+    const geoCarrito = mergeGeometries([
+      new THREE.BoxGeometry(0.36, 0.55, 0.3).translate(0, 0.5, -0.5),
+      new THREE.CylinderGeometry(0.02, 0.02, 0.9, 5).translate(0, 0.45, -0.32).rotateX(0.25),
+      new THREE.CylinderGeometry(0.07, 0.07, 0.3, 6).rotateZ(Math.PI / 2).translate(0, 0.07, -0.5),
+    ]);
+    this.carritos = new THREE.InstancedMesh(geoCarrito, new THREE.MeshLambertMaterial({ color: '#b03a48' }), cuantos);
+    this.carritos.count = 0;
+    this.carritos.frustumCulled = false;
+    this.grupo.add(this.carritos);
     for (const c of t.ropa) {
       const im = new THREE.InstancedMesh(geoCuerpo, new THREE.MeshLambertMaterial({ color: c }), cuantos);
       im.count = 0;
@@ -239,7 +250,7 @@ export class Vecinos {
 
   private dibujar(cx: number, cz: number): void {
     const cuentas = this.cuerpos.map(() => 0);
-    let nCabezas = 0, nGorros = 0;
+    let nCabezas = 0, nGorros = 0, nCarritos = 0;
     for (const v of this.lista) {
       if ((v.x - cx) ** 2 + (v.z - cz) ** 2 > 130 * 130) continue;
       this.p.set(v.x, 0, v.z);
@@ -263,8 +274,11 @@ export class Vecinos {
       this.cabezas.setMatrixAt(nCabezas++, this.m);
       // Dos de cada tres llevan gorro (según el color de la ropa, que es fijo por vecino).
       if (this.gorros && v.color % 3 !== 2) this.gorros.setMatrixAt(nGorros++, this.m);
+      if (v.color % 5 === 1 && (v.estado === 'pasear' || v.estado === 'huir')) this.carritos.setMatrixAt(nCarritos++, this.m);
     }
     if (this.gorros) { this.gorros.count = nGorros; this.gorros.instanceMatrix.needsUpdate = true; }
+    this.carritos.count = nCarritos;
+    this.carritos.instanceMatrix.needsUpdate = true;
     this.cuerpos.forEach((im, i) => { im.count = cuentas[i]!; im.instanceMatrix.needsUpdate = true; });
     this.cabezas.count = nCabezas;
     this.cabezas.instanceMatrix.needsUpdate = true;

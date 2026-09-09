@@ -76,7 +76,7 @@ export class Barrio {
     this.grupo.add(this.trastos.grupo);
     this.vecinos = new Vecinos(this.grafo, ficha.poblacion.vecinos, this.trastos.asientos, ficha.tribu);
     this.grupo.add(this.vecinos.grupo);
-    this.trafico = new Trafico(fisica, this.grafo, ficha.poblacion.trafico, ficha.poblacion.buses, nivel.pois.filter((p) => p.clase === 'bus_stop'));
+    this.trafico = new Trafico(fisica, this.grafo, ficha.poblacion.trafico, ficha.poblacion.buses, nivel.pois.filter((p) => p.clase === 'bus_stop'), 1);
     this.grupo.add(this.trafico.grupo);
     this.semaforos = new Semaforos(nivel);
     this.trafico.semaforos = this.semaforos;

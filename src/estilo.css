@@ -107,3 +107,4 @@ body.en-bus #hud-carrera { display: none; }
 body.jugando #minimapa { display: block; }
 body.en-bus #minimapa { display: none; }
 #minimapa.plegado { width: 28px; height: 28px; }
+#minimapa.apaisado { right: auto; left: 14px; top: calc(92px + env(safe-area-inset-top)); }

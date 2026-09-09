@@ -145,3 +145,17 @@ Formato:
 - Descripción para generarlo: furgoneta tipo Berlingo/Kangoo low-poly (~400 triángulos), blanca,
   proporciones de juguete.
 - Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 3,9 m de largo.
+
+## Perro callejero
+- Dónde se usa: `src/mundo/perros.ts` (pasajes).
+- Placeholder actual: cajas (cuerpo, cabeza, orejas, patas y rabo) en tres pelajes.
+- Descripción para generarlo: perro mediano de barrio (mezcla de podenco y lo que sea), low-poly
+  (~200 triángulos), con pose de correr; tres pelajes: canela, negro y blanco.
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 0,9 m de largo.
+
+## Farola
+- Dónde se usa: `src/mundo/farolas.ts`.
+- Placeholder actual: poste con brazo y caja de luz.
+- Descripción para generarlo: farola urbana sevillana de brazo (las de fundición negras del
+  centro para la Alameda y Triana; una de poste gris para Pino Montano), low-poly (~120 tris).
+- Formato y tamaño deseados: GLB, 6 m, Y arriba.

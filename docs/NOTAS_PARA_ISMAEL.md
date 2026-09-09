@@ -31,7 +31,8 @@ dejar herramientas para que pruebes el rendimiento en el móvil.
 - [x] **Bloque 9 (hecho a la 01:12)** — Mercadillo junto al Mercado (diez puestos con toldo que se rompen) y furgonetas en el tráfico.
 - [x] **Bloque 10 (hecho a la 01:12)** — Pistas la primera vez que pasa cada cosa.
 - [x] **Bloque 11 (hecho a la 01:15)** — El taller: mejoras por moto para gastar el dinero.
-- [ ] **Bloque 12** — Farolas de noche, coches del tráfico que pitan si les cortas el paso, y perros por los pasajes.
+- [x] **Bloque 12 (hecho a la 01:32)** — Farolas de noche, coches del tráfico que pitan si les cortas el paso, y perros por los pasajes.
+- [ ] **Bloque 13** — Caballito al acelerar, abuelas con carrito, pantalla apaisada, y el camión de Lipasam de noche.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Plan de la noche del 2026-09-09 (segunda sesión, 00:15 → 04:45)

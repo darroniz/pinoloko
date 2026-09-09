@@ -582,3 +582,24 @@ modelo (`aplicarMejoras`): +7 % de punta por nivel de escape, +10 % de arranque 
 el tono del motor. Las mejoras son **por modelo** (la Jog tuneada no tunea la Zip) y se guardan
 en `pinoloko.taller.v1`, que NUEVA PARTIDA borra con el resto. Se aplican al crear la moto, al
 cambiarla desde el garaje y al subirte a una robada del mismo modelo.
+
+## 2026-09-10 — Farolas, perros y bocinazos; y el gate resuelto con un A/B
+
+**Farolas** cada 28 m por las calles rodadas (aceras alternas, brazo hacia la calzada), postes
+instanciados; de noche se enciende la cabeza y un charco de luz aditivo de 5,5 m en el suelo.
+Sin luces puntuales: el ambiente ya lleva el tinte cálido y en móvil las luces cuestan.
+
+**Perros callejeros** (7 en Pino Montano, 6 en los otros): vagan por el grafo peatonal, si pasas
+a menos de 14 m con la moto te persiguen ladrando (7 m/s: no te alcanzan a fondo, sí por los
+pasajes) durante 4-6 s y luego se cansan. Si vas a llevártelos por delante saltan a un lado: a los
+perros no se les atropella, como a los niños. El primer intento tenía un bucle (el salto
+reiniciaba la persecución y el perro no se cansaba nunca): el salto lleva ahora su propio reloj.
+
+**Bocinazos**: un coche del tráfico con el jugador delante más de 2,5 s pita y suelta una frase;
+se enfría 4 s para no ser un concierto.
+
+**El gate y el taller**: el commit del taller falló el gate dos veces seguidas (112 y 109 frames,
+listón 120) sin tocar nada por frame. Un A/B con `scripts/sonda-ab.mjs` (la build anterior en un
+`git worktree` contra la nueva, dos rondas alternas) dio [81,109]/[64,144] contra
+[64,138]/[85,110]: la misma distribución, con la Pi a 80 °C. Se publicó. Regla: dos fallos
+seguidos se resuelven con el A/B, no adivinando; y nada de lint ni builds mientras mide.

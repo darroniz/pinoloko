@@ -76,6 +76,8 @@ export class Scooter {
   ajustes: AjustesScooter;
   private rumbo = 0;
   private inclinacion = 0;
+  /** Caballito: al acelerar a fondo desde parado el morro se levanta un momento. */
+  private caballito = 0;
   private velocidadPrevia = new THREE.Vector3();
   private readonly chasis: THREE.Group;
   private readonly ruedaDelantera: THREE.Mesh;
@@ -258,6 +260,10 @@ export class Scooter {
     // Inclinación visual: girar rápido inclina la moto hacia dentro.
     const objetivo = -this.giroActual * Math.min(1, rapidez / 6) * a.inclinacionMaxima;
     this.inclinacion += (objetivo - this.inclinacion) * Math.min(1, dt * 8);
+    // Caballito: acelerando a fondo por debajo de media punta, el morro sube (más con más variador).
+    const umbral = a.velocidadMaxima * 0.45;
+    const objetivoCaballito = acelerador > 0.8 && !entrada.freno && rapidez > 0.5 && rapidez < umbral ? 0.38 * (1 - rapidez / umbral) * Math.min(1.3, a.aceleracion / 11) : 0;
+    this.caballito += (objetivoCaballito - this.caballito) * Math.min(1, dt * (objetivoCaballito > this.caballito ? 5 : 3));
   }
 
   /** Se llama después del paso de física: detecta golpes y sincroniza la malla. */
@@ -279,6 +285,9 @@ export class Scooter {
     this.malla.position.set(t.x, t.y - RADIO, t.z);
     this.malla.rotation.set(0, -this.rumbo, 0, 'YXZ');
     this.chasis.rotation.z = this.inclinacion;
+    // Caballito: pivota sobre la rueda trasera (el chasis sube lo que baje el trasero al girar).
+    this.chasis.rotation.x = this.caballito;
+    this.chasis.position.y = Math.sin(this.caballito) * 0.6;
     // Derrape: el chasis gira un poco más que el rumbo para que se vea cruzarse.
     this.chasis.rotation.y = -this.estado.velocidadLateral * 0.06;
     this.manillar.rotation.y = -this.giroActual * 0.5;

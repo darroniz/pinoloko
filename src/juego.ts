@@ -6,7 +6,7 @@ import { Controles } from './control/entrada';
 import { PASO_FISICA } from './fisica/mundo';
 import { MODELOS, Scooter } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
-import { BUS, Coche } from './fisica/coche';
+import { BUS, Coche, UTILITARIO, geometriaFurgoneta } from './fisica/coche';
 import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO } from './mundo/trafico';
 import { geometriaBus } from './cinematica';
 import { viaMasCercana } from './mundo/grafo';
@@ -146,6 +146,9 @@ export class Juego {
   private foto: Foto;
   private tiempoGolNinos = 0;
   private horaCampanas = -1;
+  /** Pistas que ya se han enseñado (una vez por partida guardada). */
+  private pistas = new Set<string>(Juego.leerPistas());
+  private tiempoParado = 0;
   private helicoptero = new Helicoptero();
   private tiempoTimbre = 0;
   /** `?vibrar=0` la apaga; la vibración solo existe en móviles. */
@@ -421,13 +424,15 @@ export class Juego {
       const esBus = delTrafico.tipo === 'bus';
       const c = esBus
         ? new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color, BUS, { geometria: geometriaBus(), escala: BUS_ESCALA, largo: BUS_LARGO, ancho: BUS_ANCHO, nombre: 'el 13' })
-        : new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color);
+        : delTrafico.variante === 'furgoneta'
+          ? new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color, UTILITARIO, { geometria: geometriaFurgoneta(delTrafico.color), escala: 1.35, largo: 3.9, ancho: 1.75, nombre: 'la furgoneta' })
+          : new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color);
       b.trafico.quitar(delTrafico);
       b.coches.push(c);
       b.grupo.add(c.malla);
       mejorCoche = c;
       mejorDc = 0;
-      this.hud.avisar(esBus ? '¡El 13 es mío! Todos al fondo' : ['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
+      this.hud.avisar(esBus ? '¡El 13 es mío! Todos al fondo' : delTrafico.variante === 'furgoneta' ? '¡La furgoneta del reparto!' : ['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
       this.busqueda.fechoria('robo_coche');
       this.contador.sumar('cochesRobados');
     }
@@ -592,6 +597,35 @@ export class Juego {
       }
       this.tiempoAire = 0;
     }
+  }
+
+  private static leerPistas(): string[] {
+    try { return JSON.parse(localStorage.getItem('pinoloko.pistas.v1') ?? '[]') as string[]; } catch { return []; }
+  }
+
+  /** Una pista de juego, solo la primera vez que toca. */
+  private pista(id: string, texto: string): void {
+    if (this.pistas.has(id) || this.tiempoTrincao > 0 || this.cine.activa) return;
+    this.pistas.add(id);
+    try { localStorage.setItem('pinoloko.pistas.v1', JSON.stringify([...this.pistas])); } catch { /* sin almacenamiento */ }
+    this.hud.avisar(texto, 3.4);
+  }
+
+  /** Comprueba qué pista toca según dónde estás y qué llevas (cada 0,3 s). */
+  private actualizarPistas(pos: THREE.Vector3, dt: number): void {
+    const b = this.barrio;
+    if (this.aPie) { this.pista('subir', 'A pie por los pasajes. Para robar una moto aparcada, acércate y E / SUBIR'); this.tiempoParado = 0; }
+    else if (Math.abs(this.vehiculo.estado.velocidad) < 0.5) { this.tiempoParado += dt; if (this.tiempoParado > 4) this.pista('bajar', 'Para bajarte: E o el botón BAJAR. A pie llegas donde la moto no'); }
+    else this.tiempoParado = 0;
+    const e = this.busqueda.estrellas;
+    if (e >= 1) this.pista('local', '★ La Local. Sus coches no entran en los pasajes: métete por ellos y aguanta hasta que se enfríen');
+    if (e >= 3) this.pista('motos', 'A tres estrellas salen las motos de la Local, y esas sí entran en los pasajes');
+    const cerca = (x: number, z: number, r: number): boolean => (x - pos.x) ** 2 + (z - pos.z) ** 2 < r * r;
+    if (!this.aPie && b.encargos.puntos.some((l) => cerca(l.x, l.z, 18))) this.pista('encargo', 'Bolsa naranja: pásala en moto para coger un encargo y llevarlo a otro local contra el reloj');
+    if (!this.aPie && b.carreras.some((c) => { const [x, z] = b.grafo.nodos[c.salida] ?? [9e9, 9e9]; return cerca(x, z, 18); })) this.pista('carrera', 'Pancarta a cuadros: crúzala en moto y corre por los pasajes contra el reloj');
+    if (b.pachangas.lista.some((p) => cerca(p.x, p.z, 22))) this.pista('balon', 'Los niños juegan al fútbol: chuta el balón con la moto, gol son 40 €');
+    if (!this.aPie && b.rampas.posiciones.some(([x, z]) => cerca(x, z, 16))) this.pista('rampa', 'Rampa: a fondo y a volar. Cuanto más dure el vuelo, más euros');
+    if (!this.aPie && !this.coche && b.trafico.lista.some((c) => cerca(c.x, c.z, 14))) this.pista('robar', 'Los coches en marcha se roban: bájate delante de uno parado y E / SUBIR');
   }
 
   /** Campanas de la iglesia más cercana a cada hora en punto (si estás a menos de 200 m): una,
@@ -1038,7 +1072,7 @@ export class Juego {
     const tramo = Math.hypot(pos.x - this.ultimaPos.x, pos.z - this.ultimaPos.z);
     if (this.jugando && !this.pausado && tramo < 30) this.contador.sumar('metros', tramo);
     this.ultimaPos.set(pos.x, 0, pos.z);
-    this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? (this.coche.apariencia ? 84 : 72) : 66;
+    this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? (this.coche.apariencia?.nombre === 'el 13' ? 84 : 72) : 66;
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
     if (this.repeticion.activa) this.repeticion.actualizar(dt, this.camara.camara);
     this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);
@@ -1067,6 +1101,7 @@ export class Juego {
       b.trafico.gestionarRadio(pos.x, pos.z);
       const via = viaMasCercana(b.nivel, pos.x, pos.z);
       this.hud.ponerCalle(via?.nombre || (via ? 'Pasaje' : b.nivel.nombre));
+      if (this.jugando && !this.pausado) this.actualizarPistas(pos, 0.3);
       // Al río: en Triana el Guadalquivir es zona de agua; caer dentro te devuelve a la parada.
       if (this.jugando && this.tiempoTrincao <= 0 && b.nivel.zonas.some((z) => z.clase === 'water' && dentroDePoligono(pos.x, pos.z, z.poligono))) {
         this.hud.avisar(this.aPie ? '¡Al Guadalquivir! Wifly no sabe nadar' : '¡La moto al Guadalquivir!', 2.6);

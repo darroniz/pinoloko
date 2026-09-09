@@ -46,6 +46,41 @@ export function geometriaCoche(color: string): THREE.BufferGeometry {
   return g;
 }
 
+const geometriasFurgoneta = new Map<string, THREE.BufferGeometry>();
+
+/** Furgoneta de reparto (una Berlingo, una Kangoo): más alta, con caja cerrada detrás. */
+export function geometriaFurgoneta(color: string): THREE.BufferGeometry {
+  const cache = geometriasFurgoneta.get(color);
+  if (cache) return cache;
+  const piezas: THREE.BufferGeometry[] = [];
+  const pintar = (g: THREE.BufferGeometry, c: string): THREE.BufferGeometry => {
+    const col = new THREE.Color(c);
+    const n = g.getAttribute('position').count;
+    const arr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b; }
+    g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+    g.deleteAttribute('uv');
+    return g.index ? g.toNonIndexed() : g;
+  };
+  piezas.push(pintar(new THREE.BoxGeometry(ANCHO, 0.6, LARGO).translate(0, 0.5, 0), color));
+  piezas.push(pintar(new THREE.BoxGeometry(ANCHO, 1.1, LARGO * 0.62).translate(0, 1.3, 0.55), color));
+  piezas.push(pintar(new THREE.BoxGeometry(ANCHO * 0.92, 0.7, LARGO * 0.3).translate(0, 1.1, -0.9), color));
+  piezas.push(pintar(new THREE.BoxGeometry(ANCHO * 0.9, 0.45, LARGO * 0.26).translate(0, 1.2, -0.9), '#9fd3e8'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(-0.6, 0.55, -LARGO / 2), '#fff4c2'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(0.6, 0.55, -LARGO / 2), '#fff4c2'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.3, 0.12, 0.1).translate(-0.6, 0.55, LARGO / 2), '#e0443b'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.3, 0.12, 0.1).translate(0.6, 0.55, LARGO / 2), '#e0443b'));
+  for (const [x, z] of [[-0.8, -1.25], [0.8, -1.25], [-0.8, 1.25], [0.8, 1.25]]) {
+    piezas.push(pintar(new THREE.CylinderGeometry(0.32, 0.32, 0.24, 10).rotateZ(Math.PI / 2).translate(x!, 0.32, z!), '#2b2b2f'));
+  }
+  const g = mergeGeometries(piezas, false);
+  g.computeVertexNormals();
+  g.computeBoundingSphere();
+  for (const p of piezas) p.dispose();
+  geometriasFurgoneta.set(color, g);
+  return g;
+}
+
 export const MATERIAL_COCHE = new THREE.MeshLambertMaterial({ vertexColors: true });
 
 export interface AjustesCoche {

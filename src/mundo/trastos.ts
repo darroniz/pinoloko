@@ -5,10 +5,10 @@ import * as THREE from 'three';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { MundoFisico, RAPIER as R } from '../fisica/mundo';
 import type { Nivel, Punto } from './tipos';
-import { azar, dentroDePoligono, muestrearPolilinea } from './geometria';
+import { azar, dentroDePoligono, distanciaPolilinea, muestrearPolilinea } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla';
+export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto';
 
 export interface Trasto {
   tipo: TipoTrasto;
@@ -140,6 +140,21 @@ const DEFINICIONES: Record<TipoTrasto, Definicion> = {
     },
     collider: (d) => d.cuboid(0.3, 0.2, 0.2).setDensity(0.5).setRestitution(0.5),
   },
+  puesto: {
+    valor: 30, masa: 25, alturaMedia: 0.9,
+    crearMalla: () => {
+      // Puesto de mercadillo: tablero con género encima, dos postes y toldo a rayas (tres colores).
+      const g = new THREE.Group();
+      const toldo = [materiales.rojo, materiales.azul, materiales.verde][Math.floor(Math.random() * 3)]!;
+      g.add(malla(new THREE.BoxGeometry(2.0, 0.08, 0.9), materiales.madera, 0, 0, 0));
+      g.add(malla(new THREE.BoxGeometry(1.9, 0.5, 0.8), materiales.gris, 0, -0.3, 0));
+      for (const [x, c] of [[-0.6, materiales.amarillo], [0, materiales.flor], [0.6, materiales.azul]] as const) g.add(malla(new THREE.BoxGeometry(0.5, 0.25, 0.6), c, x, 0.16, 0));
+      for (const x of [-0.95, 0.95]) g.add(malla(new THREE.CylinderGeometry(0.03, 0.03, 2.1, 5), materiales.metal, x, 0.6, -0.4));
+      for (let i = 0; i < 5; i++) g.add(malla(new THREE.BoxGeometry(0.44, 0.05, 1.2), i % 2 ? materiales.blanco : toldo, -0.88 + i * 0.44, 1.65, 0));
+      return g;
+    },
+    collider: (d) => d.cuboid(1.0, 0.9, 0.5).setDensity(0.35).setRestitution(0.3),
+  },
   valla: {
     valor: 12, masa: 14, alturaMedia: 0.5,
     crearMalla: () => {
@@ -188,6 +203,7 @@ export const ROMPIBLES: Partial<Record<TipoTrasto, string[]>> = {
   caja: ['#c99a5b', '#c99a5b', '#b8894c', '#f4732b', '#f4732b', '#f4732b', '#d93b3b', '#f4732b'],
   silla: ['#d93b3b', '#d93b3b', '#b9bcc4', '#b9bcc4', '#b9bcc4'],
   mesa: ['#f7f3ea', '#f7f3ea', '#f7f3ea', '#b9bcc4', '#b9bcc4'],
+  puesto: ['#c99a5b', '#c99a5b', '#f7f3ea', '#d93b3b', '#f2c94c', '#e84a7a', '#3b6fd9', '#b9bcc4'],
 };
 
 export class Trastos {
@@ -203,7 +219,7 @@ export class Trastos {
     let variantes = this.geometrias.get(tipo);
     if (!variantes) {
       variantes = [];
-      for (let i = 0; i < (tipo === 'caja' ? 4 : 1); i++) variantes.push(fundir(DEFINICIONES[tipo].crearMalla()));
+      for (let i = 0; i < (tipo === 'caja' ? 4 : tipo === 'puesto' ? 3 : 1); i++) variantes.push(fundir(DEFINICIONES[tipo].crearMalla()));
       this.geometrias.set(tipo, variantes);
     }
     return variantes[Math.floor(Math.random() * variantes.length)]!;
@@ -334,6 +350,17 @@ export class Trastos {
           const ang = rnd() * Math.PI * 2, d = 14 + rnd() * 26;
           colocar('caja', poi.x + Math.cos(ang) * d, poi.z + Math.sin(ang) * d, rnd() * Math.PI, 0.7);
         }
+        // El mercadillo: una hilera de puestos con toldo por el pasaje más cercano al mercado.
+        const pasaje = nivel.vias.filter((v) => v.clase === 'peatonal' && v.tipo === 'pedestrian' && v.ancho >= 4)
+          .sort((a, b) => distanciaPolilinea(poi.x, poi.z, a.puntos) - distanciaPolilinea(poi.x, poi.z, b.puntos))[0];
+        if (pasaje) {
+          let puestos = 0;
+          for (const m of muestrearPolilinea(pasaje.puntos, 3.6, 1.5)) {
+            if (puestos >= 10 || Math.hypot(m.x - poi.x, m.z - poi.z) > 80) continue;
+            const lado = pasaje.ancho / 2 - 0.9;
+            if (colocar('puesto', m.x + m.nx * lado, m.z + m.nz * lado, -Math.atan2(m.tz, m.tx) + Math.PI, 2.2)) puestos++;
+          }
+        }
       } else if (poi.clase === 'supermarket' || poi.clase === 'convenience' || poi.clase === 'mall') {
         for (let i = 0; i < 5; i++) colocar('caja', poi.x + (rnd() - 0.5) * 16, poi.z + (rnd() - 0.5) * 16, rnd() * Math.PI, 0.7);
       }
@@ -379,4 +406,5 @@ export const FRASES: Record<TipoTrasto, string[]> = {
   silla: ['¡Silla voladora!', 'Eso lo paga el bar'],
   caja: ['¡Fruta del mercado!', '¡Los tomates del puesto!', '¡Cuidado con las cajas!'],
   valla: ['¡Valla de obra al suelo!', 'Las obras llevaban tres años ahí'],
+  puesto: ['¡El puesto del mercadillo!', '¡Los calcetines a tres euros por el aire!', '¡Se cae el toldo!', '¡Las bragas del puesto, por el suelo!'],
 };

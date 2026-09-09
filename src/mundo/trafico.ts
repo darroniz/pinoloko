@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { MundoFisico } from '../fisica/mundo';
 import { RAPIER as R } from '../fisica/mundo';
-import { ALTO, ANCHO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaCoche } from '../fisica/coche';
+import { ALTO, ANCHO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaCoche, geometriaFurgoneta } from '../fisica/coche';
 import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
 import { geometriaBus } from '../cinematica';
@@ -14,8 +14,12 @@ import type { Semaforos } from './semaforos';
 
 export type TipoTrafico = 'coche' | 'bus';
 
+/** Silueta de los coches del tráfico: utilitario o furgoneta de reparto (una de cada cuatro). */
+export type VarianteCoche = 'utilitario' | 'furgoneta';
+
 export interface CocheTrafico {
   tipo: TipoTrafico;
+  variante: VarianteCoche;
   cuerpo: RAPIER.RigidBody;
   malla: THREE.Mesh;
   color: string;
@@ -65,18 +69,20 @@ export class Trafico {
   }
 
   private crear(origen: number, destino: number, t: number, tipo: TipoTrafico): void {
-    const color = tipo === 'bus' ? '#f4f4f4' : COLORES_COCHE[Math.floor(this.rnd() * COLORES_COCHE.length)]!;
+    const variante: VarianteCoche = tipo === 'coche' && this.rnd() < 0.25 ? 'furgoneta' : 'utilitario';
+    // Las furgonetas van casi siempre de blanco, como las de reparto.
+    const color = tipo === 'bus' ? '#f4f4f4' : variante === 'furgoneta' && this.rnd() < 0.7 ? '#f0f0ee' : COLORES_COCHE[Math.floor(this.rnd() * COLORES_COCHE.length)]!;
     const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.dynamic().lockRotations().setLinearDamping(2));
     const [ancho, largo] = tipo === 'bus' ? [BUS_ANCHO, BUS_LARGO] : [ANCHO, LARGO];
     this.fisica.world.createCollider(
       R.ColliderDesc.cuboid(ancho / 2, ALTO / 2, largo / 2).setDensity(tipo === 'bus' ? 9 : 6).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
       cuerpo,
     );
-    const malla = new THREE.Mesh(tipo === 'bus' ? geometriaBus() : geometriaCoche(color), MATERIAL_COCHE);
+    const malla = new THREE.Mesh(tipo === 'bus' ? geometriaBus() : variante === 'furgoneta' ? geometriaFurgoneta(color) : geometriaCoche(color), MATERIAL_COCHE);
     malla.scale.setScalar(tipo === 'bus' ? BUS_ESCALA : 1.35);
     malla.castShadow = true;
     this.grupo.add(malla);
-    const c: CocheTrafico = { tipo, cuerpo, malla, color, origen, destino, t, velocidad: tipo === 'bus' ? VELOCIDAD_BUS : VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, activo: true, enParada: 0, entreParadas: 5 };
+    const c: CocheTrafico = { tipo, variante, cuerpo, malla, color, origen, destino, t, velocidad: tipo === 'bus' ? VELOCIDAD_BUS : VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, activo: true, enParada: 0, entreParadas: 5 };
     this.lista.push(c);
     this.colocar(c);
   }

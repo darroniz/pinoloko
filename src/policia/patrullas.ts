@@ -42,6 +42,14 @@ const RADIO_DIRECTO = 26;
 // Distancia entre centros: dos coches morro con culo ya están a 3,9 m, así que 5,5.
 const RADIO_TRINCAR = 5.5;
 
+// Geometrías compartidas por todas las patrullas: las patrullas nacen y se retiran sin parar y
+// crear una geometría por patrulla era una fuga lenta de buffers en la GPU.
+const GEO_FRANJA = new THREE.BoxGeometry(ANCHO + 0.02, 0.2, LARGO * 0.7);
+const GEO_LUZ_COCHE = new THREE.BoxGeometry(0.9, 0.18, 0.3);
+const GEO_LUZ_MOTO = new THREE.BoxGeometry(0.3, 0.12, 0.2);
+const GEO_CONO = new THREE.ConeGeometry(0.3, 0.7, 7).translate(0, 0.35, 0);
+const MATERIAL_FRANJA = new THREE.MeshLambertMaterial({ color: '#1f4fd8' });
+const MATERIAL_CONO = new THREE.MeshLambertMaterial({ color: '#ff7a1a' });
 let geoMoto: THREE.BufferGeometry | null = null;
 function geometriaMotoPatrulla(): THREE.BufferGeometry {
   if (geoMoto) return geoMoto;
@@ -106,7 +114,7 @@ export class Patrullas {
     const v = this.grafo.vecinos(nodo, 'rodada')[0];
     const [vx, vz] = v ? this.grafo.nodos[v.nodo]! : [x, z - 1];
     p.rumbo = Math.atan2(vx - x, -(vz - z)) + Math.PI / 2;
-    const cono = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.7, 7).translate(0, 0.35, 0), new THREE.MeshLambertMaterial({ color: '#ff7a1a' }));
+    const cono = new THREE.Mesh(GEO_CONO, MATERIAL_CONO);
     const cono2 = cono.clone();
     cono.position.set(1.9, 0, 0);
     cono2.position.set(-1.9, 0, 0);
@@ -144,9 +152,9 @@ export class Patrullas {
         cuerpo,
       );
       const carroceria = new THREE.Mesh(geometriaCoche('#f4f4f4'), MATERIAL_COCHE);
-      const franja = new THREE.Mesh(new THREE.BoxGeometry(ANCHO + 0.02, 0.2, LARGO * 0.7), new THREE.MeshLambertMaterial({ color: '#1f4fd8' }));
+      const franja = new THREE.Mesh(GEO_FRANJA, MATERIAL_FRANJA);
       franja.position.set(0, 0.62, 0.1);
-      luz = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.18, 0.3), this.materialLuz);
+      luz = new THREE.Mesh(GEO_LUZ_COCHE, this.materialLuz);
       luz.position.set(0, 1.35, 0.1);
       malla.add(carroceria, franja, luz);
       malla.scale.setScalar(1.35);
@@ -156,7 +164,7 @@ export class Patrullas {
         cuerpo,
       );
       const moto = new THREE.Mesh(geometriaMotoPatrulla(), MATERIAL_COCHE);
-      luz = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, 0.2), this.materialLuz);
+      luz = new THREE.Mesh(GEO_LUZ_MOTO, this.materialLuz);
       luz.position.set(0, 0.95, -0.5);
       malla.add(moto, luz);
       malla.scale.setScalar(1.6);
@@ -239,7 +247,7 @@ export class Patrullas {
           p.tipo = 'coche';
           p.ruta = [this.grafo.masCercano(p.x, p.z, 'rodada')];
           p.tiempoRuta = 0;
-          p.malla.children.filter((o) => o instanceof THREE.Mesh && o.geometry instanceof THREE.ConeGeometry).forEach((o) => p.malla.remove(o));
+          p.malla.children.filter((o) => o instanceof THREE.Mesh && o.geometry === GEO_CONO).forEach((o) => p.malla.remove(o));
           activados++;
         }
         if (d < RADIO_TRINCAR) { if (jugador.rapidez < 3.5) p.tiempoEncima += dt; if (p.tiempoEncima > 1.1) trincado = true; }

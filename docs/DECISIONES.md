@@ -447,3 +447,18 @@ huella: en Triana había cientos de casas altas y estrechas con peto.
 **Lo que Triana no tiene todavía:** el río. La caja toca Calle Betis pero el Guadalquivir es una
 relación multipolígono que el generador no lee (solo vías cerradas para zonas). Queda anotado en
 el roadmap: agua como zona, y de paso el puente.
+
+## 2026-09-09 — El minimapa se pinta dentro del WebGL, y el gate mira el termómetro
+
+**Minimapa como quad en una escena ortográfica**, no como `<canvas>` del DOM encima del juego.
+Es un canvas 2D (el barrio pintado una vez a 1 px/m, recorte centrado en el jugador a 5 Hz) que
+se sube como textura y se pinta en una segunda pasada sin borrar. Motivo: un canvas superpuesto es
+una capa aparte para el compositor del navegador, y en la Pi (sin GPU) pareció costar un 25 % de
+los frames. La zona táctil para plegarlo sigue siendo un `div` transparente en el mismo sitio.
+
+**Lo que de verdad pasaba: la Pi estaba estrangulando por temperatura.** Cuatro verificaciones
+seguidas fallaron con 100, 108, 114, 80 y 70 frames (el listón son 120) y cada cambio "para
+aligerar" daba peor. `vcgencmd get_throttled` marcaba `0xe0000` (ha habido tope de frecuencia y
+estrangulamiento) y 73 °C tras una hora de Chromium sin parar. Ninguna sonda A/B es fiable en
+ese estado. Regla nueva: `verificar.mjs` imprime temperatura y estado de estrangulamiento al
+empezar, y si el gate falla con el flag activo, **se espera a que baje** antes de tocar código.

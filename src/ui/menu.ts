@@ -21,6 +21,7 @@ const AYUDA = `
 <div class="fila"><span>Claxon (asusta a la gente)</span><strong>H · PIII</strong></div>
 <div class="fila"><span>Volver a la parada</span><strong>R</strong></div>
 <div class="fila"><span>Menú y pausa</span><strong>ESC · ☰</strong></div>
+<div class="fila"><span>Plegar el minimapa</span><strong>M · tocarlo</strong></div>
 <p class="peque" style="margin-top:10px">Roba motos aparcadas y coches en marcha (¡y el 13!). Derriba conos, macetas, terrazas y cajas del
 mercado para ganar dinero y armar lío. Las estrellas son la Policía Local: los coches patrulla no entran en los
 pasajes, las motos sí. Pasa en moto por una pancarta a cuadros para correr contra el reloj. Las rampas de los

@@ -33,6 +33,7 @@ a cablearse). En lo publicado ahora mismo Wifly no puede bajarse de la moto.
       robable), vecinos sentados en las terrazas. Push.
 - [x] **Bloque 9 (hecho a la 01:40)** — Cómo se juega, pitidos y fanfarria, assets pendientes.
 - [x] **Bloque 10 (hecho a la 01:55)** — Triana como tercer barrio y paradas con destino propio.
+- [x] **Bloque 11 (hecho a las 02:30)** — El Guadalquivir en Triana, minimapa (tres versiones hasta dar con la que no cuesta frames) y fuga de geometrías de las patrullas.
 - [ ] **Cierre (04:25-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Plan de la noche del 2026-09-08 (primera sesión, 00:15 → 04:45)

@@ -23,6 +23,16 @@ const servidor = createServer(async (req, res) => {
 await new Promise((r) => servidor.listen(0, '127.0.0.1', r));
 const puerto = servidor.address().port;
 const url = `http://127.0.0.1:${puerto}/`;
+const urlInicial = url + (process.env.PV_QUERY ?? '');
+
+// Termómetro de la Pi: si ha estrangulado por temperatura, las cifras de abajo no valen.
+try {
+  const { execSync } = await import('node:child_process');
+  const temp = execSync('vcgencmd measure_temp', { encoding: 'utf8' }).trim();
+  const thr = execSync('vcgencmd get_throttled', { encoding: 'utf8' }).trim();
+  const bits = parseInt(thr.split('=')[1] ?? '0', 16);
+  console.log(`Pi: ${temp} · ${thr}${bits & 0x7 ? ' · ¡ESTRANGULANDO AHORA: cifras no fiables!' : bits ? ' · ha estrangulado hace poco' : ''}`);
+} catch { /* no es una Pi */ }
 
 const errores = [];
 const fallidas = [];
@@ -38,7 +48,7 @@ pagina.on('response', (r) => { if (r.status() >= 400) fallidas.push(`${r.status(
 
 let ok = true;
 try {
-  await pagina.goto(url, { waitUntil: 'load', timeout: 60000 });
+  await pagina.goto(urlInicial, { waitUntil: 'load', timeout: 60000 });
   await pagina.waitForFunction(() => window.__pv_listo === true, null, { timeout: 90000 });
   await pagina.click('#boton-jugar');
   await pagina.waitForFunction(() => window.__pv_jugando === true, null, { timeout: 30000 });

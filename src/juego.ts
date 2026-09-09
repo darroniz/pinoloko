@@ -30,6 +30,7 @@ import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
 import { Carrera, Records, formatearTiempo, premio } from './carreras';
 import { Menu, type Pestana } from './ui/menu';
+import { Minimapa } from './ui/minimapa';
 
 declare global {
   interface Window {
@@ -115,6 +116,9 @@ export class Juego {
   private contador = new Contador();
   private garaje = new Garaje();
   private menu: Menu;
+  private minimapa = new Minimapa();
+  /** `?minimapa=0` lo apaga del todo (para medir su coste en la sonda). */
+  private sinMinimapa = new URLSearchParams(location.search).get('minimapa') === '0';
   private pausado = false;
   private ultimaPos = new THREE.Vector3();
   readonly calidad: Calidad;
@@ -149,6 +153,7 @@ export class Juego {
     document.getElementById('boton-menu')!.addEventListener('click', () => this.abrirMenu());
     for (const b of document.querySelectorAll<HTMLElement>('#portada [data-menu]')) b.addEventListener('click', () => this.menu.abrir(b.dataset['menu'] as Pestana));
     window.addEventListener('keydown', (e) => {
+      if (e.code === 'KeyM' && this.jugando) { this.minimapa.alternar(); return; }
       if (e.code !== 'Escape') return;
       if (this.menu.abierto) this.menu.cerrar();
       else if (this.jugando) this.abrirMenu();
@@ -273,6 +278,7 @@ export class Juego {
     this.hud.ponerCalle(this.barrio.nivel.nombre);
     this.hud.ponerEstrellas(0);
     this.busqueda.limpiar();
+    this.minimapa.cargar(this.barrio.nivel);
   }
 
   /** El viaje en el 13: cinemática ya vista, pantalla en negro, barrio nuevo y Wifly a pie en la parada. */
@@ -480,6 +486,7 @@ export class Juego {
   private redimensionar(): void {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.camara.redimensionar(window.innerWidth / window.innerHeight);
+    this.minimapa.redimensionar(window.innerWidth, window.innerHeight);
   }
 
   private guardar(): void {
@@ -629,6 +636,13 @@ export class Juego {
     performance.measure('update', 'update-inicio', 'update-fin');
     performance.mark('render-inicio');
     this.renderer.render(this.escena, this.camara.camara);
+    // Capa del minimapa encima, sin borrar lo pintado.
+    this.minimapa.mostrar(this.jugando && !this.cine.activa && !this.cargandoBarrio && !this.sinMinimapa);
+    if (this.minimapa.escena.children[0]?.visible) {
+      this.renderer.autoClear = false;
+      this.renderer.render(this.minimapa.escena, this.minimapa.camara);
+      this.renderer.autoClear = true;
+    }
     performance.mark('render-fin');
     performance.measure('render', 'render-inicio', 'render-fin');
     window.__pv_frames++;
@@ -822,6 +836,18 @@ export class Juego {
     if (this.jugando) this.cielo.actualizar(dt);
     this.cielo.colocarSol(pos.x, pos.z);
     this.hud.ponerHora(this.cielo.textoHora);
+    if (this.jugando && !this.sinMinimapa) {
+      const rumbo = this.aPie ? Math.atan2(v.x, -v.z) : this.vehiculo.estado.rumbo;
+      const siguiente = this.carrera.estado === 'en_curso' ? b.grafo.nodos[this.carrera.siguiente] : undefined;
+      this.minimapa.actualizar(dt, {
+        jugador: { x: pos.x, z: pos.z, rumbo: this.aPie && Math.hypot(v.x, v.z) < 0.5 ? this.scooter.estado.rumbo : rumbo },
+        paradas: b.paradas.lista,
+        patrullas: b.patrullas.lista,
+        mecheros: b.mecheros.posiciones.filter((_, i) => !b.mecheros.recogidos.has(i)).map(([x, z]) => ({ x, z })),
+        objetivo: siguiente ? { x: siguiente[0], z: siguiente[1] } : null,
+        rampas: b.rampas.posiciones.map(([x, z]) => ({ x, z })),
+      });
+    }
 
     this.hud.ponerVelocidad(this.aPie ? this.peaton.velocidad : this.vehiculo.estado.velocidad);
     this.tiempoCalle += dt;

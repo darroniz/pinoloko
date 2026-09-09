@@ -64,6 +64,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media.
+- [x] Minimapa (norte arriba, paradas, patrullas, mecheros, siguiente punto de carrera; M o tocarlo para plegarlo).
 - [x] Sonido sintetizado (motor de dos tiempos y de coche, derrape, golpes, sirena).
 - [x] Manifest PWA, metadatos Open Graph y portada con JUGAR.
 - [x] Service worker generado en el build (caché por versión, página red-primero, assets caché-primero).

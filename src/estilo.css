@@ -82,3 +82,11 @@ body.en-bus #boton-menu { display: none; }
 #hud-carrera { position: fixed; top: max(50px, calc(env(safe-area-inset-top) + 40px)); left: 50%; transform: translateX(-50%); background: #ffd23f; color: #2b2320; font-weight: 900; font-size: 16px; padding: 5px 14px; border-radius: 12px; box-shadow: 0 3px 0 #a8842a; display: none; pointer-events: none; white-space: nowrap; }
 #hud-carrera.visible { display: block; }
 body.en-bus #hud-carrera { display: none; }
+
+/* Minimapa */
+/* Solo la zona táctil: el minimapa en sí se pinta dentro del WebGL (ver ui/minimapa.ts) */
+:root { --sat: env(safe-area-inset-top, 0px); }
+#minimapa { position: fixed; right: 12px; top: max(132px, calc(env(safe-area-inset-top) + 122px)); width: 112px; height: 112px; border-radius: 50%; display: none; touch-action: none; user-select: none; background: transparent; }
+body.jugando #minimapa { display: block; }
+body.en-bus #minimapa { display: none; }
+#minimapa.plegado { width: 28px; height: 28px; }

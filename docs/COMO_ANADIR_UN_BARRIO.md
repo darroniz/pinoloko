@@ -14,8 +14,8 @@ Un cuadrado de unos 500 x 500 m en `sur,oeste,norte,este` (grados decimales). Co
 esté cerca del centro de la caja y junto a una calle rodada.
 
 Orientación: la caja de 500 m cabe en un móvil sin que el cargador tarde. El Mercado son 186
-edificios (110 KB); la Alameda, 891 (275 KB); Triana, 1.214 (418 KB) y tarda unos 8 s en
-construirse en una Pi sin GPU. Mucho más y habría que pasar a GLB precompilado.
+edificios (110 KB); la Alameda, 891 (275 KB); Los Remedios, 818 (251 KB); Triana, 1.214 (418 KB)
+y tarda unos 8 s en construirse en una Pi sin GPU. Mucho más y habría que pasar a GLB precompilado.
 
 ## 2. Añadir el perfil al generador
 
@@ -70,7 +70,8 @@ triana: {
   roban en marcha); `buses`, cuántos 13 circulan. Siempre hay además un camión
   de Lipasam y una de cada cuatro entradas de tráfico es furgoneta.
 - `tribu` decide la ropa y el gorro de los vecinos y qué te gritan (`TRIBUS` en
-  `src/mundo/peatones.ts`). Para un barrio de pijos habría que añadir una tribu nueva ahí.
+  `src/mundo/peatones.ts`): `canis` (gorra), `modernos` (gorro), `trianeros` (nada) y `pijos`
+  (jersey a los hombros; Los Remedios y Nervión).
 
 Recuerda enlazar el barrio desde otro: algún `destinos13` tiene que apuntar a él. El test
 comprueba que desde cualquier barrio se llega a todos.

@@ -51,10 +51,21 @@ ALTO_PLANTA = 3.0
 # Casco antiguo: cal, albero, ocre y terracota en vez de los pasteles de los bloques.
 PALETA_CASCO = ["#f7f2e6", "#f2e3c2", "#eccfa8", "#f6efe2", "#e8b98a", "#f4d9c4", "#dcae86", "#f0e6d2"]
 
+# Los Remedios: bloques altos de los 60-70 en ladrillo visto, cremas y blancos de pijo.
+PALETA_REMEDIOS = ["#efd3b8", "#e2b394", "#f6ecdc", "#ecc8a8", "#faf4e8", "#e6c8b0", "#f2e0c8", "#dcb094"]
+
 # Perfil de cada barrio: caja, caché de OSM, nombre y lo que cambia de un barrio a otro
 # (paleta y plantas por defecto cuando OSM no trae `building:levels`). Añadir un barrio es
 # añadir una entrada aquí y ejecutar `python3 tools/genera_nivel.py <id>`.
 PERFILES = {
+    "los-remedios": {
+        "nombre": "Los Remedios",
+        "bbox": "37.37420,-6.00580,37.37880,-6.00020",
+        "cache": "los-remedios",
+        "paleta": PALETA_REMEDIOS,
+        "plantas": {**PLANTAS_POR_DEFECTO, "yes": 6, "residential": 7, "apartments": 8, "house": 2},
+        "alto_planta": 3.0,
+    },
     "triana": {
         "nombre": "Triana",
         "bbox": "37.38225,-6.00833,37.38675,-6.00267",

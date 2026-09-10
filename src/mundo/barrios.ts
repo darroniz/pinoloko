@@ -2,7 +2,7 @@
 // public/barrios/<id>/ y dar de alta aquí su nombre y a dónde lleva el 13.
 // Ver docs/COMO_ANADIR_UN_BARRIO.md.
 
-export type Tribu = 'canis' | 'modernos' | 'trianeros';
+export type Tribu = 'canis' | 'modernos' | 'trianeros' | 'pijos';
 
 export interface FichaBarrio {
   id: string;
@@ -23,7 +23,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   'pino-montano': {
     id: 'pino-montano',
     nombre: 'Pino Montano · Mercado',
-    destinos13: ['alameda', 'triana'],
+    destinos13: ['alameda', 'triana', 'los-remedios'],
     poblacion: { vecinos: 110, trafico: 14, buses: 1, motos: 14, coches: 12, sevici: 8, perros: 7, motosCalle: 10 },
     tribu: 'canis',
     bienvenida: 'Pino Montano. En casa.',
@@ -41,11 +41,20 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   triana: {
     id: 'triana',
     nombre: 'Triana',
-    destinos13: ['pino-montano', 'alameda'],
+    destinos13: ['pino-montano', 'alameda', 'los-remedios'],
     poblacion: { vecinos: 150, trafico: 12, buses: 1, motos: 16, coches: 12, sevici: 8, perros: 7, motosCalle: 10 },
     tribu: 'trianeros',
     bienvenida: 'Triana. La otra orilla.',
     paradaLlegada: 'San Jacinto',
+  },
+  'los-remedios': {
+    id: 'los-remedios',
+    nombre: 'Los Remedios',
+    destinos13: ['triana', 'pino-montano'],
+    poblacion: { vecinos: 130, trafico: 16, buses: 1, motos: 10, coches: 16, sevici: 6, perros: 4, motosCalle: 5 },
+    tribu: 'pijos',
+    bienvenida: 'Los Remedios. Territorio pijo: aquí eres el enemigo.',
+    paradaLlegada: 'Virgen de Luján (Virgen de África)',
   },
 };
 

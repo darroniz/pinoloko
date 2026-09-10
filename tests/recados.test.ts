@@ -9,7 +9,7 @@ const carga = (b: string): Nivel => JSON.parse(readFileSync(new URL(`../public/b
 
 describe('recadero', () => {
   it('cada barrio tiene locales con nombre de sobra y las puertas están en la calle', () => {
-    for (const id of ['pino-montano', 'alameda', 'triana']) {
+    for (const id of ['pino-montano', 'alameda', 'triana', 'los-remedios']) {
       const nivel = carga(id);
       const grafo = new GrafoBarrio(nivel.grafo);
       const locales = localesConNombre(nivel.pois, (p) => grafo.nodos[grafo.masCercano(p.x, p.z)] ?? [p.x, p.z]);

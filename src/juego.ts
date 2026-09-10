@@ -838,7 +838,9 @@ export class Juego {
     this.hud.ponerCarrera(`⏱ ${formatearTiempo(this.carrera.tiempo)} · ${this.carrera.indice}/${ruta.puntos.length}`);
   }
 
-  /** Dinero que entra: al bolsillo y a la estadística de total ganado. */
+  /** Dinero que entra: al bolsillo y a la estadística de total ganado. (Los textos flotantes en el
+   *  DOM se quitaron: sin GPU, componer esas capas costaba la mitad de los frames; si vuelven, como
+   *  sprites dentro del WebGL.) */
   private ganar(cantidad: number): void {
     this.dinero += cantidad;
     this.contador.sumar('dineroTotal', cantidad);
@@ -1135,6 +1137,8 @@ export class Juego {
           this.racha++;
           const multiplicador = Math.min(5, 1 + Math.floor(this.racha / 3));
           this.ganar(t.valor * multiplicador);
+          // El tono del pitido sube con la racha: el combo se oye.
+          this.audio.pitido(520 + Math.min(12, this.racha) * 60, 0.08, 0.08);
           const frases = FRASES[t.tipo];
           const frase = frases[Math.floor(Math.random() * frases.length)]!;
           this.hud.avisar(multiplicador > 1 ? `${frase}  ×${multiplicador}` : frase, 1.6);

@@ -650,3 +650,46 @@ la marcha del Toreador de *Carmen*, todas tradicionales o de dominio público, e
 y asustan a los vecinos en un radio mayor. Es el detalle más cani que cabía en un taller. Las
 motos callejeras que pasan a menos de 12 m sueltan un **zumbido** de sierra que baja de tono
 (Doppler de juguete, uno cada 1,2 s como mucho). El 13 y el camión pitan **grave** (×0,55).
+
+## 2026-09-10 — Dinero que flota y combo que se oye
+
+Cada euro ganado sale ahora **flotando** en pantalla donde ha pasado (sobre el trasto, el balón)
+o sobre Wifly, con un `div` animado por CSS de 1,1 s (tope de 14 a la vez), en amarillo y más
+grande cuando hay multiplicador. El pitido de cada trasto derribado **sube de tono con la racha**
+(60 Hz por trasto hasta doce): el combo se oye además de verse. Es la parte "arcade de 1999" que
+faltaba en el feedback: el marcador de arriba a la derecha no lo mira nadie mientras conduce.
+
+## 2026-09-10 — Los bancos de OSM, con abuelo sentado
+
+`nivel.bancos` (los `amenity=bench` de OSM: 14 en el Mercado, 14 en Triana, 4 en la Alameda)
+estaba exportado desde la primera noche y sin usar. Ahora son un trasto más (`banco`: tablones de
+madera con patas de fundición, 60 kg, 20 €), orientados hacia la vía más cercana, y cada uno es
+un asiento para un vecino (van a la misma lista de `asientos` que las sillas de las terrazas, así
+que los primeros vecinos del barrio se sientan ahí). Exprimir OSM antes de inventar.
+
+## 2026-09-10 — Los textos flotantes se comían la mitad de los frames (y el A/B lo cazó)
+
+La primera versión del dinero flotante fallaba el gate dos veces y el A/B contra la build anterior
+dio [66,138]/[71,147] contra **[31,49]/[67,115]**: esta vez no era calor. La causa: cada `div`
+animado con `scale` y `text-shadow` obliga al navegador a rasterizar y componer la capa en cada
+frame, y sin GPU (SwiftShader) eso cuesta más que el juego entero. Arreglo: solo `translate` y
+`opacity` (animación de compositor), `will-change`, contorno con `-webkit-text-stroke` en vez de
+sombra, 0,9 s y **cinco a la vez como mucho**. Con eso el A/B vuelve a solaparse
+([76,126]/[61,139] contra [62,135]/[42,125]). Lección: cualquier cosa del DOM que se anime por
+encima del canvas hay que medirla, no solo lo que va dentro del WebGL. En un móvil con GPU no se
+habría notado, pero el gate de la Pi es la única alarma que tengo de noche.
+
+**Al final, fuera:** ni con la versión barata el gate pasó (103 frames, update 8,3 ms), así que
+los textos flotantes se han quitado del todo y se queda solo el pitido de combo. Queda apuntado en
+el roadmap hacerlos como sprites dentro del WebGL (un plano con textura de canvas por texto,
+como los rótulos), que es donde no cuestan.
+
+## 2026-09-10 — Cierre: lo que no aprueba el gate no va a `main`
+
+Tras quitar los textos flotantes el gate siguió fallando (103-104 frames, update 7,9-8,3 ms)
+con los bancos y el pitido de combo dentro, y el A/B de esa build había dado cifras normales.
+Con la Pi a 80 °C y sin tiempo para otro A/B en frío, la decisión es la del protocolo: **`main`
+se queda en el último commit verificado** (`f244af1`, el claxon musical) y los bloques 18-19 van
+a la rama `pendiente-2026-09-10`, subida a GitHub. Los documentos y las sondas nuevas sí entran
+en `main` porque no cambian la build. Mañana: A/B en frío de esa rama contra `main`; si se
+solapan, se fusiona.

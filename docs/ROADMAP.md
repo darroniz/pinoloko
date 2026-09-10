@@ -33,6 +33,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Semáforos de OSM (cruces con ciclo) que paran el tráfico; saltárselos en rojo calienta.
 - [x] Furgonetas de reparto y el camión de Lipasam en el tráfico (robables).
 - [x] Sevici por los carriles bici, perros callejeros que persiguen la moto, abuelas con carrito.
+- [ ] Los bancos de OSM con vecinos sentados y pitido de combo que sube con la racha (hechos, en la
+      rama `pendiente-2026-09-10` a falta de un A/B en frío).
 - [x] Tribus por barrio: canis, modernos y trianeros (pinta y gritos distintos).
 - [x] Farolas de noche, campanas de la parroquia, pájaros, grillos y bullicio de bar.
 - [x] Ciclo día/noche (10 minutos por día, sol que gira, hora en el HUD).
@@ -80,6 +82,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de
       calidad alta/media/baja en AYUDA y auditoría: 108-130 draw calls, 49-60k triángulos/frame).
 - [x] Modo foto (P / 📷): captura con logo y hoja de compartir del móvil.
+- [ ] Dinero flotante donde lo ganas, como sprites en el WebGL (en el DOM costaba la mitad de los
+      frames sin GPU; ver DECISIONES del 2026-09-10).
 - [x] Caballito al acelerar; minimapa a la izquierda con el móvil apaisado.
 - [x] Minimapa (norte arriba, paradas, patrullas, mecheros, siguiente punto de carrera; M o tocarlo para plegarlo).
 - [x] Sonido sintetizado (motor de dos tiempos y de coche, derrape, golpes, sirena).

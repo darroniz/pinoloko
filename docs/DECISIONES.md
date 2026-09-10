@@ -642,3 +642,11 @@ calor de atropello). A pie y con E a menos de 3,4 m (rodando o caída), la moto 
 `Scooter` de verdad con ese modelo, con calor de robo de moto y, si es nueva, al garaje. Es el
 "robar motos en marcha" del brief en la versión que cabe en una noche: sin cuerpo físico hasta
 que es tuya, así que no empujan ni les afectan los trastos.
+
+## 2026-09-10 — Claxon musical, zumbido de las motos y bocina grave
+
+Quinta mejora del taller: **claxon musical** (200/300/400 €): La Cucaracha, Cumpleaños feliz y
+la marcha del Toreador de *Carmen*, todas tradicionales o de dominio público, en onda cuadrada,
+y asustan a los vecinos en un radio mayor. Es el detalle más cani que cabía en un taller. Las
+motos callejeras que pasan a menos de 12 m sueltan un **zumbido** de sierra que baja de tono
+(Doppler de juguete, uno cada 1,2 s como mucho). El 13 y el camión pitan **grave** (×0,55).

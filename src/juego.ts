@@ -1052,6 +1052,10 @@ export class Juego {
       this.actualizarCampanas(jugadorPos);
       // Motos callejeras: canis en scooter por calles y pasajes; si los embistes, al suelo.
       const moteros = b.motosCalle.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez, enVehiculo: !this.aPie }, dt);
+      for (const m of b.motosCalle.lista) {
+        const d2 = (m.x - jugadorPos.x) ** 2 + (m.z - jugadorPos.z) ** 2;
+        if (m.estado === 'rodar' && d2 < 12 * 12) { this.audio.zumbido(1 - Math.sqrt(d2) / 12); break; }
+      }
       if (moteros.golpes > 0) {
         this.racha += moteros.golpes;
         this.tiempoRacha = 3;
@@ -1103,9 +1107,11 @@ export class Juego {
       // Claxon: asusta a los vecinos de alrededor.
       this.tiempoClaxon -= dt;
       if (this.controles.claxon && this.tiempoClaxon <= 0 && !this.aPie) {
-        this.tiempoClaxon = 0.6;
-        this.audio.claxon();
-        b.vecinos.asustar(jugadorPos.x, jugadorPos.z, 14);
+        // Claxon musical del taller en la moto; en el 13 y el camión, bocina grave.
+        const musical = !this.coche ? this.taller.nivel(MODELOS.indexOf(this.scooter.modelo), 'claxon') : 0;
+        if (musical > 0) this.tiempoClaxon = Math.max(0.6, this.audio.melodia(musical - 1));
+        else { this.tiempoClaxon = 0.6; this.audio.claxon(this.coche?.apariencia && this.coche.apariencia.largo > 6 ? 0.55 : 1); }
+        b.vecinos.asustar(jugadorPos.x, jugadorPos.z, musical > 0 ? 20 : 14);
       }
       // Faros de noche, pegados al vehículo que lleves; y las ventanas del barrio encendidas.
       this.faros.visible = this.cielo.esDeNoche && !this.aPie;

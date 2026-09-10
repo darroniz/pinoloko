@@ -33,6 +33,8 @@ dejar herramientas para que pruebes el rendimiento en el móvil.
 - [x] **Bloque 11 (hecho a la 01:15)** — El taller: mejoras por moto para gastar el dinero.
 - [x] **Bloque 12 (hecho a la 01:32)** — Farolas de noche, coches del tráfico que pitan si les cortas el paso, y perros por los pasajes.
 - [x] **Bloque 14 (hecho a la 01:58)** — Pestaña MAPA, ambiente sonoro (pájaros, grillos, bullicio de bar), olés y guía de barrios al día.
+- [x] **Bloque 16 (hecho a las 02:24)** — Ayuda y portada al día, icono de foto en SVG, sonda de caos (juego al azar sin errores), roadmap.
+- [ ] **Bloque 17** — Claxon musical en el taller, zumbido de las motos que pasan y bocina grave del 13 y el camión.
 - [x] **Bloque 15 (hecho a las 02:10)** — Motos callejeras: canis en scooter por calles y pasajes, se caen si los embistes y se roban en marcha a pie.
 - [x] **Bloque 13 (hecho a la 01:48)** — Caballito al acelerar, abuelas con carrito, minimapa a la izquierda en apaisado y el camión de Lipasam en el tráfico.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.

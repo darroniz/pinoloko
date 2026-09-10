@@ -275,13 +275,71 @@ export class AudioJuego {
     }
   }
 
-  claxon(): void {
+  /** Melodías del claxon musical (todas tradicionales o de dominio público): [semitonos desde La4, duración]. */
+  private static MELODIAS: [number, number][][] = [
+    // La Cucaracha
+    [[0, 0.15], [0, 0.15], [0, 0.15], [5, 0.4], [9, 0.4], [0, 0.15], [0, 0.15], [0, 0.15], [5, 0.4], [9, 0.5]],
+    // Cumpleaños feliz
+    [[0, 0.2], [0, 0.15], [2, 0.35], [0, 0.35], [5, 0.35], [4, 0.6]],
+    // Toreador (Carmen, Bizet)
+    [[4, 0.3], [4, 0.15], [4, 0.15], [4, 0.3], [0, 0.3], [2, 0.3], [4, 0.3], [5, 0.3], [4, 0.3], [2, 0.6]],
+  ];
+
+  /** Claxon musical: la melodía `cual` (0-2) con onda cuadrada. Devuelve lo que dura. */
+  melodia(cual: number): number {
+    if (!this.ctx || !this.maestro) return 0;
+    const notas = AudioJuego.MELODIAS[Math.max(0, Math.min(AudioJuego.MELODIAS.length - 1, cual))]!;
+    const ctx = this.ctx;
+    let t = ctx.currentTime;
+    for (const [semi, dur] of notas) {
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.value = 440 * Math.pow(2, semi / 12);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16, t + 0.01);
+      g.gain.setValueAtTime(0.16, t + dur * 0.8);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g).connect(this.maestro);
+      osc.start(t);
+      osc.stop(t + dur + 0.02);
+      t += dur;
+    }
+    return t - ctx.currentTime;
+  }
+
+  private tiempoZumbido = 0;
+
+  /** Zumbido de una moto que pasa: sierra grave que baja de tono (efecto Doppler de juguete). */
+  zumbido(cercania: number): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    if (ctx.currentTime < this.tiempoZumbido) return;
+    this.tiempoZumbido = ctx.currentTime + 1.2;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(120, t);
+    osc.frequency.exponentialRampToValueAtTime(70, t + 0.9);
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = 'lowpass';
+    filtro.frequency.value = 700;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.05 + cercania * 0.08, t + 0.2);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.0);
+    osc.connect(filtro).connect(g).connect(this.maestro);
+    osc.start(t);
+    osc.stop(t + 1.05);
+  }
+
+  claxon(grave = 1): void {
     if (!this.ctx || !this.maestro) return;
     const ctx = this.ctx;
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
     osc.type = 'square';
-    osc.frequency.value = 420;
+    osc.frequency.value = grave * 420;
     const g = ctx.createGain();
     g.gain.setValueAtTime(0.18, t);
     g.gain.setValueAtTime(0.18, t + 0.25);

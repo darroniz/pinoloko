@@ -3,7 +3,7 @@
 // localStorage con las demás cosas de la partida (NUEVA PARTIDA lo borra).
 import type { AjustesScooter } from './fisica/scooter';
 
-export type Mejora = 'escape' | 'variador' | 'neumaticos' | 'frenos';
+export type Mejora = 'escape' | 'variador' | 'neumaticos' | 'frenos' | 'claxon';
 
 export interface FichaMejora {
   id: Mejora;
@@ -18,6 +18,7 @@ export const MEJORAS: FichaMejora[] = [
   { id: 'variador', nombre: 'Variador y rodillos', descripcion: 'Sale como un tiro', precios: [120, 250, 500] },
   { id: 'neumaticos', nombre: 'Neumáticos', descripcion: 'Más agarre y giro más nervioso', precios: [100, 200, 400] },
   { id: 'frenos', nombre: 'Frenos', descripcion: 'Para en seco y derrapa mejor', precios: [80, 160, 320] },
+  { id: 'claxon', nombre: 'Claxon musical', descripcion: 'La Cucaracha, Cumpleaños feliz y el Toreador', precios: [200, 300, 400] },
 ];
 
 export const NIVEL_MAXIMO = 3;

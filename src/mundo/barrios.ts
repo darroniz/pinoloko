@@ -63,7 +63,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
     poblacion: { vecinos: 120, trafico: 16, buses: 1, motos: 10, coches: 14, sevici: 6, perros: 3, motosCalle: 5 },
     tribu: 'pijos',
     bienvenida: 'Nervión. Pijos con bufanda del Sevilla.',
-    paradaLlegada: 'Luis de Morales (Est. Sánchez Pizjuán)',
+    paradaLlegada: 'Eduardo Dato (Estadio Sánchez Pizjuan)',
   },
 };
 

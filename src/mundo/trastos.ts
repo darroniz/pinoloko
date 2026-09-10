@@ -359,7 +359,8 @@ export class Trastos {
           if (d < mejor.d) mejor = { d, giro: -Math.atan2(cz - az, cx - ax) };
         }
       }
-      if (colocar('banco', bx, bz, mejor.giro, 1.0)) this.asientos.push({ x: bx, z: bz, rumbo: -mejor.giro + Math.PI / 2 });
+      // Con hueco de sobra alrededor: un banco de 1,7 m pegado a una maceta o un puesto no se dormiría nunca.
+      if (colocar('banco', bx, bz, mejor.giro, 2.6)) this.asientos.push({ x: bx, z: bz, rumbo: -mejor.giro + Math.PI / 2 });
     }
     for (const poi of nivel.pois) {
       if (poi.clase === 'bar' || poi.clase === 'cafe' || poi.clase === 'restaurant') {

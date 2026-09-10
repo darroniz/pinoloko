@@ -678,3 +678,8 @@ sombra, 0,9 s y **cinco a la vez como mucho**. Con eso el A/B vuelve a solaparse
 ([76,126]/[61,139] contra [62,135]/[42,125]). Lección: cualquier cosa del DOM que se anime por
 encima del canvas hay que medirla, no solo lo que va dentro del WebGL. En un móvil con GPU no se
 habría notado, pero el gate de la Pi es la única alarma que tengo de noche.
+
+**Al final, fuera:** ni con la versión barata el gate pasó (103 frames, update 8,3 ms), así que
+los textos flotantes se han quitado del todo y se queda solo el pitido de combo. Queda apuntado en
+el roadmap hacerlos como sprites dentro del WebGL (un plano con textura de canvas por texto,
+como los rótulos), que es donde no cuestan.

@@ -80,6 +80,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de
       calidad alta/media/baja en AYUDA y auditoría: 108-130 draw calls, 49-60k triángulos/frame).
 - [x] Modo foto (P / 📷): captura con logo y hoja de compartir del móvil.
+- [ ] Dinero flotante donde lo ganas, como sprites en el WebGL (en el DOM costaba la mitad de los
+      frames sin GPU; ver DECISIONES del 2026-09-10).
 - [x] Caballito al acelerar; minimapa a la izquierda con el móvil apaisado.
 - [x] Minimapa (norte arriba, paradas, patrullas, mecheros, siguiente punto de carrera; M o tocarlo para plegarlo).
 - [x] Sonido sintetizado (motor de dos tiempos y de coche, derrape, golpes, sirena).

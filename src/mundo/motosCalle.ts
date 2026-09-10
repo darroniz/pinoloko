@@ -71,6 +71,29 @@ export function pasoMotero(m: Motero, grafo: GrafoBarrio, jugador: { x: number; 
   return null;
 }
 
+function pintar(g: THREE.BufferGeometry, c: string): THREE.BufferGeometry {
+  const col = new THREE.Color(c);
+  const n = g.getAttribute('position').count;
+  const arr = new Float32Array(n * 3);
+  for (let k = 0; k < n; k++) { arr[k * 3] = col.r; arr[k * 3 + 1] = col.g; arr[k * 3 + 2] = col.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+  g.deleteAttribute('uv');
+  return g.index ? g.toNonIndexed() : g;
+}
+
+/** Scooter de juguete con un cani encima, con los colores en los vértices (una sola malla). */
+export function geometriaMotero(colorMoto: string, colorRopa = '#1d3fa8'): THREE.BufferGeometry {
+  return mergeGeometries([
+    pintar(new THREE.BoxGeometry(0.45, 0.35, 1.3).translate(0, 0.5, 0), colorMoto),
+    pintar(new THREE.BoxGeometry(0.4, 0.5, 0.3).translate(0, 0.75, -0.55), colorMoto),
+    pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, -0.6), '#2b2b2f'),
+    pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, 0.6), '#2b2b2f'),
+    pintar(new THREE.CapsuleGeometry(0.2, 0.4, 3, 8).translate(0, 1.05, 0.1), colorRopa),
+    pintar(new THREE.SphereGeometry(0.19, 8, 6).translate(0, 1.5, 0.1), '#e0ac8b'),
+    pintar(new THREE.CylinderGeometry(0.2, 0.21, 0.08, 8).translate(0, 1.66, 0.1), '#111111'),
+  ]);
+}
+
 export class MotosCalle {
   readonly grupo = new THREE.Group();
   readonly lista: Motero[] = [];
@@ -95,26 +118,8 @@ export class MotosCalle {
       this.lista.push({ origen, destino: s.nodo, t: this.rnd(), x: 0, z: 0, rumbo: 0, estado: 'rodar', tiempo: 0, modelo: i % MODELOS.length, golpeado: 9 });
     }
     // Una malla instanciada por modelo (el color de la moto es el del modelo), con un cani encima.
-    const pintar = (g: THREE.BufferGeometry, c: string): THREE.BufferGeometry => {
-      const col = new THREE.Color(c);
-      const n = g.getAttribute('position').count;
-      const arr = new Float32Array(n * 3);
-      for (let k = 0; k < n; k++) { arr[k * 3] = col.r; arr[k * 3 + 1] = col.g; arr[k * 3 + 2] = col.b; }
-      g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
-      g.deleteAttribute('uv');
-      return g.index ? g.toNonIndexed() : g;
-    };
     for (const modelo of MODELOS) {
-      const geo = mergeGeometries([
-        pintar(new THREE.BoxGeometry(0.45, 0.35, 1.3).translate(0, 0.5, 0), modelo.color),
-        pintar(new THREE.BoxGeometry(0.4, 0.5, 0.3).translate(0, 0.75, -0.55), modelo.color),
-        pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, -0.6), '#2b2b2f'),
-        pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, 0.6), '#2b2b2f'),
-        pintar(new THREE.CapsuleGeometry(0.2, 0.4, 3, 8).translate(0, 1.05, 0.1), '#1d3fa8'),
-        pintar(new THREE.SphereGeometry(0.19, 8, 6).translate(0, 1.5, 0.1), '#e0ac8b'),
-        pintar(new THREE.CylinderGeometry(0.2, 0.21, 0.08, 8).translate(0, 1.66, 0.1), '#111111'),
-      ]);
-      const im = new THREE.InstancedMesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }), cuantas);
+      const im = new THREE.InstancedMesh(geometriaMotero(modelo.color), new THREE.MeshLambertMaterial({ vertexColors: true }), cuantas);
       im.count = 0;
       im.castShadow = true;
       im.frustumCulled = false;

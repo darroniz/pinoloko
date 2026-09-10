@@ -21,6 +21,8 @@ export const LOGROS: Logro[] = [
   { id: 'recadero', nombre: 'Recadero', descripcion: 'Entrega 5 encargos', cumple: (e) => e.recados >= 5 },
   { id: 'cadena', nombre: 'Cadena de tres', descripcion: 'Tres encargos seguidos', cumple: (e) => e.cadenaRecados >= 3 },
   { id: 'corredor', nombre: 'Corredor de pasajes', descripcion: 'Termina 3 carreras', cumple: (e) => e.carreras >= 3 },
+  { id: 'pique', nombre: 'Pique ganado', descripcion: 'Gana una carrera al Kevin, al Jonathan y a la Vanessa', cumple: (e) => e.piquesGanados >= 1 },
+  { id: 'rey_piques', nombre: 'El más rápido del barrio', descripcion: 'Gana cinco piques', cumple: (e) => e.piquesGanados >= 5 },
   { id: 'mil', nombre: 'Mil euros', descripcion: 'Gana 1.000 € en total', cumple: (e) => e.dineroTotal >= 1000 },
   { id: 'km', nombre: 'Diez kilómetros', descripcion: 'Recorre 10 km', cumple: (e) => e.metros >= 10000 },
   { id: 'trincao', nombre: 'Cliente habitual', descripcion: 'Que te trinquen 3 veces', cumple: (e) => e.trincados >= 3 },

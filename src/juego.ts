@@ -31,6 +31,7 @@ import { BARRIO_INICIAL, BARRIOS } from './mundo/barrios';
 import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
 import { Carrera, Records, formatearTiempo, premio } from './carreras';
+import { BONUS_PIQUE, ordinal, puesto } from './piques';
 import { Recadero, elegirDestino, premioRecado } from './recados';
 import type { Mejora } from './taller';
 import { Logros } from './logros';
@@ -48,7 +49,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -293,6 +294,7 @@ export class Juego {
       forzarEje: (x: number, y: number) => { this.controles.forzado = x === 0 && y === 0 ? null : { x, y }; },
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
+      rivales: () => this.barrio.rivales.lista.map((r) => ({ nombre: r.nombre, x: Math.round(r.x), z: Math.round(r.z), tramo: r.tramo, velocidad: Math.round(r.velocidad * 10) / 10, tiempo: Math.round(r.tiempo * 10) / 10 })),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
       moteros: () => this.barrio.motosCalle.lista.map((m) => ({ x: Math.round(m.x * 10) / 10, z: Math.round(m.z * 10) / 10, rumbo: m.rumbo, estado: m.estado })),
       perros: () => this.barrio.perros.lista.map((p) => ({ x: Math.round(p.x * 10) / 10, z: Math.round(p.z * 10) / 10, estado: p.estado })),
@@ -788,6 +790,7 @@ export class Juego {
   private abandonarCarrera(aviso: string | null): void {
     if (this.carrera.estado !== 'en_curso') return;
     this.carrera.abandonar();
+    this.barrio.rivales.parar();
     this.barrio.circuito.mostrarRuta(null);
     this.hud.ponerCarrera(null);
     this.enfriamientoCarrera = 6;
@@ -807,37 +810,45 @@ export class Juego {
         this.indiceCarrera = i;
         this.carrera.empezar(c.ruta);
         b.circuito.mostrarRuta(c.ruta);
+        b.rivales.empezar(c.ruta);
         const mejor = this.records.mejor(b.ficha.id, i);
-        this.hud.avisar(mejor === null ? `¡Carrera! ${c.ruta.puntos.length} puntos por los pasajes` : `¡Carrera! Récord: ${formatearTiempo(mejor)}`, 2.2);
+        this.hud.avisar(mejor === null ? `¡Pique! ${c.ruta.puntos.length} puntos contra el Kevin, el Jonathan y la Vanessa` : `¡Pique! Récord: ${formatearTiempo(mejor)}`, 2.4);
         this.audio.pitido(660, 0.25, 0.2);
       });
       return;
     }
     const ruta = this.carrera.ruta!;
     const r = this.carrera.actualizar(pos.x, pos.z, dt, b.grafo);
+    for (const rival of b.rivales.actualizar(dt, this.carrera.tiempo)) if (r !== 'meta') this.hud.avisar(`${rival.nombre[0]!.toUpperCase()}${rival.nombre.slice(1)} ya ha llegado`, 1.4);
     if (r === 'punto') {
       this.hud.avisar(`${this.carrera.indice}/${ruta.puntos.length}`, 0.9);
       this.audio.pitido(990, 0.14, 0.2);
     } else if (r === 'meta') {
-      const dinero = premio(this.carrera.tiempo, ruta.puntos.length);
+      const posicion = puesto(b.rivales.lista);
+      const dinero = premio(this.carrera.tiempo, ruta.puntos.length) + (posicion === 1 ? BONUS_PIQUE : 0);
       const record = this.records.registrar(b.ficha.id, this.indiceCarrera, this.carrera.tiempo);
       this.ganar(dinero);
       this.contador.sumar('carreras');
-      this.hud.avisar(`¡Meta! ${formatearTiempo(this.carrera.tiempo)}${record ? ' · ¡RÉCORD!' : ''} · +${dinero} €`, 3);
+      if (posicion === 1) this.contador.sumar('piquesGanados');
+      const ganador = b.rivales.lista.find((x) => x.tiempo >= 0);
+      const puestoTexto = posicion === 1 ? '¡Primero! Los canis muerden el polvo' : `${ordinal(posicion)}: te ha ganado ${ganador?.nombre ?? 'un cani'}`;
+      this.hud.avisar(`¡Meta! ${formatearTiempo(this.carrera.tiempo)}${record ? ' · ¡RÉCORD!' : ''} · ${puestoTexto} · +${dinero} €`, 3.4);
       this.audio.fanfarria();
+      b.rivales.parar();
       b.circuito.mostrarRuta(null);
       this.hud.ponerCarrera(null);
       this.enfriamientoCarrera = 8;
       return;
     } else if (r === 'tiempo') {
       this.hud.avisar('Se acabó el tiempo', 1.8);
+      b.rivales.parar();
       b.circuito.mostrarRuta(null);
       this.hud.ponerCarrera(null);
       this.enfriamientoCarrera = 6;
       return;
     }
     b.circuito.actualizar(dt, this.carrera.indice, pos.x, pos.z);
-    this.hud.ponerCarrera(`⏱ ${formatearTiempo(this.carrera.tiempo)} · ${this.carrera.indice}/${ruta.puntos.length}`);
+    this.hud.ponerCarrera(`⏱ ${formatearTiempo(this.carrera.tiempo)} · ${this.carrera.indice}/${ruta.puntos.length} · ${ordinal(puesto(b.rivales.lista))}`);
   }
 
   /** Dinero que entra: al bolsillo, a la estadística de total ganado y flotando donde ha pasado

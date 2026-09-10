@@ -82,7 +82,8 @@ export class Hud {
 
   /** Texto que flota y se desvanece en un punto de la pantalla (dinero ganado, combos). */
   flotar(texto: string, x: number, y: number, clase = ''): void {
-    if (this.flotantes >= 14) return;
+    // Pocos a la vez: cada uno es una capa que el navegador compone cada frame (y sin GPU, cuesta).
+    if (this.flotantes >= 5) return;
     const d = document.createElement('div');
     d.className = `flota ${clase}`;
     d.textContent = texto;
@@ -90,7 +91,7 @@ export class Hud {
     d.style.top = `${Math.round(y)}px`;
     document.body.appendChild(d);
     this.flotantes++;
-    window.setTimeout(() => { d.remove(); this.flotantes--; }, 1100);
+    window.setTimeout(() => { d.remove(); this.flotantes--; }, 900);
   }
 
   avisar(texto: string, segundos = 2): void {

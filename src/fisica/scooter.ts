@@ -46,7 +46,12 @@ export const MODELOS: ModeloScooter[] = [
   { nombre: 'Aprilia Sonic', color: '#f2c14e', ajustes: { ...JOG_RR, aceleracion: 12, velocidadMaxima: 17, giroMaximo: 3.1, agarreDerrape: 1.8 } },
   { nombre: 'Peugeot Speedfight', color: '#2a9d8f', ajustes: { ...JOG_RR, aceleracion: 10.5, velocidadMaxima: 16, frenado: 26 } },
   { nombre: 'Gilera Runner', color: '#7b2cbf', ajustes: { ...JOG_RR, aceleracion: 12.5, velocidadMaxima: 18, giroMaximo: 2.9, agarre: 10 } },
+  // La de los pijos: Los Remedios y Nervión van llenos. Suave, cómoda y sin nervio.
+  { nombre: 'Vespa Primavera', color: '#f5efe0', ajustes: { ...JOG_RR, aceleracion: 9, velocidadMaxima: 15, giroMaximo: 3.3, agarre: 13, agarreDerrape: 3 } },
 ];
+
+/** Índice de la Vespa en MODELOS: la moto de los barrios pijos. */
+export const VESPA = MODELOS.length - 1;
 
 export interface EstadoScooter {
   x: number;

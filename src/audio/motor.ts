@@ -272,6 +272,16 @@ export class AudioJuego {
     fuente.stop(ctx.currentTime + duracion);
   }
 
+  /** Alarma de coche aparcado: dos tonos alternos durante `segundos`, como las de los 90. */
+  alarmaCoche(segundos = 6): void {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    for (let t = 0; t < segundos; t += 0.5) {
+      this.pitido(880, 0.11, 0.09, ctx.currentTime + t);
+      this.pitido(660, 0.11, 0.09, ctx.currentTime + t + 0.16);
+    }
+  }
+
   fanfarria(): void {
     if (!this.ctx) return;
     const notas = [660, 880, 1320];

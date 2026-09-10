@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { CamaraAlta } from './camara';
 import { Controles } from './control/entrada';
 import { PASO_FISICA } from './fisica/mundo';
-import { MODELOS, Scooter } from './fisica/scooter';
+import { MODELOS, Scooter, VESPA } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
 import { BUS, CAMION, CAMION_ANCHO, CAMION_LARGO, Coche, UTILITARIO, geometriaCamion, geometriaFurgoneta } from './fisica/coche';
 import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO } from './mundo/trafico';
@@ -50,7 +50,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -133,6 +133,7 @@ export class Juego {
   private colorChispa = new THREE.Color('#ffd166');
   private colorPolvo = new THREE.Color('#d8c9a8');
   private colorSpray = new THREE.Color('#e63946');
+  private relojAlarmas = 0;
   private aPie = false;
   private botonAccion = document.getElementById('boton-accion')!;
   private tiempoInsulto = 0;
@@ -218,6 +219,7 @@ export class Juego {
           pancartas: b.carreras.map((c) => { const [x, z] = b.grafo.nodos[c.salida] ?? [0, 0]; return { x, z }; }),
           pachangas: b.pachangas.lista.map((p) => ({ x: p.x, z: p.z })),
           rampas: b.rampas.posiciones.map(([x, z]) => ({ x, z })),
+          pintadas: b.pintadas.posiciones.map(([x, z], i) => ({ x, z, hecha: b.pintadas.hechas.has(i) })),
           mecheros: { recogidos: b.mecheros.cuantos, total: TOTAL_MECHEROS },
         };
       },
@@ -296,6 +298,7 @@ export class Juego {
       forzarEje: (x: number, y: number) => { this.controles.forzado = x === 0 && y === 0 ? null : { x, y }; },
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
+      aparcados: () => this.barrio.coches.map((c) => [c.estado.x, c.estado.z, c.estado.rumbo]),
       pintadas: () => ({ puntos: this.barrio.pintadas.posiciones, hechas: [...this.barrio.pintadas.hechas], firmando: !!this.barrio.pintadas.firma, progreso: this.barrio.pintadas.firma?.progreso ?? 0 }),
       rivales: () => this.barrio.rivales.lista.map((r) => ({ nombre: r.nombre, x: Math.round(r.x), z: Math.round(r.z), tramo: r.tramo, velocidad: Math.round(r.velocidad * 10) / 10, tiempo: Math.round(r.tiempo * 10) / 10 })),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
@@ -334,7 +337,7 @@ export class Juego {
     };
     window.__pv_info = () => {
       const b = this.barrio;
-      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.infoRender }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, sentados: b.vecinos.lista.filter((v) => v.estado === 'sentado').length, buses: b.trafico.lista.filter((c) => c.tipo === 'bus').length, camiones: b.trafico.lista.filter((c) => c.tipo === 'camion').length, furgonetas: b.trafico.lista.filter((c) => c.variante === 'furgoneta').length, rotos: b.trastos.lista.filter((t) => t.roto).length, flotantes: this.dineroFlotante.activas, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
+      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.infoRender }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, sentados: b.vecinos.lista.filter((v) => v.estado === 'sentado').length, buses: b.trafico.lista.filter((c) => c.tipo === 'bus').length, camiones: b.trafico.lista.filter((c) => c.tipo === 'camion').length, furgonetas: b.trafico.lista.filter((c) => c.variante === 'furgoneta').length, rotos: b.trastos.lista.filter((t) => t.roto).length, flotantes: this.dineroFlotante.activas, alarmas: b.coches.filter((c) => c.alarma > 0).length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
     };
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
@@ -499,6 +502,7 @@ export class Juego {
         this.busqueda.fechoria('robo_moto');
         this.contador.sumar('motosRobadas');
         const nueva = this.garaje.desbloquear(MODELOS.indexOf(mejorMoto.modelo));
+        if (mejorMoto.modelo === MODELOS[VESPA]) this.contador.sumar('vespas');
         this.hud.avisar(nueva ? `${mejorMoto.modelo.nombre}: ¡mía! Nueva en el garaje` : `${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
       }
       this.scooter = mejorMoto;
@@ -948,6 +952,16 @@ export class Juego {
     window.__pv_frames++;
   }
 
+  /** Un coche aparcado al que le das: seis segundos de alarma, intermitentes, vecinos corriendo y la Local al tanto. */
+  private dispararAlarma(c: Coche): void {
+    c.saltarAlarma(6);
+    this.audio.alarmaCoche(6);
+    this.contador.sumar('alarmas');
+    this.busqueda.fechoria('trasto', 3);
+    this.barrio.vecinos.asustar(c.estado.x, c.estado.z, 10);
+    this.hud.avisar(this.barrio.ficha.tribu === 'pijos' ? '¡La alarma del Mini! Eso lo oye todo el barrio' : '¡La alarma del coche! Media Sevilla despierta', 1.8);
+  }
+
   /** A pie junto a un bote de spray: Wifly se pone a firmar (dos segundos sin moverse de ahí). */
   private empezarPintada(): boolean {
     const b = this.barrio;
@@ -1010,13 +1024,19 @@ export class Juego {
         b.trafico.despuesDelPaso();
         b.patrullas.despuesDelPaso();
         for (const m of b.scooters) { if (m === this.scooter && !this.aPie && !this.coche) m.despuesDelPaso(); else m.reposo(); }
-        for (const c of b.coches) { if (c === this.coche && !this.aPie) c.despuesDelPaso(); else c.reposo(); }
+        for (const c of b.coches) {
+          if (c === this.coche && !this.aPie) c.despuesDelPaso();
+          else { c.reposo(); if (!c.conducida && !c.rota && c.alarma <= 0 && c.estado.velocidad > 0.8) this.dispararAlarma(c); }
+        }
         if (this.aPie) this.peaton.sincronizar();
       }
       performance.mark('u1');
       performance.measure('u-fisica', 'u0', 'u1');
       const e = this.vehiculo.estado;
       if (e.golpe > 0 && !this.aPie) {
+        // Golpe contra un coche aparcado: le salta la alarma.
+        const aparcado = b.coches.find((c) => c !== this.coche && !c.conducida && !c.rota && c.alarma <= 0 && (c.estado.x - e.x) ** 2 + (c.estado.z - e.z) ** 2 < 4 * 4);
+        if (aparcado && e.golpe > 3) this.dispararAlarma(aparcado);
         if (e.golpe > 4) this.vibrar(Math.min(60, Math.round(e.golpe * 4)));
         this.camara.sacudir(e.golpe * 0.06);
         this.audio.golpe(e.golpe);
@@ -1044,8 +1064,10 @@ export class Juego {
         this.tiempoRacha = 3;
         this.ganar(25 * eventos.atropellos);
         this.contador.sumar('atropellos', eventos.atropellos);
+        const pijos = b.ficha.tribu === 'pijos';
+        if (pijos) this.contador.sumar('pijosAtropellados', eventos.atropellos);
         this.hud.ponerRacha(this.racha);
-        this.hud.avisar(['¡Atropello!', '¡Al suelo, vecino!', '¡Uy, uy, uy!', '¡Que era el del quinto!'][Math.floor(Math.random() * 4)]!, 1.5);
+        this.hud.avisar((pijos ? ['¡Pijo al suelo!', '¡Se le ha caído el jersey de los hombros!', '¡Uy, los náuticos!', '¡Guerra de barrios!'] : ['¡Atropello!', '¡Al suelo, vecino!', '¡Uy, uy, uy!', '¡Que era el del quinto!'])[Math.floor(Math.random() * 4)]!, 1.5);
         this.camara.sacudir(0.35);
         this.vibrar(40);
         this.audio.golpe(4);
@@ -1061,6 +1083,7 @@ export class Juego {
         const euros = pijo ? 50 : 25;
         this.ganar(euros, { x: jugadorPos.x, y: 0, z: jugadorPos.z });
         this.contador.sumar('pintadas');
+        if (pijo) this.contador.sumar('pintadasPijas');
         this.busqueda.fechoria('pintada', pijo ? 2 : 1);
         const texto = b.pintadas.texto(pintada.hecha);
         this.hud.avisar(pijo ? `"${texto}" en territorio pijo. Eso duele. +${euros} €` : `"${texto}" · ${b.pintadas.cuantas}/${b.pintadas.posiciones.length} pintadas · +${euros} €`, 2.4);
@@ -1215,6 +1238,8 @@ export class Juego {
       this.particulas.actualizar(dt);
       this.trozos.actualizar(dt);
       this.dineroFlotante.actualizar(dt);
+      this.relojAlarmas += dt;
+      for (const c of b.coches) c.actualizarAlarma(dt, this.relojAlarmas);
       // Logros: se comprueban cada dos segundos contra las estadísticas.
       this.tiempoLogros -= dt;
       if (this.tiempoLogros <= 0) {

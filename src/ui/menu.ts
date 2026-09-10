@@ -18,6 +18,7 @@ export interface DatosMapa {
   pancartas: { x: number; z: number }[];
   pachangas: { x: number; z: number }[];
   rampas: { x: number; z: number }[];
+  pintadas: { x: number; z: number; hecha: boolean }[];
   mecheros: { recogidos: number; total: number };
 }
 
@@ -202,6 +203,7 @@ export class Menu {
       ctx.stroke();
     };
     for (const r of d.rampas) punto(r.x, r.z, '#f2c14e', 5);
+    for (const p of d.pintadas) punto(p.x, p.z, p.hecha ? '#7b2cbf' : '#e63946', 5);
     for (const p of d.pachangas) punto(p.x, p.z, '#3fd36b', 7);
     for (const p of d.pancartas) punto(p.x, p.z, '#2b2320', 7);
     for (const b of d.bolsas) punto(b.x, b.z, '#ff8c42', 7);

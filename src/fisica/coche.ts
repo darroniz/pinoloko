@@ -11,6 +11,8 @@ export const LARGO = 3.9, ANCHO = 1.75, ALTO = 1.35;
 const ESCALA_VISUAL = 1.35;
 
 export const COLORES_COCHE = ['#e5e5e5', '#c0392b', '#2c3e50', '#95a5a6', '#f1c40f', '#1f6feb', '#27ae60', '#7f8c8d', '#8e44ad', '#f39c12'];
+/** Los coches de los pijos: blanco nacarado, verde inglés, azul marino, plata y granate. */
+export const COLORES_COCHE_PIJO = ['#f4f1ea', '#1b3a2a', '#0f2a5c', '#c8ccd2', '#f7f7f7', '#7a1f2b', '#e8e2d4'];
 
 const geometriasCoche = new Map<string, THREE.BufferGeometry>();
 
@@ -200,6 +202,9 @@ export class Coche {
   readonly estado: EstadoCoche = { x: 0, z: 0, rumbo: 0, velocidad: 0, velocidadLateral: 0, derrapando: false, golpe: 0 };
   readonly color: string;
   conducida = false;
+  /** Segundos que le quedan a la alarma (solo los aparcados): saltó al golpearlo. */
+  alarma = 0;
+  private intermitentes: THREE.Group | null = null;
   /** 100 = nueva; por debajo de 30 echa humo; a 0 revienta y ya no arranca. */
   salud = 100;
   get rota(): boolean {
@@ -314,11 +319,36 @@ export class Coche {
   }
 
   reposo(): void {
-    if (this.cuerpo.isSleeping()) return;
+    if (this.cuerpo.isSleeping()) { this.estado.velocidad = 0; return; }
     const v = this.cuerpo.linvel();
     this.cuerpo.setLinvel({ x: v.x * 0.95, y: v.y, z: v.z * 0.95 }, true);
     this.estado.velocidad = Math.hypot(v.x, v.z);
     this.sincronizar();
+  }
+
+  /** Salta la alarma: intermitentes naranjas parpadeando en las cuatro esquinas durante `segundos`. */
+  saltarAlarma(segundos: number): void {
+    this.alarma = segundos;
+    if (!this.intermitentes) {
+      const g = new THREE.Group();
+      const geo = new THREE.BoxGeometry(0.3, 0.16, 0.16);
+      const mat = new THREE.MeshBasicMaterial({ color: '#ffb020' });
+      for (const [x, z] of [[-ANCHO / 2, -LARGO / 2 + 0.2], [ANCHO / 2, -LARGO / 2 + 0.2], [-ANCHO / 2, LARGO / 2 - 0.2], [ANCHO / 2, LARGO / 2 - 0.2]]) {
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(x!, ALTO * 0.55, z!);
+        g.add(m);
+      }
+      this.intermitentes = g;
+      this.malla.add(g);
+    }
+    this.intermitentes.visible = true;
+  }
+
+  /** Cuenta atrás de la alarma y parpadeo a 4 Hz. */
+  actualizarAlarma(dt: number, tiempo: number): void {
+    if (this.alarma <= 0 || !this.intermitentes) return;
+    this.alarma -= dt;
+    this.intermitentes.visible = this.alarma > 0 && Math.floor(tiempo * 4) % 2 === 0;
   }
 
   sincronizar(): void {

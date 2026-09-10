@@ -107,7 +107,8 @@ export class MotosCalle {
   private eje = new THREE.Vector3(0, 1, 0);
   private ejeZ = new THREE.Vector3(0, 0, 1);
 
-  constructor(private readonly grafo: GrafoBarrio, cuantas: number) {
+  /** `preferido`: índice de MODELOS que llevan dos de cada tres (la Vespa en los barrios pijos). */
+  constructor(private readonly grafo: GrafoBarrio, cuantas: number, preferido?: number) {
     this.grupo.name = 'motos-calle';
     const candidatos: number[] = [];
     for (let i = 0; i < grafo.nodos.length; i++) if (grafo.vecinos(i).length > 0) candidatos.push(i);
@@ -115,7 +116,7 @@ export class MotosCalle {
     for (let i = 0; i < cuantas; i++) {
       const origen = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
       const s = siguiente(grafo, origen, -1, this.rnd);
-      this.lista.push({ origen, destino: s.nodo, t: this.rnd(), x: 0, z: 0, rumbo: 0, estado: 'rodar', tiempo: 0, modelo: i % MODELOS.length, golpeado: 9 });
+      this.lista.push({ origen, destino: s.nodo, t: this.rnd(), x: 0, z: 0, rumbo: 0, estado: 'rodar', tiempo: 0, modelo: preferido !== undefined && i % 3 !== 2 ? preferido : i % MODELOS.length, golpeado: 9 });
     }
     // Una malla instanciada por modelo (el color de la moto es el del modelo), con un cani encima.
     for (const modelo of MODELOS) {

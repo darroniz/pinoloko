@@ -2,8 +2,8 @@
 // es destruir este objeto y crear otro; el jugador (moto, Wifly) se recrea en el nuevo mundo.
 import * as THREE from 'three';
 import { MundoFisico } from '../fisica/mundo';
-import { Coche, COLORES_COCHE } from '../fisica/coche';
-import { MODELOS, Scooter } from '../fisica/scooter';
+import { Coche, COLORES_COCHE, COLORES_COCHE_PIJO } from '../fisica/coche';
+import { MODELOS, Scooter, VESPA } from '../fisica/scooter';
 import { construirArboles, construirAzoteas } from './azoteas';
 import { GrafoBarrio } from './grafo';
 import { cargarNivel, construirBarrio } from './nivel';
@@ -82,7 +82,7 @@ export class Barrio {
     this.grupo.add(this.trastos.grupo);
     this.vecinos = new Vecinos(this.grafo, ficha.poblacion.vecinos, this.trastos.asientos, ficha.tribu);
     this.grupo.add(this.vecinos.grupo);
-    this.trafico = new Trafico(fisica, this.grafo, ficha.poblacion.trafico, ficha.poblacion.buses, nivel.pois.filter((p) => p.clase === 'bus_stop'), 1);
+    this.trafico = new Trafico(fisica, this.grafo, ficha.poblacion.trafico, ficha.poblacion.buses, nivel.pois.filter((p) => p.clase === 'bus_stop'), 1, ficha.tribu === 'pijos' ? COLORES_COCHE_PIJO : COLORES_COCHE);
     this.grupo.add(this.trafico.grupo);
     this.semaforos = new Semaforos(nivel);
     this.trafico.semaforos = this.semaforos;
@@ -142,7 +142,7 @@ export class Barrio {
     this.grupo.add(this.sevici.grupo);
     this.perros = new Perros(this.grafo, ficha.poblacion.perros);
     this.grupo.add(this.perros.grupo);
-    this.motosCalle = new MotosCalle(this.grafo, ficha.poblacion.motosCalle);
+    this.motosCalle = new MotosCalle(this.grafo, ficha.poblacion.motosCalle, ficha.tribu === 'pijos' ? VESPA : undefined);
     this.grupo.add(this.motosCalle.grupo);
     this.rivales = new Rivales(this.grafo);
     this.grupo.add(this.rivales.grupo);
@@ -170,7 +170,9 @@ export class Barrio {
       const x = nx + (rnd(i) - 0.5) * 3, z = nz + (rnd(i + 50) - 0.5) * 3;
       if (Math.hypot(x - this.arranque.x, z - this.arranque.z) < 6) continue;
       if (this.scooters.some((m) => Math.hypot(m.estado.x - x, m.estado.z - z) < 3)) continue;
-      const moto = new Scooter(this.fisica, x, z, rnd(i + 100) * Math.PI * 2, MODELOS[(i + 1) % MODELOS.length]!);
+      // En territorio pijo, dos de cada tres aparcadas son Vespas.
+      const modelo = this.ficha.tribu === 'pijos' && i % 3 !== 2 ? MODELOS[VESPA]! : MODELOS[(i + 1) % (MODELOS.length - 1)]!;
+      const moto = new Scooter(this.fisica, x, z, rnd(i + 100) * Math.PI * 2, modelo);
       this.scooters.push(moto);
       this.grupo.add(moto.malla);
       i++;
@@ -193,7 +195,8 @@ export class Barrio {
       const lado = via.ancho / 2 + 1.3;
       const x = ax + ux * (5 + rnd(via.id + 1) * (l - 10)) - uz * lado;
       const z = az + uz * (5 + rnd(via.id + 1) * (l - 10)) + ux * lado;
-      const coche = new Coche(this.fisica, x, z, Math.atan2(ux, -uz), COLORES_COCHE[Math.floor(rnd(via.id + 2) * COLORES_COCHE.length)]!);
+      const paleta = this.ficha.tribu === 'pijos' ? COLORES_COCHE_PIJO : COLORES_COCHE;
+      const coche = new Coche(this.fisica, x, z, Math.atan2(ux, -uz), paleta[Math.floor(rnd(via.id + 2) * paleta.length)]!);
       this.coches.push(coche);
       this.grupo.add(coche.malla);
       i++;

@@ -62,7 +62,7 @@ export class Trafico {
   /** Bocinazos de este paso (coches a los que el jugador corta el paso); el juego lo lee y lo pone a cero. */
   pitidos = 0;
 
-  constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number, buses = 0, private readonly paradas: { x: number; z: number }[] = [], camiones = 0) {
+  constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number, buses = 0, private readonly paradas: { x: number; z: number }[] = [], camiones = 0, private readonly colores: string[] = COLORES_COCHE) {
     const candidatos: number[] = [];
     for (let i = 0; i < grafo.nodos.length; i++) if (grafo.vecinos(i, 'rodada').length > 0) candidatos.push(i);
     for (let i = 0; i < cuantos + buses + camiones && candidatos.length; i++) {
@@ -76,7 +76,7 @@ export class Trafico {
   private crear(origen: number, destino: number, t: number, tipo: TipoTrafico): void {
     const variante: VarianteCoche = tipo === 'coche' && this.rnd() < 0.25 ? 'furgoneta' : 'utilitario';
     // Las furgonetas van casi siempre de blanco, como las de reparto.
-    const color = tipo === 'bus' || tipo === 'camion' ? '#f4f4f4' : variante === 'furgoneta' && this.rnd() < 0.7 ? '#f0f0ee' : COLORES_COCHE[Math.floor(this.rnd() * COLORES_COCHE.length)]!;
+    const color = tipo === 'bus' || tipo === 'camion' ? '#f4f4f4' : variante === 'furgoneta' && this.rnd() < 0.7 ? '#f0f0ee' : this.colores[Math.floor(this.rnd() * this.colores.length)]!;
     const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.dynamic().lockRotations().setLinearDamping(2));
     const [ancho, largo] = tipo === 'bus' ? [BUS_ANCHO, BUS_LARGO] : tipo === 'camion' ? [CAMION_ANCHO, CAMION_LARGO] : [ANCHO, LARGO];
     this.fisica.world.createCollider(

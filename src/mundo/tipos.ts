@@ -5,7 +5,7 @@ export type Punto = [number, number];
 
 export type TipoEdificio =
   | 'bloque' | 'mercado' | 'iglesia' | 'colegio' | 'bomberos' | 'sanidad'
-  | 'biblioteca' | 'comercio' | 'publico' | 'garaje' | 'nave';
+  | 'biblioteca' | 'comercio' | 'publico' | 'garaje' | 'nave' | 'estadio';
 
 export interface Edificio {
   id: number;

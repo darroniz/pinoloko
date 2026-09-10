@@ -23,7 +23,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   'pino-montano': {
     id: 'pino-montano',
     nombre: 'Pino Montano · Mercado',
-    destinos13: ['alameda', 'triana', 'los-remedios'],
+    destinos13: ['alameda', 'triana', 'los-remedios', 'nervion'],
     poblacion: { vecinos: 110, trafico: 14, buses: 1, motos: 14, coches: 12, sevici: 8, perros: 7, motosCalle: 10 },
     tribu: 'canis',
     bienvenida: 'Pino Montano. En casa.',
@@ -50,11 +50,20 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   'los-remedios': {
     id: 'los-remedios',
     nombre: 'Los Remedios',
-    destinos13: ['triana', 'pino-montano'],
+    destinos13: ['triana', 'pino-montano', 'nervion'],
     poblacion: { vecinos: 130, trafico: 16, buses: 1, motos: 10, coches: 16, sevici: 6, perros: 4, motosCalle: 5 },
     tribu: 'pijos',
     bienvenida: 'Los Remedios. Territorio pijo: aquí eres el enemigo.',
     paradaLlegada: 'Virgen de Luján (Virgen de África)',
+  },
+  nervion: {
+    id: 'nervion',
+    nombre: 'Nervión',
+    destinos13: ['pino-montano', 'los-remedios'],
+    poblacion: { vecinos: 120, trafico: 16, buses: 1, motos: 10, coches: 14, sevici: 6, perros: 3, motosCalle: 5 },
+    tribu: 'pijos',
+    bienvenida: 'Nervión. Pijos con bufanda del Sevilla.',
+    paradaLlegada: 'Luis de Morales (Est. Sánchez Pizjuán)',
   },
 };
 

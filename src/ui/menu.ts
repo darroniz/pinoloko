@@ -56,7 +56,7 @@ helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dire
 <p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: carrera contra el reloj por los pasajes. Bolsa naranja en un bar: encargo
 para llevar a otro local, y cada entrega encadena la siguiente. Rampas para volar. Balón de los niños: gol son 40 €. Los 20
 mecheros de cada barrio se buscan (el MAPA del menú no los chiva).</p>
-<p class="peque"><strong>Barrios.</strong> A pie y en una parada, el 13 te lleva a la Alameda, a Triana o a Los Remedios (territorio pijo), y de vuelta. Cuidado con el
+<p class="peque"><strong>Barrios.</strong> A pie y en una parada, el 13 te lleva a la Alameda, a Triana, a Los Remedios o a Nervión (territorio pijo), y de vuelta. Cuidado con el
 Guadalquivir. Los perros del pasaje ladran pero no muerden.</p>`;
 
 const CREDITOS = `

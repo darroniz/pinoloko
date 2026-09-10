@@ -123,6 +123,11 @@ export function construirAzoteas(nivel: Nivel): THREE.Group {
     } else if (e.tipo === 'iglesia') {
       const [cx, cz] = puntosDentro(e.poligono, 1, 2, rnd)[0] ?? [caja.minX + ancho / 2, caja.minZ + fondo / 2];
       poner(antenas, cx, y, cz, 0, 1, 2.5);
+    } else if (e.tipo === 'estadio') {
+      // El estadio: cuatro torres de focos en las esquinas del anillo y los depósitos del graderío.
+      const esquinas: [number, number][] = [[caja.minX + 3, caja.minZ + 3], [caja.maxX - 3, caja.minZ + 3], [caja.minX + 3, caja.maxZ - 3], [caja.maxX - 3, caja.maxZ - 3]];
+      for (const [x, z] of esquinas) { poner(antenas, x, y, z, 0, 4, 6); poner(aires, x, y + 18, z, 0, 2.5, 1.2); }
+      for (const [x, z] of puntosDentro(e.poligono, 8, 3, rnd)) poner(depositos, x, y, z, 0, 1.4);
     }
   }
 

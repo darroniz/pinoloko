@@ -42,6 +42,7 @@ COLOR_TIPO = {
     "publico": "#d5dce6",
     "garaje": "#cfd3d8",
     "nave": "#c9cfd6",
+    "estadio": "#ece7df",
 }
 PLANTAS_POR_DEFECTO = {"apartments": 5, "residential": 4, "yes": 4, "public": 2, "fire_station": 2,
                        "commercial": 1, "retail": 1, "garage": 1, "garages": 1, "industrial": 1,
@@ -58,6 +59,14 @@ PALETA_REMEDIOS = ["#efd3b8", "#e2b394", "#f6ecdc", "#ecc8a8", "#faf4e8", "#e6c8
 # (paleta y plantas por defecto cuando OSM no trae `building:levels`). Añadir un barrio es
 # añadir una entrada aquí y ejecutar `python3 tools/genera_nivel.py <id>`.
 PERFILES = {
+    "nervion": {
+        "nombre": "Nervión",
+        "bbox": "37.38170,-5.97280,37.38630,-5.96720",
+        "cache": "nervion",
+        "paleta": PALETA_REMEDIOS,
+        "plantas": {**PLANTAS_POR_DEFECTO, "yes": 7, "residential": 7, "apartments": 8, "house": 2, "stadium": 10},
+        "alto_planta": 3.0,
+    },
     "los-remedios": {
         "nombre": "Los Remedios",
         "bbox": "37.37420,-6.00580,37.37880,-6.00020",
@@ -188,6 +197,8 @@ def clasificar_edificio(t: dict) -> str:
     am = t.get("amenity", "")
     if am == "marketplace":
         return "mercado"
+    if b == "stadium" or t.get("leisure") == "stadium":
+        return "estadio"
     if am == "place_of_worship" or b in ("church", "chapel", "cathedral"):
         return "iglesia"
     if am in ("school", "kindergarten", "college", "university") or b == "school":

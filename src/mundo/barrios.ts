@@ -10,7 +10,7 @@ export interface FichaBarrio {
   /** A dónde lleva el 13 desde aquí. Con varios, cada parada del barrio va a uno (por turnos). */
   destinos13: string[];
   /** Cuántos vecinos, coches de tráfico, autobuses del 13, motos y coches aparcados. */
-  poblacion: { vecinos: number; trafico: number; buses: number; motos: number; coches: number; sevici: number; perros: number };
+  poblacion: { vecinos: number; trafico: number; buses: number; motos: number; coches: number; sevici: number; perros: number; motosCalle: number };
   /** Quién vive aquí: cambia la pinta de los vecinos y lo que te gritan. */
   tribu: Tribu;
   /** Frase de bienvenida al bajar del bus. */
@@ -24,7 +24,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
     id: 'pino-montano',
     nombre: 'Pino Montano · Mercado',
     destinos13: ['alameda', 'triana'],
-    poblacion: { vecinos: 110, trafico: 14, buses: 1, motos: 14, coches: 12, sevici: 8, perros: 7 },
+    poblacion: { vecinos: 110, trafico: 14, buses: 1, motos: 14, coches: 12, sevici: 8, perros: 7, motosCalle: 10 },
     tribu: 'canis',
     bienvenida: 'Pino Montano. En casa.',
     paradaLlegada: 'Mercado',
@@ -33,7 +33,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
     id: 'alameda',
     nombre: 'La Alameda',
     destinos13: ['pino-montano', 'triana'],
-    poblacion: { vecinos: 160, trafico: 10, buses: 1, motos: 18, coches: 10, sevici: 0, perros: 6 },
+    poblacion: { vecinos: 160, trafico: 10, buses: 1, motos: 18, coches: 10, sevici: 0, perros: 6, motosCalle: 6 },
     tribu: 'modernos',
     bienvenida: 'La Alameda. Territorio de modernos.',
     paradaLlegada: 'Alameda de Hércules',
@@ -42,7 +42,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
     id: 'triana',
     nombre: 'Triana',
     destinos13: ['pino-montano', 'alameda'],
-    poblacion: { vecinos: 150, trafico: 12, buses: 1, motos: 16, coches: 12, sevici: 8, perros: 7 },
+    poblacion: { vecinos: 150, trafico: 12, buses: 1, motos: 16, coches: 12, sevici: 8, perros: 7, motosCalle: 10 },
     tribu: 'trianeros',
     bienvenida: 'Triana. La otra orilla.',
     paradaLlegada: 'San Jacinto',

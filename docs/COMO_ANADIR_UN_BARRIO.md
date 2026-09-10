@@ -51,7 +51,7 @@ triana: {
   id: 'triana',
   nombre: 'Triana',
   destinos13: ['alameda', 'pino-montano'], // a dónde lleva el 13 desde aquí (una parada por destino, por turnos)
-  poblacion: { vecinos: 140, trafico: 12, buses: 1, motos: 16, coches: 10, sevici: 8, perros: 6 },
+  poblacion: { vecinos: 140, trafico: 12, buses: 1, motos: 16, coches: 10, sevici: 8, perros: 6, motosCalle: 8 },
   tribu: 'trianeros',                   // 'canis' | 'modernos' | 'trianeros': pinta y gritos de los vecinos
   bienvenida: 'Triana. La otra orilla.',
   paradaLlegada: 'Plaza de Cuba',       // trozo del nombre de la bus_stop donde te deja el bus
@@ -66,7 +66,8 @@ triana: {
   acercarte a la parada dice a dónde va. Con un solo destino, todas van al mismo sitio.
 - Ajusta `poblacion` a ojo: la Alameda lleva más vecinos y menos tráfico que Pino Montano porque
   es peatonal. `sevici` son ciclistas por los `cycleway` de la caja (si no hay, pon 0); `perros`,
-  perros callejeros por los pasajes; `buses`, cuántos 13 circulan. Siempre hay además un camión
+  perros callejeros por los pasajes; `motosCalle`, canis en scooter por calles y pasajes (se
+  roban en marcha); `buses`, cuántos 13 circulan. Siempre hay además un camión
   de Lipasam y una de cada cuatro entradas de tráfico es furgoneta.
 - `tribu` decide la ropa y el gorro de los vecinos y qué te gritan (`TRIBUS` en
   `src/mundo/peatones.ts`). Para un barrio de pijos habría que añadir una tribu nueva ahí.

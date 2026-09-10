@@ -166,3 +166,10 @@ Formato:
 - Descripción para generarlo: camión de recogida de basura de carga trasera, low-poly (~500
   triángulos), verde Lipasam con cabina blanca, proporciones de juguete.
 - Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 7,5 m de largo.
+
+## Cani en scooter (motos callejeras)
+- Dónde se usa: `src/mundo/motosCalle.ts`.
+- Placeholder actual: cajas de scooter del color del modelo con un cani de cápsula y gorra.
+- Descripción para generarlo: puede reutilizar el GLB de la scooter del jugador con un piloto
+  distinto (chándal de otro color, gorra); low-poly, mismas proporciones.
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 1,7 m.

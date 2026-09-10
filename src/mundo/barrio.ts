@@ -23,6 +23,7 @@ import { Encargos } from './encargos';
 import { Pachangas } from './pachangas';
 import { Sevici } from './sevici';
 import { Perros } from './perros';
+import { MotosCalle } from './motosCalle';
 import { construirFarolas } from './farolas';
 import { localesConNombre, type Local } from '../recados';
 import type { Nivel } from './tipos';
@@ -51,6 +52,7 @@ export class Barrio {
   readonly pachangas: Pachangas;
   readonly sevici: Sevici;
   readonly perros: Perros;
+  readonly motosCalle: MotosCalle;
   /** Charcos de luz de las farolas: solo visibles de noche. */
   readonly farolasLuz: THREE.Group;
   /** Carreras del barrio: nodo de salida y su ruta fija. */
@@ -136,6 +138,8 @@ export class Barrio {
     this.grupo.add(this.sevici.grupo);
     this.perros = new Perros(this.grafo, ficha.poblacion.perros);
     this.grupo.add(this.perros.grupo);
+    this.motosCalle = new MotosCalle(this.grafo, ficha.poblacion.motosCalle);
+    this.grupo.add(this.motosCalle.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
     this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);

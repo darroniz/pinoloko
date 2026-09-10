@@ -619,3 +619,26 @@ la cámara se aleja igual que con el bus (por el largo de la apariencia, no por 
 
 **Minimapa en apaisado**: con el móvil tumbado el disco va a la izquierda bajo el nombre de la
 calle, porque a la derecha se pisaba con SUBIR/BAJAR. En vertical sigue bajo ☰ y 📷.
+
+## 2026-09-10 — Mapa del barrio, ambiente sonoro y olés
+
+**MAPA** en el menú: el mismo canvas que pinta el minimapa (el barrio a 1 px/m, una vez por
+barrio) escalado a la caja del menú, con paradas, bolsas de encargo, pancartas, pachangas, rampas
+y tu posición. **Los mecheros no salen**: son para buscarlos; el mapa solo dice cuántos llevas.
+
+**Ambiente**: pájaros de día (grupitos de dos a cuatro blips agudos cada 1,5-5,5 s), grillos de
+noche (tres pulsos a 4,3 kHz cada medio segundo) y bullicio de bar (ruido por paso banda con el
+volumen ondulando) cuando estás a menos de 22 m de un bar, cafetería o restaurante. Todo con los
+mismos osciladores del resto del juego: sin ficheros de audio. Y los vecinos jalean un vuelo de
+más de 0,8 s si hay alguno a menos de 20 m.
+
+## 2026-09-10 — Motos callejeras: canis en scooter que se roban en marcha
+
+Faltaba lo más de barrio: **scooters circulando** (10 en Pino Montano, 8 en Triana, 6 en la
+Alameda). Recorren **todo el grafo**, calles y pasajes (a 7 y 5 m/s), como haría un cani, sin
+física: una malla instanciada por modelo (color del modelo, cani con gorra encima). Si los
+embistes con un vehículo, el motero cae y la moto se queda cuatro segundos en el suelo (30 €,
+calor de atropello). A pie y con E a menos de 3,4 m (rodando o caída), la moto pasa a ser una
+`Scooter` de verdad con ese modelo, con calor de robo de moto y, si es nueva, al garaje. Es el
+"robar motos en marcha" del brief en la versión que cabe en una noche: sin cuerpo físico hasta
+que es tuya, así que no empujan ni les afectan los trastos.

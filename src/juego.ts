@@ -47,7 +47,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -292,6 +292,7 @@ export class Juego {
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
+      moteros: () => this.barrio.motosCalle.lista.map((m) => ({ x: Math.round(m.x * 10) / 10, z: Math.round(m.z * 10) / 10, rumbo: m.rumbo, estado: m.estado })),
       perros: () => this.barrio.perros.lista.map((p) => ({ x: Math.round(p.x * 10) / 10, z: Math.round(p.z * 10) / 10, estado: p.estado })),
       dinero: (n: number) => { this.dinero = n; this.hud.ponerDinero(n); },
       ajustes: () => ({ ...this.scooter.ajustes }),
@@ -308,6 +309,13 @@ export class Juego {
         if (!this.aPie) this.bajarse();
         this.peaton.aparecer(bus.x + 2.5, bus.z, 0);
         return this.subirse() && !!this.coche?.apariencia;
+      },
+      robarMotero: () => {
+        const m = this.barrio.motosCalle.lista[0];
+        if (!m) return false;
+        if (!this.aPie) this.bajarse();
+        this.peaton.aparecer(m.x + 1, m.z, 0);
+        return this.subirse() && !this.aPie && !this.coche;
       },
       robarCoche: () => {
         const c = this.barrio.trafico.lista[0];
@@ -433,6 +441,15 @@ export class Juego {
     const p = this.peaton.posicion;
     const b = this.barrio;
     let mejorMoto: Scooter | null = null, mejorD = 3.2 * 3.2;
+    // Una moto callejera a mano (rodando o con el motero en el suelo): pasa a ser de verdad.
+    const callejera = b.motosCalle.cercano(p.x, p.z, 3.4);
+    if (callejera) {
+      const moto = b.motosCalle.robar(callejera, b.fisica);
+      b.scooters.push(moto);
+      b.grupo.add(moto.malla);
+      this.hud.avisar(callejera.estado === 'caido' ? '¡La moto del que se ha caído!' : ['¡Bájate, illo, que es un momento!', '¡Esa Zip es mía!', '¡Al suelo, motero!'][Math.floor(Math.random() * 3)]!, 1.8);
+      this.busqueda.fechoria('robo_moto');
+    }
     for (const m of b.scooters) {
       const d = (m.estado.x - p.x) ** 2 + (m.estado.z - p.z) ** 2;
       if (d < mejorD) { mejorD = d; mejorMoto = m; }
@@ -1033,6 +1050,20 @@ export class Juego {
         this.busqueda.fechoria('atropello', sevici.atropellos);
       }
       this.actualizarCampanas(jugadorPos);
+      // Motos callejeras: canis en scooter por calles y pasajes; si los embistes, al suelo.
+      const moteros = b.motosCalle.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez, enVehiculo: !this.aPie }, dt);
+      if (moteros.golpes > 0) {
+        this.racha += moteros.golpes;
+        this.tiempoRacha = 3;
+        this.ganar(30 * moteros.golpes);
+        this.contador.sumar('atropellos', moteros.golpes);
+        this.hud.ponerRacha(this.racha);
+        this.hud.avisar(['¡Motero al suelo! Cógele la moto', '¡Uy, la Sonic del vecino!', '¡Ese iba sin casco!'][Math.floor(Math.random() * 3)]!, 1.8);
+        this.camara.sacudir(0.4);
+        this.vibrar(50);
+        this.audio.golpe(5);
+        this.busqueda.fechoria('atropello', moteros.golpes);
+      }
       // Ambiente: pájaros de día, grillos de noche y bullicio junto a las terrazas.
       const bar = b.nivel.pois.some((p) => (p.clase === 'bar' || p.clase === 'cafe' || p.clase === 'restaurant') && (p.x - jugadorPos.x) ** 2 + (p.z - jugadorPos.z) ** 2 < 22 * 22);
       this.audio.actualizarAmbiente(this.cielo.esDeNoche, bar, dt);

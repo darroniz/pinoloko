@@ -70,6 +70,7 @@ dejar herramientas para que pruebes el rendimiento en el móvil.
 - [x] **Bloque 14 (hecho a la 01:58)** — Pestaña MAPA, ambiente sonoro (pájaros, grillos, bullicio de bar), olés y guía de barrios al día.
 - [x] **Bloque 16 (hecho a las 02:24)** — Ayuda y portada al día, icono de foto en SVG, sonda de caos (juego al azar sin errores), roadmap.
 - [x] **Bloque 17 (hecho a las 02:42)** — Claxon musical en el taller, zumbido de las motos que pasan y bocina grave del 13 y el camión.
+- [x] **Bloque 20 (hecho a las 03:15)** — Arreglo de rendimiento de los textos flotantes (el A/B cazó una regresión real).
 - [x] **Bloque 19 (hecho a las 03:00)** — Los bancos de OSM como trastos, con vecino sentado.
 - [x] **Bloque 18 (hecho a las 02:50)** — Dinero que flota donde lo ganas y pitido de combo que sube con la racha.
 - [x] **Bloque 15 (hecho a las 02:10)** — Motos callejeras: canis en scooter por calles y pasajes, se caen si los embistes y se roban en marcha a pie.

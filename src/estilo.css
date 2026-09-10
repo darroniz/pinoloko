@@ -28,9 +28,6 @@ body.tactil #joystick, body.tactil #boton-freno, body.tactil #boton-accion, body
 #portada.oculta { display: none; }
 #aviso { position: fixed; left: 50%; bottom: 18%; transform: translateX(-50%); background: rgba(43,35,32,0.85); color: #fff; padding: 8px 16px; border-radius: 10px; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity 0.3s; width: max-content; max-width: 88vw; text-align: center; }
 #aviso.visible { opacity: 1; }
-.flota { position: fixed; transform: translate(-50%, -50%); color: #fff; font-weight: 900; font-size: 18px; -webkit-text-stroke: 3px rgba(43,35,32,0.9); paint-order: stroke fill; pointer-events: none; z-index: 5; will-change: transform, opacity; animation: flota 0.9s ease-out forwards; }
-.flota.combo { color: #ffd23f; font-size: 22px; }
-@keyframes flota { 0% { opacity: 0; transform: translate(-50%, -40%); } 15% { opacity: 1; transform: translate(-50%, -60%); } 100% { opacity: 0; transform: translate(-50%, -140%); } }
 #racha { position: fixed; left: 50%; top: 18%; transform: translateX(-50%) rotate(-6deg); font-size: 34px; font-weight: 900; color: #e9553f; text-shadow: 3px 3px 0 #fff5e6; pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; }
 #racha.visible { opacity: 1; transform: translateX(-50%) rotate(-6deg) scale(1.1); }
 #estrellas { position: fixed; top: max(50px, calc(env(safe-area-inset-top) + 40px)); right: 14px; font-size: 22px; letter-spacing: 2px; color: #f2b134; text-shadow: 0 2px 0 rgba(0,0,0,0.2); pointer-events: none; user-select: none; }

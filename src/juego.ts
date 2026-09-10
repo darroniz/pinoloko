@@ -698,8 +698,7 @@ export class Juego {
   private actualizarPachangas(pos: THREE.Vector3, rapidez: number, dt: number): void {
     const r = this.barrio.pachangas.actualizar({ x: pos.x, z: pos.z, rapidez }, dt);
     if (r.golesJugador > 0) {
-      const balon = this.barrio.pachangas.lista.find((p) => p.reinicio > 0)?.malla.position;
-      this.ganar(40 * r.golesJugador, balon ? { x: balon.x, y: balon.y, z: balon.z } : undefined, 'combo');
+      this.ganar(40 * r.golesJugador);
       this.contador.sumar('goles', r.golesJugador);
       this.hud.avisar(['¡GOOOL de Wifly! +40 €', '¡Golazo por la escuadra! +40 €', '¡Gol! Los niños flipando +40 €'][Math.floor(Math.random() * 3)]!, 2.4);
       this.audio.fanfarria();
@@ -839,23 +838,13 @@ export class Juego {
     this.hud.ponerCarrera(`⏱ ${formatearTiempo(this.carrera.tiempo)} · ${this.carrera.indice}/${ruta.puntos.length}`);
   }
 
-  private proyeccion = new THREE.Vector3();
-
-  /** Punto del mundo a píxeles de pantalla (para los textos que flotan). */
-  private aPantalla(x: number, y: number, z: number): { x: number; y: number } | null {
-    this.proyeccion.set(x, y, z).project(this.camara.camara);
-    if (this.proyeccion.z > 1) return null;
-    return { x: ((this.proyeccion.x + 1) / 2) * window.innerWidth, y: ((1 - this.proyeccion.y) / 2) * window.innerHeight };
-  }
-
-  /** Dinero que entra: al bolsillo, a la estadística y flotando en pantalla (donde ha pasado o sobre Wifly). */
-  private ganar(cantidad: number, donde?: { x: number; y?: number; z: number }, clase = ''): void {
+  /** Dinero que entra: al bolsillo y a la estadística de total ganado. (Los textos flotantes en el
+   *  DOM se quitaron: sin GPU, componer esas capas costaba la mitad de los frames; si vuelven, como
+   *  sprites dentro del WebGL.) */
+  private ganar(cantidad: number): void {
     this.dinero += cantidad;
     this.contador.sumar('dineroTotal', cantidad);
     this.hud.ponerDinero(this.dinero);
-    const d = donde ?? (this.aPie ? this.peaton.posicion : this.vehiculo.posicion);
-    const p = this.aPantalla(d.x, (d.y ?? 0) + 2.5, d.z);
-    if (p) this.hud.flotar(`+${cantidad} €`, p.x + (Math.random() - 0.5) * 24, p.y - 10, clase);
   }
 
   private abrirMenu(pestana?: Pestana): void {
@@ -1147,8 +1136,7 @@ export class Juego {
         for (const t of derribados) {
           this.racha++;
           const multiplicador = Math.min(5, 1 + Math.floor(this.racha / 3));
-          const pt = t.malla.position;
-          this.ganar(t.valor * multiplicador, { x: pt.x, y: pt.y, z: pt.z }, multiplicador > 1 ? 'combo' : '');
+          this.ganar(t.valor * multiplicador);
           // El tono del pitido sube con la racha: el combo se oye.
           this.audio.pitido(520 + Math.min(12, this.racha) * 60, 0.08, 0.08);
           const frases = FRASES[t.tipo];

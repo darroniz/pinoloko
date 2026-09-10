@@ -666,3 +666,15 @@ estaba exportado desde la primera noche y sin usar. Ahora son un trasto más (`b
 madera con patas de fundición, 60 kg, 20 €), orientados hacia la vía más cercana, y cada uno es
 un asiento para un vecino (van a la misma lista de `asientos` que las sillas de las terrazas, así
 que los primeros vecinos del barrio se sientan ahí). Exprimir OSM antes de inventar.
+
+## 2026-09-10 — Los textos flotantes se comían la mitad de los frames (y el A/B lo cazó)
+
+La primera versión del dinero flotante fallaba el gate dos veces y el A/B contra la build anterior
+dio [66,138]/[71,147] contra **[31,49]/[67,115]**: esta vez no era calor. La causa: cada `div`
+animado con `scale` y `text-shadow` obliga al navegador a rasterizar y componer la capa en cada
+frame, y sin GPU (SwiftShader) eso cuesta más que el juego entero. Arreglo: solo `translate` y
+`opacity` (animación de compositor), `will-change`, contorno con `-webkit-text-stroke` en vez de
+sombra, 0,9 s y **cinco a la vez como mucho**. Con eso el A/B vuelve a solaparse
+([76,126]/[61,139] contra [62,135]/[42,125]). Lección: cualquier cosa del DOM que se anime por
+encima del canvas hay que medirla, no solo lo que va dentro del WebGL. En un móvil con GPU no se
+habría notado, pero el gate de la Pi es la única alarma que tengo de noche.

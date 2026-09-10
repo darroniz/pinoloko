@@ -54,6 +54,7 @@ el camión de Lipasam y el 13. Las motos que robas se quedan en el garaje; el ta
 racha. Saltarse un semáforo en rojo, atropellar vecinos, ciclistas del Sevici o moteros calienta a la Policía Local.</p>
 <p class="peque"><strong>La Local.</strong> Sus coches no entran en los pasajes; a tres estrellas salen motos que sí, y a cinco el
 helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dirección lo pierdes.</p>
+<p class="peque"><strong>Radares.</strong> Poste con cámara y raya blanca en las avenidas: pasarla a más de 50 km/h es foto multa, 50 € menos.</p>
 <p class="peque"><strong>A pie.</strong> ESPACIO / FRENO es patada: el cono, la maceta o el balón que tengas delante salen volando (y cuentan
 para la racha). Manteniéndolo, Wifly corre.</p>
 <p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: pique por los pasajes contra el reloj y contra tres canis en moto (el Kevin, el Jonathan y la Vanessa); ganarles vale 60 € más. Bolsa naranja en un bar: encargo

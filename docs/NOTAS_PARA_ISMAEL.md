@@ -26,10 +26,15 @@ Nervión si da tiempo), que son la mitad de la comedia y no existían.
       Logro y contador. Push.
 - [x] **Bloque 6 (hecho a la 01:07)** — **Guerra de barrios**: alarmas de los coches aparcados,
       la Vespa Primavera y los coches de pijo, pintadas en el MAPA y cuatro logros más.
-- [ ] **Bloque 7 (01:15-02:00)** — **Patada a pie**: FRENO a pie es patada; trastos, balones y
+- [x] **Bloque 7 (hecho a la 01:22)** — **Patada a pie**: FRENO a pie es patada; trastos, balones y
       conos vuelan sin moto. Wifly a pie también puede liarla.
-- [ ] **Bloque 8 (02:00-02:45)** — Lo que salga del roadmap: el Centro como sexto barrio si la
-      caja tiene parada y calles rodadas; si no, más vida en los barrios pijos.
+- [x] **Bloque 8 (hecho a la 01:22, con el 7)** — **El Centro** como sexto barrio (Campana, Plaza
+      del Duque, la Encarnación) con la tribu de los **guiris** (sombrero de paja).
+- [ ] **Bloque 9 (01:30-02:00)** — **Radares** en las avenidas de los barrios pijos: pasar a más
+      de 50 te hace la foto, te quita 50 € y calienta a la Local.
+- [ ] **Bloque 10 (02:00-02:50)** — **La Local a pie**: a partir de dos estrellas, agentes a pie
+      que te persiguen por los pasajes cuando vas andando (donde el coche no entra).
+- [ ] **Bloque 11 (02:50-03:30)** — Sondas de caos en los barrios nuevos, roadmap y decisiones.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-10 — resumen para leer en el móvil

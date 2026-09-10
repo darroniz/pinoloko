@@ -247,6 +247,31 @@ export class AudioJuego {
     }
   }
 
+  /** Spray: siseo de ruido agudo, a rachas, mientras dura la pintada. */
+  siseo(duracion = 2): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.maestro) return;
+    const largo = Math.floor(ctx.sampleRate * duracion);
+    const buffer = ctx.createBuffer(1, largo, ctx.sampleRate);
+    const datos = buffer.getChannelData(0);
+    for (let i = 0; i < largo; i++) {
+      const t = i / ctx.sampleRate;
+      const racha = (t % 0.55) < 0.38 ? 1 : 0.15;
+      datos[i] = (Math.random() * 2 - 1) * racha;
+    }
+    const fuente = ctx.createBufferSource();
+    fuente.buffer = buffer;
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = 'highpass';
+    filtro.frequency.value = 3800;
+    const ganancia = ctx.createGain();
+    ganancia.gain.setValueAtTime(0.12, ctx.currentTime);
+    ganancia.gain.linearRampToValueAtTime(0, ctx.currentTime + duracion);
+    fuente.connect(filtro).connect(ganancia).connect(this.maestro);
+    fuente.start();
+    fuente.stop(ctx.currentTime + duracion);
+  }
+
   fanfarria(): void {
     if (!this.ctx) return;
     const notas = [660, 880, 1320];

@@ -32,6 +32,7 @@ import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
 import { Carrera, Records, formatearTiempo, premio } from './carreras';
 import { BONUS_PIQUE, ordinal, puesto } from './piques';
+import { DURACION_PINTADA } from './mundo/pintadas';
 import { Recadero, elegirDestino, premioRecado } from './recados';
 import type { Mejora } from './taller';
 import { Logros } from './logros';
@@ -49,7 +50,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -131,6 +132,7 @@ export class Juego {
   private tiempoRacha = 0;
   private colorChispa = new THREE.Color('#ffd166');
   private colorPolvo = new THREE.Color('#d8c9a8');
+  private colorSpray = new THREE.Color('#e63946');
   private aPie = false;
   private botonAccion = document.getElementById('boton-accion')!;
   private tiempoInsulto = 0;
@@ -294,6 +296,7 @@ export class Juego {
       forzarEje: (x: number, y: number) => { this.controles.forzado = x === 0 && y === 0 ? null : { x, y }; },
       empujar: (vx: number, vz: number) => { this.scooter.cuerpo.setLinvel({ x: vx, y: 0, z: vz }, true); },
       trastos: (tipo: string) => this.barrio.trastos.lista.filter((t) => t.tipo === tipo && !t.roto).map((t) => [t.malla.position.x, t.malla.position.z]),
+      pintadas: () => ({ puntos: this.barrio.pintadas.posiciones, hechas: [...this.barrio.pintadas.hechas], firmando: !!this.barrio.pintadas.firma, progreso: this.barrio.pintadas.firma?.progreso ?? 0 }),
       rivales: () => this.barrio.rivales.lista.map((r) => ({ nombre: r.nombre, x: Math.round(r.x), z: Math.round(r.z), tramo: r.tramo, velocidad: Math.round(r.velocidad * 10) / 10, tiempo: Math.round(r.tiempo * 10) / 10 })),
       carrera: () => ({ estado: this.carrera.estado, indice: this.carrera.indice, tiempo: this.carrera.tiempo, enfriamiento: this.enfriamientoCarrera, aPie: this.aPie, coche: !!this.coche }),
       moteros: () => this.barrio.motosCalle.lista.map((m) => ({ x: Math.round(m.x * 10) / 10, z: Math.round(m.z * 10) / 10, rumbo: m.rumbo, estado: m.estado })),
@@ -676,6 +679,7 @@ export class Juego {
     if (!this.aPie && b.encargos.puntos.some((l) => cerca(l.x, l.z, 18))) this.pista('encargo', 'Bolsa naranja: pásala en moto para coger un encargo y llevarlo a otro local contra el reloj');
     if (!this.aPie && b.carreras.some((c) => { const [x, z] = b.grafo.nodos[c.salida] ?? [9e9, 9e9]; return cerca(x, z, 18); })) this.pista('carrera', 'Pancarta a cuadros: crúzala en moto y corre por los pasajes contra el reloj');
     if (b.pachangas.lista.some((p) => cerca(p.x, p.z, 22))) this.pista('balon', 'Los niños juegan al fútbol: chuta el balón con la moto, gol son 40 €');
+    if (this.aPie && b.pintadas.posiciones.some(([x, z], i) => !b.pintadas.hechas.has(i) && cerca(x, z, 14))) this.pista('pintada', 'Bote de spray: a pie, ponte al lado y E para firmar la pintada. Quieto dos segundos');
     if (!this.aPie && b.rampas.posiciones.some(([x, z]) => cerca(x, z, 16))) this.pista('rampa', 'Rampa: a fondo y a volar. Cuanto más dure el vuelo, más euros');
     if (!this.aPie && !this.coche && b.trafico.lista.some((c) => cerca(c.x, c.z, 14))) this.pista('robar', 'Los coches en marcha se roban: bájate delante de uno parado y E / SUBIR');
   }
@@ -944,12 +948,26 @@ export class Juego {
     window.__pv_frames++;
   }
 
+  /** A pie junto a un bote de spray: Wifly se pone a firmar (dos segundos sin moverse de ahí). */
+  private empezarPintada(): boolean {
+    const b = this.barrio;
+    if (b.pintadas.firma) return false;
+    const p = this.peaton.posicion;
+    const i = b.pintadas.cercano(p.x, p.z);
+    if (i < 0) return false;
+    b.pintadas.empezar(i);
+    this.audio.siseo(DURACION_PINTADA);
+    this.hud.avisar('Firmando…', 1.2);
+    return true;
+  }
+
   /** La tecla E / botón de acción: coger el 13, subirse o bajarse. La R: volver a la parada. */
   private atenderAcciones(): void {
     if (this.tiempoTrincao > 0) return;
     if (this.controles.accion) {
       if (this.aPie) {
         if (this.enParada) this.cogerEl13();
+        else if (this.empezarPintada()) { /* firmando */ }
         else if (!this.subirse()) this.hud.avisar('No hay moto a mano', 1.2);
       } else if (Math.abs(this.vehiculo.estado.velocidad) < 2.5) this.bajarse();
       else this.hud.avisar('Frena antes de bajarte', 1.2);
@@ -1036,6 +1054,20 @@ export class Juego {
       this.actualizarPolicia(jugadorPos, rapidez, dt);
       performance.mark('u4');
       performance.measure('u-policia', 'u3', 'u4');
+      const pintada = b.pintadas.actualizar(jugadorPos.x, jugadorPos.z, dt);
+      if (b.pintadas.firma) this.particulas.emitir(jugadorPos.x + (Math.random() - 0.5), 0.5, jugadorPos.z + (Math.random() - 0.5), 2, this.colorSpray, 1.2);
+      if (pintada.hecha >= 0) {
+        const pijo = b.ficha.tribu === 'pijos';
+        const euros = pijo ? 50 : 25;
+        this.ganar(euros, { x: jugadorPos.x, y: 0, z: jugadorPos.z });
+        this.contador.sumar('pintadas');
+        this.busqueda.fechoria('pintada', pijo ? 2 : 1);
+        const texto = b.pintadas.texto(pintada.hecha);
+        this.hud.avisar(pijo ? `"${texto}" en territorio pijo. Eso duele. +${euros} €` : `"${texto}" · ${b.pintadas.cuantas}/${b.pintadas.posiciones.length} pintadas · +${euros} €`, 2.4);
+        this.audio.pitido(1320, 0.15);
+        this.vibrar(40);
+      }
+      if (pintada.perdida) this.hud.avisar('Te has ido y la pintada se ha quedado a medias', 1.4);
       const mechero = b.mecheros.actualizar(jugadorPos.x, jugadorPos.z, dt);
       if (mechero >= 0) {
         this.ganar(10);

@@ -55,7 +55,8 @@ racha. Saltarse un semáforo en rojo, atropellar vecinos, ciclistas del Sevici o
 helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dirección lo pierdes.</p>
 <p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: pique por los pasajes contra el reloj y contra tres canis en moto (el Kevin, el Jonathan y la Vanessa); ganarles vale 60 € más. Bolsa naranja en un bar: encargo
 para llevar a otro local, y cada entrega encadena la siguiente. Rampas para volar. Balón de los niños: gol son 40 €. Los 20
-mecheros de cada barrio se buscan (el MAPA del menú no los chiva).</p>
+mecheros de cada barrio se buscan (el MAPA del menú no los chiva). Bote de spray en un cruce de pasajes: a pie y con E, Wifly firma
+la pintada (en territorio pijo vale el doble y la Local se calienta).</p>
 <p class="peque"><strong>Barrios.</strong> A pie y en una parada, el 13 te lleva a la Alameda, a Triana, a Los Remedios o a Nervión (territorio pijo), y de vuelta. Cuidado con el
 Guadalquivir. Los perros del pasaje ladran pero no muerden.</p>`;
 

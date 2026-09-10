@@ -23,6 +23,8 @@ export const LOGROS: Logro[] = [
   { id: 'corredor', nombre: 'Corredor de pasajes', descripcion: 'Termina 3 carreras', cumple: (e) => e.carreras >= 3 },
   { id: 'pique', nombre: 'Pique ganado', descripcion: 'Gana una carrera al Kevin, al Jonathan y a la Vanessa', cumple: (e) => e.piquesGanados >= 1 },
   { id: 'rey_piques', nombre: 'El más rápido del barrio', descripcion: 'Gana cinco piques', cumple: (e) => e.piquesGanados >= 5 },
+  { id: 'spray', nombre: 'Wifly estuvo aquí', descripcion: 'Firma una pintada', cumple: (e) => e.pintadas >= 1 },
+  { id: 'rey_spray', nombre: 'Rey del spray', descripcion: 'Quince pintadas por Sevilla', cumple: (e) => e.pintadas >= 15 },
   { id: 'mil', nombre: 'Mil euros', descripcion: 'Gana 1.000 € en total', cumple: (e) => e.dineroTotal >= 1000 },
   { id: 'km', nombre: 'Diez kilómetros', descripcion: 'Recorre 10 km', cumple: (e) => e.metros >= 10000 },
   { id: 'trincao', nombre: 'Cliente habitual', descripcion: 'Que te trinquen 3 veces', cumple: (e) => e.trincados >= 3 },

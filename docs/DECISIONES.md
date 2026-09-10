@@ -658,3 +658,11 @@ o sobre Wifly, con un `div` animado por CSS de 1,1 s (tope de 14 a la vez), en a
 grande cuando hay multiplicador. El pitido de cada trasto derribado **sube de tono con la racha**
 (60 Hz por trasto hasta doce): el combo se oye además de verse. Es la parte "arcade de 1999" que
 faltaba en el feedback: el marcador de arriba a la derecha no lo mira nadie mientras conduce.
+
+## 2026-09-10 — Los bancos de OSM, con abuelo sentado
+
+`nivel.bancos` (los `amenity=bench` de OSM: 14 en el Mercado, 14 en Triana, 4 en la Alameda)
+estaba exportado desde la primera noche y sin usar. Ahora son un trasto más (`banco`: tablones de
+madera con patas de fundición, 60 kg, 20 €), orientados hacia la vía más cercana, y cada uno es
+un asiento para un vecino (van a la misma lista de `asientos` que las sillas de las terrazas, así
+que los primeros vecinos del barrio se sientan ahí). Exprimir OSM antes de inventar.

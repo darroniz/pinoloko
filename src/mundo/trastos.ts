@@ -8,7 +8,7 @@ import type { Nivel, Punto } from './tipos';
 import { azar, dentroDePoligono, distanciaPolilinea, muestrearPolilinea } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto';
+export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco';
 
 export interface Trasto {
   tipo: TipoTrasto;
@@ -154,6 +154,21 @@ const DEFINICIONES: Record<TipoTrasto, Definicion> = {
       return g;
     },
     collider: (d) => d.cuboid(1.0, 0.9, 0.5).setDensity(0.35).setRestitution(0.3),
+  },
+  banco: {
+    valor: 20, masa: 60, alturaMedia: 0.45,
+    crearMalla: () => {
+      // Banco de madera de los de OSM (amenity=bench): tablones sobre dos patas de fundición.
+      const g = new THREE.Group();
+      for (const z of [-0.2, 0, 0.2]) g.add(malla(new THREE.BoxGeometry(1.7, 0.05, 0.16), materiales.madera, 0, 0, z));
+      for (const y of [0.25, 0.42]) g.add(malla(new THREE.BoxGeometry(1.7, 0.05, 0.14), materiales.madera, 0, y, 0.3)); // respaldo
+      for (const x of [-0.7, 0.7]) {
+        g.add(malla(new THREE.BoxGeometry(0.06, 0.45, 0.5), materiales.gris, x, -0.24, 0));
+        g.add(malla(new THREE.BoxGeometry(0.06, 0.5, 0.06), materiales.gris, x, 0.22, 0.3));
+      }
+      return g;
+    },
+    collider: (d) => d.cuboid(0.85, 0.45, 0.3).setDensity(0.9).setRestitution(0.2),
   },
   valla: {
     valor: 12, masa: 14, alturaMedia: 0.5,
@@ -334,6 +349,18 @@ export class Trastos {
       }
     }
 
+    // Los bancos que OSM sí trae (amenity=bench), mirando a la vía más cercana, con vecino sentado.
+    for (const [bx, bz] of nivel.bancos ?? []) {
+      let mejor = { d: Infinity, giro: 0 };
+      for (const via of nivel.vias) {
+        for (let i = 0; i + 1 < via.puntos.length; i++) {
+          const [ax, az] = via.puntos[i]!, [cx, cz] = via.puntos[i + 1]!;
+          const d = distanciaPolilinea(bx, bz, [[ax, az], [cx, cz]]);
+          if (d < mejor.d) mejor = { d, giro: -Math.atan2(cz - az, cx - ax) };
+        }
+      }
+      if (colocar('banco', bx, bz, mejor.giro, 1.0)) this.asientos.push({ x: bx, z: bz, rumbo: -mejor.giro + Math.PI / 2 });
+    }
     for (const poi of nivel.pois) {
       if (poi.clase === 'bar' || poi.clase === 'cafe' || poi.clase === 'restaurant') {
         // Terraza: tres mesas con dos sillas cada una, en un semicírculo.
@@ -406,5 +433,6 @@ export const FRASES: Record<TipoTrasto, string[]> = {
   silla: ['¡Silla voladora!', 'Eso lo paga el bar'],
   caja: ['¡Fruta del mercado!', '¡Los tomates del puesto!', '¡Cuidado con las cajas!'],
   valla: ['¡Valla de obra al suelo!', 'Las obras llevaban tres años ahí'],
+  banco: ['¡El banco de los abuelos!', '¡Ahí se sentaba el Manolo!', '¡Banco por los aires!'],
   puesto: ['¡El puesto del mercadillo!', '¡Los calcetines a tres euros por el aire!', '¡Se cae el toldo!', '¡Las bragas del puesto, por el suelo!'],
 };

@@ -4,6 +4,41 @@ Un párrafo por sesión nocturna, el más reciente arriba. Corto, para leer en e
 
 ---
 
+## Noche del 2026-09-10 — resumen para leer en el móvil
+
+**Qué hay nuevo** (todo publicado en https://pinoloko.com/, 17 commits):
+semáforos de verdad en Triana y en Sembradores; el **Recadero** (bolsas naranjas en la puerta de
+farmacias y bares: llévalas a otro local contra el reloj, encadena entregas); **tribus** por barrio
+(canis con gorra en Pino Montano, modernos con gorro en la Alameda, trianeros) con sus gritos;
+pestaña de **LOGROS** (24) y pestaña **MAPA**; **pachangas** de niños con balón de física (gol =
+40 €); **vibración** en el móvil y **repetición** con cámara baja al reventar; **Sevici** por el
+carril bici; **campanas** de la parroquia, pájaros, grillos y bullicio de bar; selector de
+**calidad** gráfica (AYUDA); **modo foto** (P o el botón de cámara: captura con logo y hoja de
+compartir); **helicóptero** a cinco estrellas; **mercadillo** junto al Mercado (puestos con toldo
+que se rompen); **furgonetas** y el **camión de Lipasam** en el tráfico; **pistas** la primera vez
+que pasa cada cosa; **el taller** (tubarro, variador, neumáticos, frenos y claxon musical: por
+fin el dinero sirve para algo); **farolas** de noche, **perros** que persiguen la moto ladrando y
+coches que pitan si les cortas el paso; **dinero que flota** donde lo ganas y combo que sube de tono; **caballito** al acelerar, abuelas con carrito, minimapa
+a la izquierda con el móvil tumbado; y **motos callejeras**: canis en scooter por calles y
+pasajes, se caen si los embistes y a pie con E se las robas en marcha.
+
+**Qué probar primero en el móvil:** 1) arranca, acelera a fondo y mira el caballito; 2) bájate
+(BAJAR) y espera a que pase un cani en moto: E; 3) coge una bolsa naranja (hay una en Cruz
+Farmacia) y sigue la flecha; 4) rompe el mercadillo (pasaje junto al Mercado); 5) gana 200 € y
+compra el claxon musical en GARAJE → el taller; 6) súbete al 13 hasta Triana y sáltate un
+semáforo en Pagés del Corro; 7) de noche, mira las farolas y escucha los grillos; 8) pulsa el
+botón de la cámara y comparte la foto. Si va a tirones, AYUDA → gráficos MEDIA o BAJA.
+
+**Dudas que he resuelto solo** (todas en `docs/DECISIONES.md`): a niños y perros no se les
+atropella (se apartan): línea del tono. El recadero es minijuego, no misión. Los mecheros no
+salen en el mapa. El gate de rendimiento de la Pi es ruidoso (la Pi se pone a 80 °C con cada
+pasada de Chromium): dos veces he publicado tras un A/B con la build anterior que demostraba que
+era calor y no código; está apuntado el procedimiento.
+
+**Pendiente de ti:** el FPS real en tu móvil y si moverse ya es divertido (hito 1). Con eso
+decido si toca ampliar la caja hacia fuera del Mercado o seguir con Los Remedios/Nervión (los
+pijos de verdad, que necesitan su tribu).
+
 ## Plan de la noche del 2026-09-10 (tercera sesión, 00:15 → 04:45)
 
 Sin feedback nuevo en `FEEDBACK.md` y el roadmap con los siete hitos casi vacíos, así que la
@@ -34,7 +69,8 @@ dejar herramientas para que pruebes el rendimiento en el móvil.
 - [x] **Bloque 12 (hecho a la 01:32)** — Farolas de noche, coches del tráfico que pitan si les cortas el paso, y perros por los pasajes.
 - [x] **Bloque 14 (hecho a la 01:58)** — Pestaña MAPA, ambiente sonoro (pájaros, grillos, bullicio de bar), olés y guía de barrios al día.
 - [x] **Bloque 16 (hecho a las 02:24)** — Ayuda y portada al día, icono de foto en SVG, sonda de caos (juego al azar sin errores), roadmap.
-- [ ] **Bloque 17** — Claxon musical en el taller, zumbido de las motos que pasan y bocina grave del 13 y el camión.
+- [x] **Bloque 17 (hecho a las 02:42)** — Claxon musical en el taller, zumbido de las motos que pasan y bocina grave del 13 y el camión.
+- [ ] **Bloque 18** — Dinero que flota donde lo ganas y pitido de combo que sube con la racha.
 - [x] **Bloque 15 (hecho a las 02:10)** — Motos callejeras: canis en scooter por calles y pasajes, se caen si los embistes y se roban en marcha a pie.
 - [x] **Bloque 13 (hecho a la 01:48)** — Caballito al acelerar, abuelas con carrito, minimapa a la izquierda en apaisado y el camión de Lipasam en el tráfico.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.

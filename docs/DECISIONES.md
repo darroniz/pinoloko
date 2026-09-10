@@ -650,3 +650,11 @@ la marcha del Toreador de *Carmen*, todas tradicionales o de dominio público, e
 y asustan a los vecinos en un radio mayor. Es el detalle más cani que cabía en un taller. Las
 motos callejeras que pasan a menos de 12 m sueltan un **zumbido** de sierra que baja de tono
 (Doppler de juguete, uno cada 1,2 s como mucho). El 13 y el camión pitan **grave** (×0,55).
+
+## 2026-09-10 — Dinero que flota y combo que se oye
+
+Cada euro ganado sale ahora **flotando** en pantalla donde ha pasado (sobre el trasto, el balón)
+o sobre Wifly, con un `div` animado por CSS de 1,1 s (tope de 14 a la vez), en amarillo y más
+grande cuando hay multiplicador. El pitido de cada trasto derribado **sube de tono con la racha**
+(60 Hz por trasto hasta doce): el combo se oye además de verse. Es la parte "arcade de 1999" que
+faltaba en el feedback: el marcador de arriba a la derecha no lo mira nadie mientras conduce.

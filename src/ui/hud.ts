@@ -78,6 +78,21 @@ export class Hud {
     this.racha.classList.toggle('visible', n >= 2);
   }
 
+  private flotantes = 0;
+
+  /** Texto que flota y se desvanece en un punto de la pantalla (dinero ganado, combos). */
+  flotar(texto: string, x: number, y: number, clase = ''): void {
+    if (this.flotantes >= 14) return;
+    const d = document.createElement('div');
+    d.className = `flota ${clase}`;
+    d.textContent = texto;
+    d.style.left = `${Math.round(x)}px`;
+    d.style.top = `${Math.round(y)}px`;
+    document.body.appendChild(d);
+    this.flotantes++;
+    window.setTimeout(() => { d.remove(); this.flotantes--; }, 1100);
+  }
+
   avisar(texto: string, segundos = 2): void {
     this.aviso.textContent = texto;
     this.aviso.classList.add('visible');

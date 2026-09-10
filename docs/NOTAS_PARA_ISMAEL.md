@@ -38,9 +38,11 @@ era calor y no código; está apuntado el procedimiento.
 **Lo que NO está publicado:** los dos últimos bloques (pitido de combo que sube con la racha y
 los bancos de OSM con abuelos sentados) están en la rama `pendiente-2026-09-10` (subida a
 GitHub), no en `main`. Motivo: con ellos el gate de la Pi falló cuatro veces seguidas y el A/B no
-fue concluyente (los textos flotantes sí eran culpables y ya no están; lo de bancos y combo no lo
-he podido demostrar ni descartar con la Pi a 80 °C). La noche que viene se rehace el A/B en frío
-y, si pasa, se fusiona. `main` está exactamente en el último commit que pasó el gate.
+fue concluyente al principio. Al cerrar, con la Pi fría (62 °C), el A/B `main` contra la rama ha
+dado [71,128]/[48,118] frente a [54,110]/[67,100]: la rama rinde un 10-15 % menos en la Pi, poco
+pero consistente, así que no se fusiona a ciegas. La noche que viene: buscar qué cuesta (sospecho
+los 14 cuerpos de los bancos cerca del Mercado) y arreglarlo antes de fusionar. `main` está
+exactamente en el último commit que pasó el gate.
 
 **Pendiente de ti:** el FPS real en tu móvil y si moverse ya es divertido (hito 1). Con eso
 decido si toca ampliar la caja hacia fuera del Mercado o seguir con Los Remedios/Nervión (los

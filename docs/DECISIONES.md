@@ -691,5 +691,7 @@ con los bancos y el pitido de combo dentro, y el A/B de esa build había dado ci
 Con la Pi a 80 °C y sin tiempo para otro A/B en frío, la decisión es la del protocolo: **`main`
 se queda en el último commit verificado** (`f244af1`, el claxon musical) y los bloques 18-19 van
 a la rama `pendiente-2026-09-10`, subida a GitHub. Los documentos y las sondas nuevas sí entran
-en `main` porque no cambian la build. Mañana: A/B en frío de esa rama contra `main`; si se
-solapan, se fusiona.
+en `main` porque no cambian la build. El A/B en frío hecho al cerrar (62 °C de salida) da la
+rama un 10-15 % por debajo de `main` ([54,110]/[67,100] contra [71,128]/[48,118]): poco, pero
+consistente, y por eso se queda aparcada. Sospecha principal: los catorce cuerpos de los bancos
+(60 kg, cuboides) alrededor del Mercado, que es justo por donde mide el gate.

@@ -40,18 +40,24 @@ export interface OpcionesMenu {
 
 const AYUDA = `
 <div class="fila"><span>Moverse</span><strong>WASD / flechas · joystick</strong></div>
-<div class="fila"><span>Frenar y derrapar</span><strong>ESPACIO · FRENO</strong></div>
+<div class="fila"><span>Frenar y derrapar (a pie: correr)</span><strong>ESPACIO · FRENO</strong></div>
 <div class="fila"><span>Subir, bajar, coger el 13</span><strong>E · SUBIR / BAJAR / EL 13</strong></div>
 <div class="fila"><span>Claxon (asusta a la gente)</span><strong>H · PIII</strong></div>
 <div class="fila"><span>Volver a la parada</span><strong>R</strong></div>
 <div class="fila"><span>Menú y pausa</span><strong>ESC · ☰</strong></div>
 <div class="fila"><span>Plegar el minimapa</span><strong>M · tocarlo</strong></div>
 <div class="fila"><span>Foto para compartir</span><strong>P · 📷</strong></div>
-<p class="peque" style="margin-top:10px">Roba motos aparcadas y coches en marcha (¡y el 13!). Derriba conos, macetas, terrazas y cajas del
-mercado para ganar dinero y armar lío. Las estrellas son la Policía Local: los coches patrulla no entran en los
-pasajes, las motos sí. Pasa en moto por una pancarta a cuadros para correr contra el reloj. Las rampas de los
-pasajes son para volar. Las bolsas de papel en la puerta de los bares son encargos: cógelas en moto y llévalas a
-otro bar antes de que se acabe el tiempo; cada entrega encadena la siguiente con más premio. Busca los 20 mecheros de cada barrio. A pie y en una parada, el 13 te lleva al otro barrio.</p>`;
+<p class="peque" style="margin-top:10px"><strong>Robar.</strong> Motos aparcadas y motos en marcha (a pie, E cuando pase un cani), coches, furgonetas,
+el camión de Lipasam y el 13. Las motos que robas se quedan en el garaje; el taller las mejora con lo que ganes.</p>
+<p class="peque"><strong>Lío.</strong> Conos, macetas, contenedores, terrazas, cajas del mercado y los puestos del mercadillo dan dinero y
+racha. Saltarse un semáforo en rojo, atropellar vecinos, ciclistas del Sevici o moteros calienta a la Policía Local.</p>
+<p class="peque"><strong>La Local.</strong> Sus coches no entran en los pasajes; a tres estrellas salen motos que sí, y a cinco el
+helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dirección lo pierdes.</p>
+<p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: carrera contra el reloj por los pasajes. Bolsa naranja en un bar: encargo
+para llevar a otro local, y cada entrega encadena la siguiente. Rampas para volar. Balón de los niños: gol son 40 €. Los 20
+mecheros de cada barrio se buscan (el MAPA del menú no los chiva).</p>
+<p class="peque"><strong>Barrios.</strong> A pie y en una parada, el 13 te lleva a la Alameda o a Triana, y de vuelta. Cuidado con el
+Guadalquivir. Los perros del pasaje ladran pero no muerden.</p>`;
 
 const CREDITOS = `
 <p><strong>Pinoloko</strong> es un juego personal de Ismael Darroniz, hecho de noche por una

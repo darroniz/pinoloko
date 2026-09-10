@@ -30,6 +30,11 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] ~~Semáforos~~: no hay ninguno en la caja del Mercado (OSM). Pasos de cebra pintados.
 - [x] Peatones con máquina de estados (pasear, huir, caerse, insultar en sevillano, sentados en las terrazas).
 - [x] El 13 de Tussam circulando por las calles rodadas, parando en las paradas, y robable.
+- [x] Semáforos de OSM (cruces con ciclo) que paran el tráfico; saltárselos en rojo calienta.
+- [x] Furgonetas de reparto y el camión de Lipasam en el tráfico (robables).
+- [x] Sevici por los carriles bici, perros callejeros que persiguen la moto, abuelas con carrito.
+- [x] Tribus por barrio: canis, modernos y trianeros (pinta y gritos distintos).
+- [x] Farolas de noche, campanas de la parroquia, pájaros, grillos y bullicio de bar.
 - [x] Ciclo día/noche (10 minutos por día, sol que gira, hora en el HUD).
 - [x] Faros de los vehículos de noche.
 - [x] Ventanas encendidas de noche (fachadas que miran a la cámara, encendidas al azar).
@@ -39,6 +44,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Objetos que se rompen de verdad: macetas en cascos, cajas con la fruta por el aire, sillas y mesas a golpe fuerte (sin cristales: no hay nada de cristal derribable).
 - [x] Daño y destrucción de vehículos (humo por debajo de 30, reventón a 0).
 - [x] Dinero por destrozos y racha de "lío armado" con multiplicador.
+- [x] Mercadillo junto al Mercado: puestos con toldo que se rompen.
+- [x] Repetición corta con cámara baja al reventar un vehículo; vibración táctil en los golpes.
 
 ## 4. Policía local
 - [x] Nivel de búsqueda por estrellas (calor que sube con fechorías y baja fuera de la vista).
@@ -47,6 +54,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Asimetría del barrio: la patrulla no entra en los pasajes; a partir de tres estrellas,
       motos de la Local que sí.
 - [x] Escapar bajando el nivel; "¡Trincao!" y reaparición en el Mercado (no hay comisaría en la caja).
+- [x] Helicóptero a cinco estrellas con foco que te sigue con retraso (se le escapa a fondo).
 
 ## 5. El 13
 - [x] Parada de bus (las `bus_stop` de OSM) y cinemática del viaje con cámara baja.
@@ -61,9 +69,18 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Garaje de motos (las robadas se quedan; eliges con cuál sales) y estadísticas acumuladas.
 - [x] Menú (portada y ESC / ☰ en partida, con pausa), créditos con atribución a OpenStreetMap, nueva partida.
 - [x] Rótulos con el `name` real de bares y comercios (atlas de canvas, sobre la azotea del local).
+- [x] Recadero: encargos entre locales con nombre real contra el reloj, encadenados.
+- [x] Pachangas: balón de física con niños en campitos y pasajes; gol = dinero.
+- [x] Logros (pestaña del menú) y pestaña MAPA del barrio (sin chivar los mecheros).
+- [x] El taller: mejoras por moto (tubarro, variador, neumáticos, frenos) para gastar el dinero.
+- [x] Motos callejeras por calles y pasajes, robables en marcha a pie.
+- [x] Pistas la primera vez que pasa cada cosa (sin tutorial).
 
 ## 7. Pulido
-- [ ] Rendimiento en móvil de gama media.
+- [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de
+      calidad alta/media/baja en AYUDA y auditoría: 108-130 draw calls, 49-60k triángulos/frame).
+- [x] Modo foto (P / 📷): captura con logo y hoja de compartir del móvil.
+- [x] Caballito al acelerar; minimapa a la izquierda con el móvil apaisado.
 - [x] Minimapa (norte arriba, paradas, patrullas, mecheros, siguiente punto de carrera; M o tocarlo para plegarlo).
 - [x] Sonido sintetizado (motor de dos tiempos y de coche, derrape, golpes, sirena).
 - [x] Manifest PWA, metadatos Open Graph y portada con JUGAR.

@@ -19,6 +19,7 @@ import { FRASES, ROMPIBLES } from './mundo/trastos';
 import { Trozos } from './efectos/trozos';
 import { MarcasNeumatico } from './efectos/marcas';
 import { Particulas } from './efectos/particulas';
+import { DineroFlotante } from './efectos/dinero';
 import { MarcadorJugador } from './efectos/marcador';
 import { NivelBusqueda } from './policia/busqueda';
 import { Helicoptero } from './policia/helicoptero';
@@ -110,6 +111,7 @@ export class Juego {
   private lienzo: HTMLCanvasElement;
   private marcas = new MarcasNeumatico();
   private particulas = new Particulas();
+  private dineroFlotante = new DineroFlotante();
   private trozos = new Trozos();
   private marcador = new MarcadorJugador();
   private busqueda = new NivelBusqueda();
@@ -235,7 +237,7 @@ export class Juego {
   }
 
   async cargar(): Promise<void> {
-    this.escena.add(this.marcas.malla, this.particulas.puntos, this.trozos.malla, this.marcador.grupo, this.cine.bus, this.helicoptero.grupo);
+    this.escena.add(this.marcas.malla, this.particulas.puntos, this.trozos.malla, this.dineroFlotante.grupo, this.marcador.grupo, this.cine.bus, this.helicoptero.grupo);
 
     // Luz: hemisferio cálido y un sol con sombras suaves que sigue al jugador.
     const ambiente = new THREE.HemisphereLight('#ffffff', '#c9b69a', 0.85);
@@ -327,7 +329,7 @@ export class Juego {
     };
     window.__pv_info = () => {
       const b = this.barrio;
-      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.infoRender }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, sentados: b.vecinos.lista.filter((v) => v.estado === 'sentado').length, buses: b.trafico.lista.filter((c) => c.tipo === 'bus').length, camiones: b.trafico.lista.filter((c) => c.tipo === 'camion').length, furgonetas: b.trafico.lista.filter((c) => c.variante === 'furgoneta').length, rotos: b.trastos.lista.filter((t) => t.roto).length, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
+      return { calidad: this.calidad, barrio: b.ficha.id, timestep: b.fisica.world.timestep, render: { ...this.infoRender }, memoria: { ...this.renderer.info.memory }, scooter: { ...this.scooter.estado }, eje: { ...this.controles.eje }, trastos: b.trastos.lista.length, trozos: this.trozos.cuantos, sentados: b.vecinos.lista.filter((v) => v.estado === 'sentado').length, buses: b.trafico.lista.filter((c) => c.tipo === 'bus').length, camiones: b.trafico.lista.filter((c) => c.tipo === 'camion').length, furgonetas: b.trafico.lista.filter((c) => c.variante === 'furgoneta').length, rotos: b.trastos.lista.filter((t) => t.roto).length, flotantes: this.dineroFlotante.activas, activos: b.trastos.activos, despiertos: b.trastos.lista.filter((t) => t.cuerpo && !t.cuerpo.isSleeping()).length, cuerpos: b.fisica.world.bodies.len(), aPie: this.aPie, enCoche: !!this.coche, estrellas: this.busqueda.estrellas, calor: Math.round(this.busqueda.calor), patrullas: b.patrullas.lista.map((p) => [p.tipo, Math.round(p.x), Math.round(p.z), p.directo, Math.round(p.velocidad * 10) / 10, Math.round(Math.hypot(p.cuerpo.linvel().x, p.cuerpo.linvel().z) * 10) / 10, p.ruta.length, Math.round(Math.hypot(p.x - this.vehiculo.estado.x, p.z - this.vehiculo.estado.z)), Math.round(p.tiempoEncima * 10) / 10]), dentroEdificio: b.nivel.edificios.some((ed) => dentroDePoligono(this.vehiculo.estado.x, this.vehiculo.estado.z, ed.poligono)), vehiculo: [this.vehiculo.estado.x, this.vehiculo.estado.z, this.vehiculo.estado.velocidad, this.vehiculo.posicion.y], salud: Math.round(this.vehiculo.salud), reventados: this.reventado.size, trafico: b.trafico.lista.length, peaton: [this.peaton.posicion.x, this.peaton.posicion.z], vecinosCerca: b.vecinos.lista.filter((v) => (v.x - this.scooter.estado.x) ** 2 + (v.z - this.scooter.estado.z) ** 2 < 60 * 60).length, paradas: b.paradas.lista.length, enParada: this.enParada };
     };
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
@@ -838,13 +840,15 @@ export class Juego {
     this.hud.ponerCarrera(`⏱ ${formatearTiempo(this.carrera.tiempo)} · ${this.carrera.indice}/${ruta.puntos.length}`);
   }
 
-  /** Dinero que entra: al bolsillo y a la estadística de total ganado. (Los textos flotantes en el
-   *  DOM se quitaron: sin GPU, componer esas capas costaba la mitad de los frames; si vuelven, como
-   *  sprites dentro del WebGL.) */
-  private ganar(cantidad: number): void {
+  /** Dinero que entra: al bolsillo, a la estadística de total ganado y flotando donde ha pasado
+   *  (sobre el trasto o el balón si se dice; si no, sobre Wifly). Los textos van dentro del WebGL:
+   *  en el DOM, sin GPU, costaban la mitad de los frames. */
+  private ganar(cantidad: number, donde?: { x: number; y?: number; z: number }, multiplicador = 1): void {
     this.dinero += cantidad;
     this.contador.sumar('dineroTotal', cantidad);
     this.hud.ponerDinero(this.dinero);
+    const p = donde ?? (this.aPie ? this.peaton.posicion : this.vehiculo.posicion);
+    this.dineroFlotante.soltar(cantidad, p.x, p.z, (p.y ?? 0) + 1.6, multiplicador);
   }
 
   private abrirMenu(pestana?: Pestana): void {
@@ -1136,7 +1140,7 @@ export class Juego {
         for (const t of derribados) {
           this.racha++;
           const multiplicador = Math.min(5, 1 + Math.floor(this.racha / 3));
-          this.ganar(t.valor * multiplicador);
+          this.ganar(t.valor * multiplicador, t.malla.position, multiplicador);
           // El tono del pitido sube con la racha: el combo se oye.
           this.audio.pitido(520 + Math.min(12, this.racha) * 60, 0.08, 0.08);
           const frases = FRASES[t.tipo];
@@ -1167,6 +1171,7 @@ export class Juego {
       }
       this.particulas.actualizar(dt);
       this.trozos.actualizar(dt);
+      this.dineroFlotante.actualizar(dt);
       // Logros: se comprueban cada dos segundos contra las estadísticas.
       this.tiempoLogros -= dt;
       if (this.tiempoLogros <= 0) {

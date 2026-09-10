@@ -4,6 +4,28 @@ Un párrafo por sesión nocturna, el más reciente arriba. Corto, para leer en e
 
 ---
 
+## Plan de la noche del 2026-09-11 (cuarta sesión, 00:15 → 04:45)
+
+Sin feedback nuevo en `FEEDBACK.md`. El roadmap está casi vacío y el brief dice que la caja
+del Mercado no se amplía hasta que digas que moverse es divertido, así que la noche va de
+**cerrar lo que quedó aparcado** y de abrir **el otro bando**: los pijos de Los Remedios (y
+Nervión si da tiempo), que son la mitad de la comedia y no existían.
+
+- [ ] **Bloque 1 (00:20-01:05)** — Fusionar la rama `pendiente-2026-09-10` (bancos de OSM con
+      abuelo sentado y pitido de combo) y el **dinero flotante como sprites dentro del WebGL**
+      (planos con textura de canvas, sin DOM). Un solo gate para todo. Push.
+- [ ] **Bloque 2 (01:05-02:00)** — **Los Remedios** como cuarto barrio (caja de 500 m sobre
+      Virgen de Luján / República Argentina: 743 edificios, 9 paradas, 15 bares con nombre) con la
+      tribu **pijos** (polo pastel, jersey a los hombros, gritos propios). Push.
+- [ ] **Bloque 3 (02:00-02:45)** — **Nervión** como quinto barrio (Luis de Morales / Eduardo
+      Dato, con el Sánchez-Pizjuán dentro de la caja), también pijos. Push.
+- [ ] **Bloque 4 (02:45-03:30)** — **Piques en scooter**: carreras contra tres canis en moto
+      que siguen la ruta de los pasajes; ganarles da dinero y logro. Push.
+- [ ] **Bloque 5 (03:30-04:10)** — **Pintadas**: puntos de spray en el suelo de las plazas de
+      cada barrio (mantén E para firmar "PINO MONTANO"); en barrio pijo calienta a la Local.
+      Logro y contador. Push.
+- [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
+
 ## Noche del 2026-09-10 — resumen para leer en el móvil
 
 **Qué hay nuevo** (todo publicado en https://pinoloko.com/, una veintena de commits):

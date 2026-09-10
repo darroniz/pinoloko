@@ -1,4 +1,4 @@
-// Sonda: textos flotantes de dinero al romper el mercadillo.
+// Sonda: dinero flotante (sprites WebGL) al romper el mercadillo; captura en logs/.
 import { chromium } from 'playwright-core';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -21,7 +21,7 @@ await p.evaluate(() => window.__pv_prueba.empujar(0, -12));
 let vistos = [];
 for (let i = 0; i < 15 && !vistos.length; i++) {
   await new Promise((r) => setTimeout(r, 200));
-  vistos = await p.evaluate(() => [...document.querySelectorAll('.flota')].map((d) => d.textContent));
+  vistos = await p.evaluate(() => window.__pv_info().flotantes ? [window.__pv_info().flotantes] : []);
   if (vistos.length) await p.screenshot({ path: 'logs/captura-popups.png' });
 }
 console.log('flotantes', vistos, 'dinero', await p.evaluate(() => document.getElementById('hud-dinero').textContent), 'rotos', await p.evaluate(() => window.__pv_info().rotos));

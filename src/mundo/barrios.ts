@@ -2,7 +2,7 @@
 // public/barrios/<id>/ y dar de alta aquí su nombre y a dónde lleva el 13.
 // Ver docs/COMO_ANADIR_UN_BARRIO.md.
 
-export type Tribu = 'canis' | 'modernos' | 'trianeros' | 'pijos';
+export type Tribu = 'canis' | 'modernos' | 'trianeros' | 'pijos' | 'guiris';
 
 export interface FichaBarrio {
   id: string;
@@ -32,7 +32,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   alameda: {
     id: 'alameda',
     nombre: 'La Alameda',
-    destinos13: ['pino-montano', 'triana'],
+    destinos13: ['pino-montano', 'triana', 'centro'],
     poblacion: { vecinos: 160, trafico: 10, buses: 1, motos: 18, coches: 10, sevici: 0, perros: 6, motosCalle: 6 },
     tribu: 'modernos',
     bienvenida: 'La Alameda. Territorio de modernos.',
@@ -41,7 +41,7 @@ export const BARRIOS: Record<string, FichaBarrio> = {
   triana: {
     id: 'triana',
     nombre: 'Triana',
-    destinos13: ['pino-montano', 'alameda', 'los-remedios'],
+    destinos13: ['pino-montano', 'alameda', 'los-remedios', 'centro'],
     poblacion: { vecinos: 150, trafico: 12, buses: 1, motos: 16, coches: 12, sevici: 8, perros: 7, motosCalle: 10 },
     tribu: 'trianeros',
     bienvenida: 'Triana. La otra orilla.',
@@ -64,6 +64,15 @@ export const BARRIOS: Record<string, FichaBarrio> = {
     tribu: 'pijos',
     bienvenida: 'Nervión. Pijos con bufanda del Sevilla.',
     paradaLlegada: 'Eduardo Dato (Estadio Sánchez Pizjuan)',
+  },
+  centro: {
+    id: 'centro',
+    nombre: 'El Centro',
+    destinos13: ['pino-montano', 'alameda', 'triana'],
+    poblacion: { vecinos: 190, trafico: 8, buses: 1, motos: 14, coches: 6, sevici: 6, perros: 3, motosCalle: 6 },
+    tribu: 'guiris',
+    bienvenida: 'El Centro. Guiris, Setas y cerveza a cuatro euros.',
+    paradaLlegada: 'Plaza del Duque',
   },
 };
 

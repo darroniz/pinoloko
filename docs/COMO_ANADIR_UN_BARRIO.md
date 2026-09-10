@@ -70,8 +70,8 @@ triana: {
   roban en marcha); `buses`, cuántos 13 circulan. Siempre hay además un camión
   de Lipasam y una de cada cuatro entradas de tráfico es furgoneta.
 - `tribu` decide la ropa y el gorro de los vecinos y qué te gritan (`TRIBUS` en
-  `src/mundo/peatones.ts`): `canis` (gorra), `modernos` (gorro), `trianeros` (nada) y `pijos`
-  (jersey a los hombros; Los Remedios y Nervión).
+  `src/mundo/peatones.ts`): `canis` (gorra), `modernos` (gorro), `trianeros` (nada), `pijos`
+  (jersey a los hombros; Los Remedios y Nervión) y `guiris` (sombrero de paja; el Centro).
 
 Recuerda enlazar el barrio desde otro: algún `destinos13` tiene que apuntar a él. El test
 comprueba que desde cualquier barrio se llega a todos.

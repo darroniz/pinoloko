@@ -30,10 +30,10 @@ export const INSULTOS = [
   '¡Vaya tela con el niño!', '¡Ni un respeto, ni un respeto!',
 ];
 
-export type Tribu = 'canis' | 'modernos' | 'trianeros' | 'pijos';
+export type Tribu = 'canis' | 'modernos' | 'trianeros' | 'pijos' | 'guiris';
 
 /** Cada tribu tiene su ropa, su gorro (o ninguno) y sus gritos. Los canis son los del barrio de Wifly. */
-export const TRIBUS: Record<Tribu, { ropa: string[]; gorro: 'gorra' | 'gorro' | 'jersey' | null; insultos: string[] }> = {
+export const TRIBUS: Record<Tribu, { ropa: string[]; gorro: 'gorra' | 'gorro' | 'jersey' | 'sombrero' | null; insultos: string[] }> = {
   canis: {
     ropa: ['#1d3fa8', '#e63946', '#f5f5f5', '#111111', '#2a9d8f', '#f4a261'],
     gorro: 'gorra',
@@ -66,6 +66,16 @@ export const TRIBUS: Record<Tribu, { ropa: string[]; gorro: 'gorra' | 'gorro' | 
       '¡Qué horror, un cani!', '¡Borja, al club, corre!', '¡Que llevo los náuticos nuevos!',
       '¡Perdona, ¿tú de quién eres?!', '¡Ay, mi jersey de los hombros!', '¡Esto lo sabe mi padre y te empapela!',
       '¡Vuélvete a Pino Montano, chaval!', '¡Cayetana, no mires!',
+    ],
+  },
+  guiris: {
+    // El Centro: turistas con sombrero de paja, camiseta blanca, pantalón corto y la piel roja.
+    ropa: ['#ffffff', '#f2c8a0', '#e0503c', '#8fb8de', '#f5e9c8', '#c9a86a'],
+    gorro: 'sombrero',
+    insultos: [
+      '¡Oh my God!', 'Excuse me, ¿la Giralda?', '¡Una cerveza, por favore!', '¿Esto es el flamenco?',
+      '¡Mamma mia, che pazzo!', '¡No corras, que es la siesta!', '¡Wow, so authentic!', '¡Que me tiras la sangría!',
+      '¿Dónde está la Plaza de España, señor?', '¡Photo, photo!', '¡Achtung, motorrad!',
     ],
   },
 };
@@ -197,6 +207,11 @@ export class Vecinos {
       this.gorros = new THREE.InstancedMesh(mergeGeometries([copa, visera]), new THREE.MeshLambertMaterial({ color: '#111111' }), cuantos);
     } else if (t.gorro === 'gorro') {
       this.gorros = new THREE.InstancedMesh(new THREE.SphereGeometry(0.26, 8, 6).scale(1, 0.7, 1).translate(0, 1.5, 0), new THREE.MeshLambertMaterial({ color: '#c8a24a' }), cuantos);
+    } else if (t.gorro === 'sombrero') {
+      // Sombrero de paja de guiri: ala ancha y copa baja.
+      const ala = new THREE.CylinderGeometry(0.42, 0.42, 0.03, 10).translate(0, 1.56, 0);
+      const copa = new THREE.CylinderGeometry(0.22, 0.24, 0.16, 10).translate(0, 1.64, 0);
+      this.gorros = new THREE.InstancedMesh(mergeGeometries([ala, copa]), new THREE.MeshLambertMaterial({ color: '#e8d39a' }), cuantos);
     } else if (t.gorro === 'jersey') {
       // Jersey a los hombros: un aro sobre el cuello y las dos mangas anudadas colgando por delante.
       const aro = new THREE.TorusGeometry(0.3, 0.07, 6, 10).rotateX(Math.PI / 2).translate(0, 1.22, 0);

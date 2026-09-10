@@ -404,6 +404,32 @@ export class Trastos {
     t.malla.quaternion.copy(this.tmpQ);
   }
 
+  /** Trasto sin romper a menos de `radio` m de (x, z) y por delante de la dirección (dx, dz); lo activa si hace falta. */
+  aTiro(x: number, z: number, dx: number, dz: number, radio: number): Trasto | null {
+    let mejor: Trasto | null = null, mejorD = radio * radio;
+    for (const t of this.lista) {
+      if (t.roto) continue;
+      const p = t.malla.position;
+      const ex = p.x - x, ez = p.z - z;
+      const d = ex * ex + ez * ez;
+      if (d > mejorD) continue;
+      if (ex * dx + ez * dz < Math.sqrt(d) * 0.2) continue;
+      mejorD = d;
+      mejor = t;
+    }
+    if (mejor && !mejor.cuerpo) this.activar(mejor);
+    return mejor;
+  }
+
+  /** Patada: cambio de velocidad `fuerza` (m/s) en la dirección dada, con algo de vuelo y de giro. */
+  patear(t: Trasto, dx: number, dz: number, fuerza: number): void {
+    if (!t.cuerpo) return;
+    t.cuerpo.wakeUp();
+    const m = t.cuerpo.mass();
+    t.cuerpo.applyImpulse({ x: dx * fuerza * m, y: fuerza * 0.45 * m, z: dz * fuerza * m }, true);
+    t.cuerpo.applyTorqueImpulse({ x: (Math.random() - 0.5) * m * 2, y: 0, z: (Math.random() - 0.5) * m * 2 }, true);
+  }
+
   /** Sincroniza mallas y devuelve los trastos derribados este paso cerca de (x, z). */
   actualizar(x: number, z: number): Trasto[] {
     const derribados: Trasto[] = [];

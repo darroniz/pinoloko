@@ -29,6 +29,7 @@ export const LOGROS: Logro[] = [
   { id: 'guerra', nombre: 'Guerra de barrios', descripcion: 'Tira a 10 pijos', cumple: (e) => e.pijosAtropellados >= 10 },
   { id: 'alarmas', nombre: 'Media Sevilla despierta', descripcion: 'Dispara 5 alarmas de coche', cumple: (e) => e.alarmas >= 5 },
   { id: 'vespa', nombre: 'Vespa de pijo', descripcion: 'Roba una Vespa Primavera', cumple: (e) => e.vespas >= 1 },
+  { id: 'patadon', nombre: 'Patadón', descripcion: 'Veinticinco patadas a pie', cumple: (e) => e.patadas >= 25 },
   { id: 'mil', nombre: 'Mil euros', descripcion: 'Gana 1.000 € en total', cumple: (e) => e.dineroTotal >= 1000 },
   { id: 'km', nombre: 'Diez kilómetros', descripcion: 'Recorre 10 km', cumple: (e) => e.metros >= 10000 },
   { id: 'trincao', nombre: 'Cliente habitual', descripcion: 'Que te trinquen 3 veces', cumple: (e) => e.trincados >= 3 },

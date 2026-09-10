@@ -59,6 +59,14 @@ PALETA_REMEDIOS = ["#efd3b8", "#e2b394", "#f6ecdc", "#ecc8a8", "#faf4e8", "#e6c8
 # (paleta y plantas por defecto cuando OSM no trae `building:levels`). Añadir un barrio es
 # añadir una entrada aquí y ejecutar `python3 tools/genera_nivel.py <id>`.
 PERFILES = {
+    "centro": {
+        "nombre": "El Centro",
+        "bbox": "37.39000,-5.99700,37.39450,-5.99140",
+        "cache": "centro",
+        "paleta": PALETA_CASCO,
+        "plantas": {**PLANTAS_POR_DEFECTO, "yes": 3, "residential": 3, "apartments": 4, "house": 2},
+        "alto_planta": 3.4,
+    },
     "nervion": {
         "nombre": "Nervión",
         "bbox": "37.38170,-5.97280,37.38630,-5.96720",

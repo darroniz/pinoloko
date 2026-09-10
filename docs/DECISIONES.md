@@ -695,3 +695,63 @@ en `main` porque no cambian la build. El A/B en frío hecho al cerrar (62 °C de
 rama un 10-15 % por debajo de `main` ([54,110]/[67,100] contra [71,128]/[48,118]): poco, pero
 consistente, y por eso se queda aparcada. Sospecha principal: los catorce cuerpos de los bancos
 (60 kg, cuboides) alrededor del Mercado, que es justo por donde mide el gate.
+
+## 2026-09-11 — La rama pendiente entra: el "10-15 % menos" era la Pi, no los bancos
+
+A/B en frío al empezar la noche, `main` (f244af1) contra la fusión con bancos + pitido + dinero
+flotante en WebGL: [59,129]/[63,98] contra [54,100]/[57,120]. Las distribuciones se solapan y la
+sonda de cuerpos despiertos da cero con los 14 bancos cerca del Mercado (nacen dormidos y los
+cuerpos solo existen a menos de 45 m). Conclusión: la Pi hoy rinde en general por debajo del
+umbral de 120 frames en la ventana de Pino Montano (100-130 en cualquier build, y 143-154 en el
+último barrio del recorrido), así que el gate se lee con el A/B y no con el número absoluto. Los
+bloques se han publicado cuando el A/B o el barrio final del recorrido demostraban que no había
+regresión. Si esto sigue así, tocará bajar el umbral a 100 o medir con la media de dos pasadas.
+
+## 2026-09-11 — Dinero flotante como sprites: seis planos con textura de canvas
+
+`src/efectos/dinero.ts`: seis mallas (`PlaneGeometry` inclinado 58° como los rótulos, para mirar
+a la cámara que nunca gira) con un canvas de 160x48 cada una; al soltar un "+30 €" se repinta el
+canvas y se sube la textura (una sola vez por texto), y después solo se mueve la malla y baja la
+opacidad. Sin `depthTest`, `renderOrder` 30. Nada en el DOM. El multiplicador va en amarillo y un
+25 % más grande.
+
+## 2026-09-11 — Los pijos existen: Los Remedios y Nervión
+
+El brief dice "canis contra pijos" y hasta hoy no había ni un pijo. Los Remedios (caja sobre
+Virgen de Luján / República Argentina: 818 edificios, 553 con plantas reales, 9 paradas) y Nervión
+(Luis de Morales / Eduardo Dato con el Sánchez-Pizjuán, 329 edificios). Tribu `pijos`: polos
+pastel, jersey a los hombros (aro + mangas anudadas, como "gorro" de la tribu) y gritos propios
+("¡Papá, que me han rayado el Mini!"). En territorio pijo las motos aparcadas y las callejeras son
+Vespas Primavera dos de cada tres (modelo nuevo, índice `VESPA`), los coches van en blanco
+nacarado, verde inglés y azul marino, y las pintadas valen el doble y calientan más. Nervión trae
+solo 5 edificios con `building:levels`: el perfil pone 7 plantas por defecto. El estadio es un
+tipo de edificio nuevo (`estadio`, multipolígono con el césped de hueco, 40 m de `height`) con
+cuatro torres de focos en las esquinas. La llegada del 13 a Nervión es la parada de Eduardo Dato
+junto al estadio, porque la de Luis de Morales cae en el borde de la caja.
+
+## 2026-09-11 — Piques: rivales sin física por el camino más corto
+
+Los tres canis (el Kevin, el Jonathan y la Vanessa) siguen el camino más corto del grafo
+peatonal entre puntos de control (Dijkstra ya existía para la policía), a velocidad constante
+calculada para tardar 1,15 / 1,35 / 1,6 veces el tiempo "bueno" de la carrera (12 s por punto),
+con tope de 11 m/s. Sin cuerpo físico: no empujan ni se caen, como las motos callejeras. El
+puesto sale en el HUD y ganar a los tres da 60 € extra. Nombres a propósito de barrio y con
+cariño; si alguno molesta, se cambian en `NOMBRES_RIVALES`.
+
+## 2026-09-11 — Pintadas: pulsar E, no mantener
+
+El brief de la noche decía "mantén E", pero la entrada de acción es de flanco (una pulsación) y
+compartida con subir/bajar/coger el 13. Así que la pintada es: a pie, junto al bote, **una
+pulsación** de E y dos segundos quieto (si te alejas más de 2,8 m se pierde). Tiene prioridad
+sobre subirse a una moto si el bote está al lado. Los textos son de barrio ("PINO MONTANO",
+"WIFLY", "CANIS RULE", "PM NORTE"...), nunca contra nadie. Se guardan por barrio en
+`pinoloko.pintadas.<id>.v1` y salen en el MAPA (rojo por hacer, morado hecha): no son un
+coleccionable escondido como los mecheros, son un sitio al que ir.
+
+## 2026-09-11 — Alarmas de coche: por el golpe del jugador y por la velocidad del aparcado
+
+La primera versión miraba solo la velocidad del coche aparcado tras el golpe y no saltaba: una
+scooter no mueve un coche por encima de 1,2 m/s. Ahora salta con el evento de golpe del vehículo
+del jugador (más de 3) con un aparcado a menos de 4 m, y además si un aparcado se mueve a más de
+0,8 m/s por lo que sea (otro coche, un contenedor). Seis segundos de dos tonos, intermitentes en
+las esquinas parpadeando a 4 Hz, los vecinos a 10 m salen corriendo y calor de tres trastos.

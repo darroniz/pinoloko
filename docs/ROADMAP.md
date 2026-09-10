@@ -33,9 +33,9 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Semáforos de OSM (cruces con ciclo) que paran el tráfico; saltárselos en rojo calienta.
 - [x] Furgonetas de reparto y el camión de Lipasam en el tráfico (robables).
 - [x] Sevici por los carriles bici, perros callejeros que persiguen la moto, abuelas con carrito.
-- [ ] Los bancos de OSM con vecinos sentados y pitido de combo que sube con la racha (hechos, en la
-      rama `pendiente-2026-09-10` a falta de un A/B en frío).
-- [x] Tribus por barrio: canis, modernos y trianeros (pinta y gritos distintos).
+- [x] Los bancos de OSM con vecinos sentados y pitido de combo que sube con la racha.
+- [x] Tribus por barrio: canis, modernos, trianeros y pijos (pinta y gritos distintos).
+- [x] Alarmas de los coches aparcados al golpearlos (intermitentes, dos tonos, vecinos corriendo, calor).
 - [x] Farolas de noche, campanas de la parroquia, pájaros, grillos y bullicio de bar.
 - [x] Ciclo día/noche (10 minutos por día, sol que gira, hora en el HUD).
 - [x] Faros de los vehículos de noche.
@@ -64,6 +64,9 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Sistema de zonas documentado en `docs/COMO_ANADIR_UN_BARRIO.md` (perfiles en el generador).
 - [x] Triana como tercer barrio; cada parada del 13 lleva a un destino distinto.
 - [x] El Guadalquivir en Triana como zona de agua (recortada a la caja); caer dentro te devuelve a la parada.
+- [x] Los Remedios (cuarto barrio) y Nervión (quinto, con el Sánchez-Pizjuán): territorio pijo, con
+      Vespas y coches de pijo aparcados.
+- [ ] Centro (sexto barrio del brief). Y ampliar la caja del Mercado cuando Ismael diga que moverse ya es divertido.
 
 ## 6. Freestyle completo
 - [x] "Recoge los 20 mecheros" (repartidos por pasajes, mercado y bares; se guardan).
@@ -77,13 +80,15 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] El taller: mejoras por moto (tubarro, variador, neumáticos, frenos) para gastar el dinero.
 - [x] Motos callejeras por calles y pasajes, robables en marcha a pie.
 - [x] Pistas la primera vez que pasa cada cosa (sin tutorial).
+- [x] Piques: en cada carrera corren contigo el Kevin, el Jonathan y la Vanessa; puesto en el HUD y 60 € por ganarles.
+- [x] Pintadas: seis botes de spray por barrio; a pie y con E, Wifly firma en el suelo (se guardan; en el MAPA).
+- [ ] Patada a pie (FRENO a pie = patada a trastos y balones) para que Wifly también pueda liarla sin moto.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de
       calidad alta/media/baja en AYUDA y auditoría: 108-130 draw calls, 49-60k triángulos/frame).
 - [x] Modo foto (P / 📷): captura con logo y hoja de compartir del móvil.
-- [ ] Dinero flotante donde lo ganas, como sprites en el WebGL (en el DOM costaba la mitad de los
-      frames sin GPU; ver DECISIONES del 2026-09-10).
+- [x] Dinero flotante donde lo ganas, como sprites en el WebGL (planos con textura de canvas, seis a la vez).
 - [x] Caballito al acelerar; minimapa a la izquierda con el móvil apaisado.
 - [x] Minimapa (norte arriba, paradas, patrullas, mecheros, siguiente punto de carrera; M o tocarlo para plegarlo).
 - [x] Sonido sintetizado (motor de dos tiempos y de coche, derrape, golpes, sirena).

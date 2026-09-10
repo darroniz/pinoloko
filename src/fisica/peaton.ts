@@ -17,6 +17,7 @@ export class Peaton {
   private figura: FiguraWifly;
   private rumbo = 0;
   private fase = 0;
+  private patada = 0;
   velocidad = 0;
 
   constructor(fisica: MundoFisico, x: number, z: number) {
@@ -40,6 +41,16 @@ export class Peaton {
     return new THREE.Vector3(t.x, t.y, t.z);
   }
 
+  /** Hacia dónde mira Wifly (en el plano). */
+  get direccion(): { x: number; z: number } {
+    return { x: Math.sin(this.rumbo), z: -Math.cos(this.rumbo) };
+  }
+
+  /** Patada: la pierna derecha sale disparada un tercio de segundo. */
+  patear(): void {
+    this.patada = 0.35;
+  }
+
   aparecer(x: number, z: number, rumbo: number): void {
     this.cuerpo.setEnabled(true);
     this.cuerpo.setTranslation({ x, y: RADIO + 0.05, z }, true);
@@ -58,6 +69,7 @@ export class Peaton {
     const sx = entrada.eje.x, sy = entrada.eje.y;
     const magnitud = Math.min(1, Math.hypot(sx, sy));
     const v = this.cuerpo.linvel();
+    this.patada = Math.max(0, this.patada - dt);
     if (magnitud > 0.12) {
       const objetivo = Math.atan2(sx, sy);
       let dif = objetivo - this.rumbo;
@@ -82,7 +94,7 @@ export class Peaton {
     this.malla.rotation.y = -this.rumbo;
     const paso = Math.sin(this.fase) * Math.min(1, this.velocidad / 3) * 0.6;
     this.figura.piernaIz.rotation.x = paso;
-    this.figura.piernaDe.rotation.x = -paso;
+    this.figura.piernaDe.rotation.x = this.patada > 0 ? -1.5 * Math.sin((this.patada / 0.35) * Math.PI) : -paso;
     this.figura.brazos.rotation.y = paso * 0.5;
   }
 }

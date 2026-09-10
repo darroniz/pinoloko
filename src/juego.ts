@@ -57,7 +57,7 @@ declare global {
 export type Calidad = 'alta' | 'media' | 'baja';
 const CLAVE_CALIDAD = 'pinoloko.calidad';
 
-const SIN_ENTRADA = { eje: { x: 0, y: 0 }, freno: true, accion: false };
+const SIN_ENTRADA = { eje: { x: 0, y: 0 }, freno: true, patada: false, accion: false };
 const PASO_MAXIMO = 1 / 20;
 const RADIO_PARADA = 5;
 
@@ -673,7 +673,7 @@ export class Juego {
   /** Comprueba qué pista toca según dónde estás y qué llevas (cada 0,3 s). */
   private actualizarPistas(pos: THREE.Vector3, dt: number): void {
     const b = this.barrio;
-    if (this.aPie) { this.pista('subir', 'A pie por los pasajes. Para robar una moto aparcada, acércate y E / SUBIR'); this.tiempoParado = 0; }
+    if (this.aPie) { this.pista('subir', 'A pie por los pasajes: ESPACIO / FRENO es patada a lo que tengas delante. Para robar una moto aparcada, acércate y E / SUBIR'); this.tiempoParado = 0; }
     else if (Math.abs(this.vehiculo.estado.velocidad) < 0.5) { this.tiempoParado += dt; if (this.tiempoParado > 4) this.pista('bajar', 'Para bajarte: E o el botón BAJAR. A pie llegas donde la moto no'); }
     else this.tiempoParado = 0;
     const e = this.busqueda.estrellas;
@@ -952,6 +952,33 @@ export class Juego {
     window.__pv_frames++;
   }
 
+  /** A pie, FRENO / ESPACIO es patada: el balón de la pachanga o el trasto que tengas delante salen volando. */
+  private patada(): void {
+    const b = this.barrio;
+    const p = this.peaton.posicion;
+    const d = this.peaton.direccion;
+    for (const pa of b.pachangas.lista) {
+      const t = pa.balon.translation();
+      if ((t.x - p.x) ** 2 + (t.z - p.z) ** 2 > 2 * 2) continue;
+      const m = pa.balon.mass();
+      pa.balon.applyImpulse({ x: d.x * 9 * m, y: 2.5 * m, z: d.z * 9 * m }, true);
+      this.peaton.patear();
+      this.audio.golpe(6);
+      this.contador.sumar('patadas');
+      this.hud.avisar('¡Chut!', 0.8);
+      return;
+    }
+    const t = b.trastos.aTiro(p.x, p.z, d.x, d.z, 1.9);
+    if (!t) return;
+    b.trastos.patear(t, d.x, d.z, 7);
+    this.peaton.patear();
+    this.audio.golpe(5);
+    this.vibrar(20);
+    this.contador.sumar('patadas');
+    const q = t.malla.position;
+    this.particulas.emitir(q.x, q.y + 0.3, q.z, 5, this.colorPolvo, 2);
+  }
+
   /** Un coche aparcado al que le das: seis segundos de alarma, intermitentes, vecinos corriendo y la Local al tanto. */
   private dispararAlarma(c: Coche): void {
     c.saltarAlarma(6);
@@ -1004,6 +1031,7 @@ export class Juego {
     const b = this.barrio;
     if (this.jugando && !this.pausado) {
       this.atenderAcciones();
+      if (this.aPie && this.controles.patada) this.patada();
       this.contador.sumar('segundos', dt);
       // Paso de física variable: 1/60 s a 60 fps, dos subpasos a 30 fps, y por debajo el
       // paso crece hasta 1/20 s para que el tiempo de juego siga siendo real (hasta 20 fps).

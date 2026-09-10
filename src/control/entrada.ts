@@ -3,6 +3,8 @@
 export interface Entrada {
   eje: { x: number; y: number };
   freno: boolean;
+  /** Flanco del freno (una pulsación, aunque dure menos que un frame): a pie es la patada. */
+  patada: boolean;
   accion: boolean;
   reaparecer?: boolean;
   claxon?: boolean;
@@ -11,6 +13,9 @@ export interface Entrada {
 export class Controles implements Entrada {
   eje = { x: 0, y: 0 };
   freno = false;
+  patada = false;
+  private frenoPulsado = false;
+  private frenoMandoPrevio = false;
   accion = false;
   /** Eje forzado por la sonda de verificación (null en el juego normal). */
   forzado: { x: number; y: number } | null = null;
@@ -35,6 +40,7 @@ export class Controles implements Entrada {
       if (e.repeat) return;
       this.teclas.add(e.code);
       if (e.code === 'KeyE' || e.code === 'Enter') this.accionPulsada = true;
+      if (e.code === 'Space' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.frenoPulsado = true;
       if (e.code === 'KeyR') this.reaparecerPulsado = true;
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     });
@@ -69,7 +75,7 @@ export class Controles implements Entrada {
     zonaJoystick.addEventListener('pointerup', soltar);
     zonaJoystick.addEventListener('pointercancel', soltar);
 
-    botonFreno.addEventListener('pointerdown', (e) => { e.preventDefault(); this.frenoTactil = true; });
+    botonFreno.addEventListener('pointerdown', (e) => { e.preventDefault(); this.frenoTactil = true; this.frenoPulsado = true; });
     botonFreno.addEventListener('pointerup', () => { this.frenoTactil = false; });
     botonFreno.addEventListener('pointercancel', () => { this.frenoTactil = false; });
     botonFreno.addEventListener('pointerleave', () => { this.frenoTactil = false; });
@@ -95,6 +101,11 @@ export class Controles implements Entrada {
       const dpad = { x: (m.buttons[15]?.pressed ? 1 : 0) - (m.buttons[14]?.pressed ? 1 : 0), y: (m.buttons[12]?.pressed ? 1 : 0) - (m.buttons[13]?.pressed ? 1 : 0) };
       if (dpad.x || dpad.y) { this.ejeMando.x = dpad.x; this.ejeMando.y = dpad.y; }
       if (m.buttons[0]?.pressed || m.buttons[6]?.pressed || m.buttons[1]?.pressed) this.frenoMando = true;
+    }
+    if (this.frenoMando && !this.frenoMandoPrevio) this.frenoPulsado = true;
+    this.frenoMandoPrevio = this.frenoMando;
+    for (const m of mandos) {
+      if (!m) continue;
       if (m.buttons[2]?.pressed) this.accionPulsada = true;
       if (m.buttons[3]?.pressed) this.claxonMando = true;
     }
@@ -114,6 +125,8 @@ export class Controles implements Entrada {
     this.freno = t.has('Space') || t.has('ShiftLeft') || t.has('ShiftRight') || this.frenoTactil || this.frenoMando;
     this.accion = this.accionPulsada;
     this.accionPulsada = false;
+    this.patada = this.frenoPulsado;
+    this.frenoPulsado = false;
     this.claxon = t.has('KeyH') || this.claxonTactil || this.claxonMando;
     this.reaparecer = this.reaparecerPulsado;
     this.reaparecerPulsado = false;

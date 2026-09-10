@@ -57,6 +57,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
       motos de la Local que sí.
 - [x] Escapar bajando el nivel; "¡Trincao!" y reaparición en el Mercado (no hay comisaría en la caja).
 - [x] Helicóptero a cinco estrellas con foco que te sigue con retraso (se le escapa a fondo).
+- [x] La Local a pie: a partir de dos estrellas, agentes que te persiguen andando por los pasajes.
 
 ## 5. El 13
 - [x] Parada de bus (las `bus_stop` de OSM) y cinemática del viaje con cámara baja.
@@ -66,7 +67,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] El Guadalquivir en Triana como zona de agua (recortada a la caja); caer dentro te devuelve a la parada.
 - [x] Los Remedios (cuarto barrio) y Nervión (quinto, con el Sánchez-Pizjuán): territorio pijo, con
       Vespas y coches de pijo aparcados.
-- [ ] Centro (sexto barrio del brief). Y ampliar la caja del Mercado cuando Ismael diga que moverse ya es divertido.
+- [x] El Centro (sexto barrio) con la tribu de los guiris.
+- [ ] Ampliar la caja del Mercado hacia fuera cuando Ismael diga que moverse ya es divertido.
 
 ## 6. Freestyle completo
 - [x] "Recoge los 20 mecheros" (repartidos por pasajes, mercado y bares; se guardan).
@@ -82,7 +84,8 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Pistas la primera vez que pasa cada cosa (sin tutorial).
 - [x] Piques: en cada carrera corren contigo el Kevin, el Jonathan y la Vanessa; puesto en el HUD y 60 € por ganarles.
 - [x] Pintadas: seis botes de spray por barrio; a pie y con E, Wifly firma en el suelo (se guardan; en el MAPA).
-- [ ] Patada a pie (FRENO a pie = patada a trastos y balones) para que Wifly también pueda liarla sin moto.
+- [x] Patada a pie (FRENO a pie = patada a trastos y balones) para que Wifly también pueda liarla sin moto.
+- [x] Radares en las avenidas: foto multa a más de 50 (flash, -50 €, calor).
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

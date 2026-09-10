@@ -30,11 +30,12 @@ Nervión si da tiempo), que son la mitad de la comedia y no existían.
       conos vuelan sin moto. Wifly a pie también puede liarla.
 - [x] **Bloque 8 (hecho a la 01:22, con el 7)** — **El Centro** como sexto barrio (Campana, Plaza
       del Duque, la Encarnación) con la tribu de los **guiris** (sombrero de paja).
-- [ ] **Bloque 9 (01:30-02:00)** — **Radares** en las avenidas de los barrios pijos: pasar a más
+- [x] **Bloque 9 (hecho a la 01:51)** — **Radares** en las avenidas de los barrios pijos: pasar a más
       de 50 te hace la foto, te quita 50 € y calienta a la Local.
-- [ ] **Bloque 10 (02:00-02:50)** — **La Local a pie**: a partir de dos estrellas, agentes a pie
+- [x] **Bloque 10 (hecho a la 01:51, con el 9)** — **La Local a pie**: a partir de dos estrellas, agentes a pie
       que te persiguen por los pasajes cuando vas andando (donde el coche no entra).
-- [ ] **Bloque 11 (02:50-03:30)** — Sondas de caos en los barrios nuevos, roadmap y decisiones.
+- [x] **Bloque 11 (hecho a la 01:55)** — Sondas de caos en los barrios nuevos (sin errores), roadmap y decisiones.
+- [ ] **Bloque 12 (02:10-03:00)** — Lo que dé tiempo: guiris que hacen fotos a tus cafradas (propina), Las Setas, y sonda de caos con todo lo nuevo.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-10 — resumen para leer en el móvil

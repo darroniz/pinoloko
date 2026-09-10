@@ -755,3 +755,43 @@ scooter no mueve un coche por encima de 1,2 m/s. Ahora salta con el evento de go
 del jugador (más de 3) con un aparcado a menos de 4 m, y además si un aparcado se mueve a más de
 0,8 m/s por lo que sea (otro coche, un contenedor). Seis segundos de dos tonos, intermitentes en
 las esquinas parpadeando a 4 Hz, los vecinos a 10 m salen corriendo y calor de tres trastos.
+
+## 2026-09-11 — El Centro es de los guiris
+
+Sexto barrio (Campana, Plaza del Duque, la Encarnación con Las Setas; 734 edificios, 7 paradas,
+472 POIs con nombre). Tribu `guiris`: sombrero de paja (ala ancha + copa baja, como "gorro"),
+camiseta blanca, piel roja, y gritan en spanglish ("¡Oh my God!", "Excuse me, ¿la Giralda?").
+Es la tercera tribu con humor de barrio, siempre cariñoso. Poco tráfico (8) y mucha gente (190):
+el Centro es peatonal. La caja de la Catedral/Plaza Nueva se descartó por tener una sola parada.
+
+## 2026-09-11 — Patada a pie: flanco del freno, con pulsación "pegajosa"
+
+A pie, ESPACIO / FRENO / botón A del mando es patada al trasto o balón que tengas delante (menos
+de 1,9 m y por delante), con cambio de velocidad de 7 m/s y algo de vuelo; mantenerlo sigue
+siendo correr. La pulsación se registra en el evento (`frenoPulsado`) y no leyendo el estado en
+el frame, porque en la Pi a 20-40 fps un toque corto de un botón táctil dura menos que un frame y
+se perdía. El trasto pateado cuenta como derribado (dinero y racha) por la misma regla de siempre
+(velocidad > 1,5 m/s a menos de 6 m).
+
+## 2026-09-11 — Radares: en avenidas, y si no hay, en cualquier calle rodada larga
+
+Tres por barrio en tramos de más de 50 m de `primary`/`secondary`/`tertiary`, separados 120 m;
+la Alameda no tiene avenidas, así que ahí vale cualquier calle rodada de 40 m. Foto a más de
+50 km/h en vehículo (a pie nunca), 8 s de enfriamiento por radar. El flash es un disco blanco en
+el WebGL sobre el jugador (0,25 s), no un fundido del DOM (ver lo del 2026-09-10). Quita 50 €
+(nunca baja de cero) y calienta como un semáforo en rojo: es la única forma de perder dinero
+aparte de que te trinquen, y le da un motivo a levantar el gas en las avenidas de los pijos.
+
+## 2026-09-11 — La Local a pie: el contrapeso de que los pasajes sean de Wifly
+
+Hasta hoy, a pie eras intocable: ni coches ni motos de la Local llegaban a los pasajes hasta tres
+estrellas. Ahora, a partir de dos estrellas y **solo mientras vas andando**, salen agentes a pie
+(uno por estrella menos una, máximo tres) en un nodo peatonal a 35-80 m de tu misma componente
+del grafo, que van hacia tu nodo más cercano por Dijkstra (recalculado cada 1,2 s desde el nodo
+al que ya se dirigen, sin zigzag) a 4,6 m/s: Wifly anda a 5,2 y corre a 7,5, así que escapas si
+no te paras. A menos de 12 m van en línea recta y sin colisiones (no tienen cuerpo: un pasaje
+estrecho no les frena, pero tampoco atraviesan más que los vecinos). Con uno a menos de 1,3 m
+durante 0,9 s: trincao. Se retiran al subirte a un vehículo más de 6 s, al bajar de dos
+estrellas o si se quedan a más de 130 m. El camino del grafo peatonal puede ser cuatro veces la
+distancia en línea recta (manzanas cerradas): se ve al agente dar la vuelta a la manzana, que
+es justo lo que hace la Local de verdad.

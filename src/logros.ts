@@ -55,6 +55,7 @@ export const LOGROS: Logro[] = [
   { id: 'truco', nombre: 'Trescientos sesenta', descripcion: 'Un giro completo en el aire', cumple: (e) => e.trucos >= 1 },
   { id: 'manguerazo', nombre: 'Manguerazo', descripcion: 'Que vengan los bomberos a apagar tu moto', cumple: (e) => e.bomberos >= 1 },
   { id: 'el061', nombre: 'El 061 ya te conoce', descripcion: 'Tres salidas de la ambulancia por tu culpa', cumple: (e) => e.ambulancias >= 3 },
+  { id: 'lipasam', nombre: 'Empleado del mes de Lipasam', descripcion: 'Recoge 20 contenedores con el camión', cumple: (e) => e.contenedores >= 20 },
   { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20 },
 ];
 

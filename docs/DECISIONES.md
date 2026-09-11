@@ -875,3 +875,12 @@ alrededor "se van en camilla" y reaparecen lejos) y se vuelven por donde viniero
 físico y no se pueden robar: son cinemáticos como los moteros, porque un cuerpo más de 7,5 m
 persiguiendo caminos con Rapier era la clase de cosa que se atasca en un cruce y se queda ahí
 toda la partida. Sirena de dos tonos con pitidos si andan a menos de 90 m. Uno de cada tipo a la vez.
+
+## 2026-09-12 — Las marquesinas viven solas, y Lipasam es un oficio
+
+El 13 del tráfico, al parar en una marquesina (ya lo hacía tres segundos), deja a un vecino en la
+puerta (uno que paseaba a más de 100 m se teletransporta ahí: nadie lo ve llegar) y sube a los
+que esperan, uno cada 0,6 s. Así las paradas tienen movimiento aunque no robes el bus. Y con el
+camión de Lipasam robado, parado a menos de 6,5 m de un contenedor durante 1,1 s, el contenedor
+desaparece (se marca como roto, sin trozos) y son 5 €: el tercer oficio (taxi, 13, basura), el
+único honrado. No hay ruta ni cuota: no es una misión.

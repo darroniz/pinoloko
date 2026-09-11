@@ -63,7 +63,7 @@ mecheros de cada barrio se buscan (el MAPA del menú no los chiva). Bote de spra
 la pintada (en territorio pijo vale el doble y la Local se calienta).</p>
 <p class="peque"><strong>Oficios.</strong> Roba un taxi (blanco con la franja amarilla): los que levantan la mano en la acera son clientes;
 para a su lado y llévalos al local que te digan antes de que se acabe el reloj. Con el 13 robado, para despacio en las marquesinas:
-los que esperan suben y pagan el billete.</p>
+los que esperan suben y pagan el billete. Con el camión de Lipasam, párate junto a un contenedor: lo recoge y son 5 €.</p>
 <p class="peque"><strong>El barrio responde.</strong> Si armas lío pegado a un bloque, la vecina del quinto sale a la azotea y tira macetas
 (de noche, más). Si dejas la moto sola un rato, un cani se la lleva: sale en el minimapa, alcánzalo y a pie con E la recuperas. Con
 estrellas o la moto tocada, párate en el anillo azul de <strong>chapa y pintura</strong> con el vehículo: por 100 € la Local te olvida y sale como nueva.

@@ -78,7 +78,15 @@ export class Hud {
     this.racha.classList.toggle('visible', n >= 2);
   }
 
+  private momentoAviso = -1e9;
+
+  /** ¿Se ha puesto un aviso hace menos de `segundos`? (para que las pistas no lo pisen). */
+  avisoReciente(segundos: number): boolean {
+    return performance.now() - this.momentoAviso < segundos * 1000;
+  }
+
   avisar(texto: string, segundos = 2): void {
+    this.momentoAviso = performance.now();
     this.aviso.textContent = texto;
     this.aviso.classList.add('visible');
     window.clearTimeout(this.temporizadorAviso);

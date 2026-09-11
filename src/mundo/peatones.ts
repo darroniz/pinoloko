@@ -342,6 +342,17 @@ export class Vecinos {
     v.destino = this.grafo.siguienteAlAzar(mejor, -1, 'peatonal', this.rnd);
   }
 
+  /** Alguien se baja del 13 del tráfico: un vecino que pasea lejos aparece junto a la puerta y sigue a pie. */
+  bajarDelBus(x: number, z: number): boolean {
+    const v = this.lista.find((c) => c.estado === 'pasear' && c.parada < 0 && !c.objetivo && (c.x - x) ** 2 + (c.z - z) ** 2 > 100 * 100);
+    if (!v) return false;
+    v.x = x; v.z = z;
+    v.nodo = this.grafo.masCercano(x, z, 'peatonal');
+    v.anterior = -1;
+    v.destino = this.grafo.siguienteAlAzar(v.nodo, -1, 'peatonal', this.rnd);
+    return true;
+  }
+
   /** Cada pocos segundos, si en una parada falta gente, un vecino que pasa por su nodo se acerca a esperar. */
   private reponerParadas(dt: number): void {
     this.tiempoReponer -= dt;

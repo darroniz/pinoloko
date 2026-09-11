@@ -7,7 +7,7 @@ import { PASO_FISICA } from './fisica/mundo';
 import { MODELOS, Scooter, VESPA } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
 import { ANCHO as COCHE_ANCHO, BUS, CAMION, CAMION_ANCHO, CAMION_LARGO, Coche, LARGO as COCHE_LARGO, UTILITARIO, geometriaCamion, geometriaFurgoneta, geometriaTaxi } from './fisica/coche';
-import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO } from './mundo/trafico';
+import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO, type CocheTrafico } from './mundo/trafico';
 import { geometriaBus } from './cinematica';
 import { viaMasCercana } from './mundo/grafo';
 import { COLORES } from './mundo/nivel';
@@ -54,7 +54,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -188,6 +188,8 @@ export class Juego {
   private colorAgua = new THREE.Color('#9fd3e8');
   private tiempoCorro = 0;
   private enfriamientoAmbulancia = 0;
+  private busesAtendidos = new WeakSet<CocheTrafico>();
+  private tiempoContenedor = 0;
   private tiempoSirenaEmergencia = 0;
   /** Vehículos reventados que los bomberos ya han apagado (sin fuego). */
   private apagados = new Set<Scooter | Coche>();
@@ -350,6 +352,13 @@ export class Juego {
         this.camara.colocar(x, z);
         this.barrio.trastos.gestionarRadio(x, z);
         return true;
+      },
+      robarCamion: () => {
+        const c = this.barrio.trafico.lista.find((x) => x.tipo === 'camion');
+        if (!c) return false;
+        if (!this.aPie) this.bajarse();
+        this.peaton.aparecer(c.x + 2.5, c.z, 0);
+        return this.subirse() && this.coche?.apariencia?.nombre === 'el camión de Lipasam';
       },
       robarTaxi: () => {
         const taxi = this.barrio.trafico.lista.find((c) => c.variante === 'taxi');
@@ -754,6 +763,8 @@ export class Juego {
   /** Una pista de juego, solo la primera vez que toca. */
   private pista(id: string, texto: string): void {
     if (this.pistas.has(id) || this.tiempoTrincao > 0 || this.cine.activa) return;
+    // Si acaba de salir un aviso (un grito, un premio), la pista espera a que se lea.
+    if (this.hud.avisoReciente(1.8)) { window.setTimeout(() => this.pista(id, texto), 2000); return; }
     this.pistas.add(id);
     try { localStorage.setItem('pinoloko.pistas.v1', JSON.stringify([...this.pistas])); } catch { /* sin almacenamiento */ }
     this.hud.avisar(texto, 3.4);
@@ -935,6 +946,42 @@ export class Juego {
     this.contador.sumar('pasajeros');
     this.audio.pitido(this.subidosEnParada === 1 ? 880 : 1040, 0.08, 0.1);
     if (this.subidosEnParada === 1) { this.hud.avisar(['¡Pasajeros al 13! Billete, 2 €', '"¿Va a la Alameda este?" +2 €', '"Illo, para en la próxima" +2 €'][Math.floor(Math.random() * 3)]!, 1.8); this.pista('el13', 'Con el 13 robado, para despacio en las marquesinas: los que esperan suben y pagan el billete'); }
+  }
+
+  /** El 13 del tráfico también vive: en cada parada baja uno y suben los que esperan. */
+  private actualizarBusTrafico(dt: number): void {
+    const b = this.barrio;
+    this.tiempoEmbarque -= dt;
+    for (const c of b.trafico.lista) {
+      if (c.tipo !== 'bus') continue;
+      if (c.enParada <= 0) { this.busesAtendidos.delete(c); continue; }
+      const parada = b.paradas.cercana(c.x, c.z, 12);
+      if (!parada) continue;
+      const i = b.paradas.lista.indexOf(parada);
+      const lateral = { x: Math.cos(c.rumbo) * 2.6, z: Math.sin(c.rumbo) * 2.6 };
+      if (!this.busesAtendidos.has(c)) { this.busesAtendidos.add(c); b.vecinos.bajarDelBus(c.x + lateral.x, c.z + lateral.z); }
+      if (this.tiempoEmbarque > 0) continue;
+      const v = b.vecinos.enLaParada(i, c.x, c.z, 12)[0];
+      if (v) { this.tiempoEmbarque = 0.6; b.vecinos.subirAlBus(v); }
+    }
+  }
+
+  /** Lipasam: con el camión robado, parar junto a un contenedor lo recoge (desaparece) y paga. */
+  private actualizarLipasam(pos: THREE.Vector3, rapidez: number, dt: number): void {
+    this.tiempoContenedor -= dt;
+    if (this.aPie || !this.coche || this.coche.apariencia?.nombre !== 'el camión de Lipasam' || rapidez > 1 || this.tiempoContenedor > 0) return;
+    const b = this.barrio;
+    const t = b.trastos.lista.find((x) => x.tipo === 'contenedor' && !x.roto && (x.malla.position.x - pos.x) ** 2 + (x.malla.position.z - pos.z) ** 2 < 6.5 * 6.5);
+    if (!t) return;
+    this.tiempoContenedor = 1.1;
+    const q = t.malla.position;
+    b.trastos.romper(t);
+    this.ganar(5, { x: q.x, y: 0, z: q.z });
+    this.contador.sumar('contenedores');
+    this.particulas.emitir(q.x, q.y + 0.5, q.z, 6, this.colorPolvo, 2);
+    this.audio.golpe(3);
+    this.audio.pitido(440, 0.12, 0.08);
+    this.pista('lipasam', 'Con el camión de Lipasam, párate junto a un contenedor y lo recoge: 5 € cada uno. Un oficio honrado, para variar');
   }
 
   /** Bomberos y ambulancia: van y vienen por las calles; al llegar, manguerazo o camilla. */
@@ -1449,12 +1496,17 @@ export class Juego {
       this.actualizarSaltos(dt);
       this.actualizarSemaforos(jugadorPos, rapidez, dt);
       this.actualizarRecados(jugadorPos, dt);
+      performance.mark('u4b');
       this.actualizarTaxi(jugadorPos, rapidez, dt);
       this.actualizarPasajeros(jugadorPos, rapidez, dt);
       this.actualizarChapa(jugadorPos, rapidez, dt);
       this.actualizarMotoSola(jugadorPos, dt);
       this.actualizarVecina(jugadorPos, this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel(), dt);
       this.actualizarEmergencias(jugadorPos, dt);
+      this.actualizarBusTrafico(dt);
+      this.actualizarLipasam(jugadorPos, rapidez, dt);
+      performance.mark('u4c');
+      performance.measure('u-nuevo', 'u4b', 'u4c');
       this.actualizarPachangas(jugadorPos, rapidez, dt);
       // Sevici por el carril bici: timbre si te tienen delante y al suelo si los atropellas.
       const sevici = b.sevici.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);

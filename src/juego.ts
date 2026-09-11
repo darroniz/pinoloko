@@ -16,6 +16,7 @@ import { Hud } from './ui/hud';
 import { AudioJuego } from './audio/motor';
 import { cargarPartida, guardarPartida } from './guardado';
 import { FRASES, ROMPIBLES } from './mundo/trastos';
+import { esSiesta } from './mundo/peatones';
 import { Trozos } from './efectos/trozos';
 import { MarcasNeumatico } from './efectos/marcas';
 import { Particulas } from './efectos/particulas';
@@ -192,6 +193,8 @@ export class Juego {
   private tiempoContenedor = 0;
   /** Pique callejero: segundos con un motero al lado a velocidad, y enfriamiento entre retos. */
   private tiempoAlLado = 0;
+  private enfriamientoVigilante = 0;
+  private siestaAvisada = false;
   private enfriamientoReto = 12;
   private tiempoSirenaEmergencia = 0;
   /** Vehículos reventados que los bomberos ya han apagado (sin fuego). */
@@ -949,7 +952,20 @@ export class Juego {
     this.ganar(2, { x: v.x, y: 0, z: v.z });
     this.contador.sumar('pasajeros');
     this.audio.pitido(this.subidosEnParada === 1 ? 880 : 1040, 0.08, 0.1);
-    if (this.subidosEnParada === 1) { this.hud.avisar(['¡Pasajeros al 13! Billete, 2 €', '"¿Va a la Alameda este?" +2 €', '"Illo, para en la próxima" +2 €'][Math.floor(Math.random() * 3)]!, 1.8); this.pista('el13', 'Con el 13 robado, para despacio en las marquesinas: los que esperan suben y pagan el billete'); }
+    if (this.subidosEnParada === 1) { this.audio.siseo(0.4); this.hud.avisar(['¡Pasajeros al 13! Billete, 2 €', '"¿Va a la Alameda este?" +2 €', '"Illo, para en la próxima" +2 €'][Math.floor(Math.random() * 3)]!, 1.8); this.pista('el13', 'Con el 13 robado, para despacio en las marquesinas: los que esperan suben y pagan el billete'); }
+  }
+
+  /** En territorio pijo, los de azul marino sin jersey son vigilantes de seguridad: si te ven liarla, llaman a la Local. */
+  private vigilante(x: number, z: number): void {
+    const b = this.barrio;
+    if (b.ficha.tribu !== 'pijos' || this.enfriamientoVigilante > 0) return;
+    const ve = b.vecinos.lista.some((v) => v.color === 5 && v.estado !== 'caido' && v.estado !== 'levantarse' && (v.x - x) ** 2 + (v.z - z) ** 2 < 18 * 18);
+    if (!ve) return;
+    this.enfriamientoVigilante = 12;
+    this.busqueda.fechoria('vigilante');
+    this.busqueda.visto();
+    this.hud.avisar(['El vigilante de la urbanización ha llamado a la Local', 'Seguridad privada: "Central, tenemos un cani"', 'El vigilante te ha visto: walkie en mano'][Math.floor(Math.random() * 3)]!, 2);
+    this.pista('vigilante', 'En Los Remedios y Nervión, los de azul marino sin jersey son vigilantes: si te ven liarla, la Local se entera al momento');
   }
 
   /** Pique callejero: un motero rodando a tu lado dos segundos, a velocidad, te reta a una ruta corta. */
@@ -996,7 +1012,7 @@ export class Juego {
       if (!parada) continue;
       const i = b.paradas.lista.indexOf(parada);
       const lateral = { x: Math.cos(c.rumbo) * 2.6, z: Math.sin(c.rumbo) * 2.6 };
-      if (!this.busesAtendidos.has(c)) { this.busesAtendidos.add(c); b.vecinos.bajarDelBus(c.x + lateral.x, c.z + lateral.z); }
+      if (!this.busesAtendidos.has(c)) { this.busesAtendidos.add(c); b.vecinos.bajarDelBus(c.x + lateral.x, c.z + lateral.z); if ((c.x - this.ultimaPos.x) ** 2 + (c.z - this.ultimaPos.z) ** 2 < 45 * 45) this.audio.siseo(0.3); }
       if (this.tiempoEmbarque > 0) continue;
       const v = b.vecinos.enLaParada(i, c.x, c.z, 12)[0];
       if (v) { this.tiempoEmbarque = 0.6; b.vecinos.subirAlBus(v); }
@@ -1373,6 +1389,7 @@ export class Juego {
     this.busqueda.fechoria('trasto', 3);
     this.barrio.vecinos.asustar(c.estado.x, c.estado.z, 10);
     this.provocarVecina(c.posicion, 0.7);
+    this.vigilante(c.estado.x, c.estado.z);
     window.setTimeout(() => { if (this.jugando) this.corro(c.estado.x, c.estado.z, 4); }, 3000);
     this.hud.avisar(this.barrio.ficha.tribu === 'pijos' ? '¡La alarma del Mini! Eso lo oye todo el barrio' : '¡La alarma del coche! Media Sevilla despierta', 1.8);
   }
@@ -1470,7 +1487,9 @@ export class Juego {
       const jugadorPos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
       const rapidez = this.aPie ? this.peaton.velocidad : Math.abs(e.velocidad);
       performance.mark('u2');
-      const eventos = b.vecinos.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
+      const siesta = esSiesta(this.cielo.hora);
+      if (siesta && !this.siestaAvisada) { this.siestaAvisada = true; this.hud.avisar(this.cielo.hora < 15.2 ? 'Hora de la siesta: ni un alma por la calle' : 'Siesta: medio barrio en casa', 2.2); } else if (!siesta) this.siestaAvisada = false;
+      const eventos = b.vecinos.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt, siesta);
       performance.mark('u3');
       performance.measure('u-vecinos', 'u2', 'u3');
       this.tiempoInsulto -= dt;
@@ -1488,6 +1507,7 @@ export class Juego {
         this.vibrar(40);
         this.audio.golpe(4);
         this.busqueda.fechoria('atropello', eventos.atropellos);
+        this.vigilante(jugadorPos.x, jugadorPos.z);
         if (this.racha >= 3 && this.enfriamientoAmbulancia <= 0 && b.emergencias.llamar('ambulancia', jugadorPos.x, jugadorPos.z, Math.random)) { this.enfriamientoAmbulancia = 45; this.contador.sumar('ambulancias'); this.hud.avisar('Alguien ha llamado al 061', 1.6); }
       }
       this.actualizarPolicia(jugadorPos, rapidez, dt);
@@ -1670,6 +1690,7 @@ export class Juego {
         this.hud.ponerRacha(this.racha);
         if (this.racha >= 4) this.propinaGuiris(jugadorPos.x, jugadorPos.z);
         if (this.racha >= 3) this.provocarVecina(jugadorPos, 0.5);
+        this.vigilante(jugadorPos.x, jugadorPos.z);
         this.busqueda.fechoria('trasto', derribados.length);
         this.contador.sumar('trastos', derribados.length);
       }
@@ -1687,6 +1708,7 @@ export class Juego {
       this.dineroFlotante.actualizar(dt);
       this.tiempoPropina = Math.max(0, this.tiempoPropina - dt);
       this.tiempoCorro = Math.max(0, this.tiempoCorro - dt);
+      this.enfriamientoVigilante = Math.max(0, this.enfriamientoVigilante - dt);
       this.relojAlarmas += dt;
       for (const c of b.coches) c.actualizarAlarma(dt, this.relojAlarmas);
       // Logros: se comprueban cada dos segundos contra las estadísticas.

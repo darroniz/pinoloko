@@ -894,3 +894,13 @@ fija, así que no hay récords: `indiceCarrera = -1`) con los anillos del circui
 (el Kevin, el rápido). Mismo premio que las carreras y 60 € por ganarle. Reutiliza todo lo de
 las carreras de pancarta; lo único nuevo es el disparador y que los récords se guardan solo en
 las rutas fijas.
+
+## 2026-09-12 — Vigilantes, siesta y puertas
+
+En Los Remedios y Nervión, los vecinos de azul marino sin jersey (color 5 de la paleta pija, que
+por la regla del jersey ya salía sin él) son vigilantes de seguridad privada: si armas lío
+(trasto, atropello, alarma) a menos de 18 m de uno, la Local se entera al momento (calor 24 y
+"visto"), con 12 s entre avisos. Es la asimetría de los barrios pijos frente a Pino Montano, donde
+nadie llama a nadie. La siesta: de 15:00 a 17:30 (hora del juego) un tercio fijo de los vecinos
+(por color de ropa) no se mueve ni se pinta mientras pasea o está sentado; los que esperan el 13
+o miran un corro siguen. Y el 13 sisea al abrir las puertas (el siseo del spray, más corto).

@@ -4,6 +4,43 @@ Un párrafo por sesión nocturna, el más reciente arriba. Corto, para leer en e
 
 ---
 
+## Noche del 2026-09-12 — resumen para leer en el móvil
+
+**Qué hay nuevo** (todo en https://pinoloko.com/, cinco commits): el barrio tiene **oficios** y
+**responde**. Oficios: roba un **taxi** (blanco con la franja amarilla) y los que levantan la mano
+en la acera son clientes que te dicen un bar de verdad ("A Bar El cazador, y rapidito"); con el
+**13 robado**, para despacio en las marquesinas y los que esperan suben y pagan; con el **camión
+de Lipasam**, párate junto a un contenedor y lo recoge (5 €). El barrio responde: si armas lío
+pegado a un bloque, **la vecina del quinto** sale a la azotea en bata y te tira una maceta (de
+noche más; si te da, macetazo); si dejas la moto sola un rato, **un cani te la levanta** (sale en
+el minimapa, alcánzalo y a pie con E la recuperas); alrededor de un reventón, una alarma o un
+motero caído se forma **el corro de mirones** ("¿Has llamado al seguro, niño?"); a los
+reventones vienen **los bomberos** con manguera y a las rachas de atropellos **el 061**, por las
+calles y con sirena; y un motero rodando a tu lado dos segundos te reta a un **pique callejero**.
+Para gastar: **chapa y pintura** (anillo azul; en Los Remedios son los talleres reales de OSM):
+100 € y la Local te olvida y la moto sale nueva. Y en los saltos, joystick a los lados para girar
+en el aire: cada **360** son 40 €. Las marquesinas viven solas (el 13 del tráfico deja y recoge
+gente), y las pistas ya no pisan los avisos. Doce logros nuevos.
+
+**Qué probar primero en el móvil:** 1) bájate delante de un taxi parado, E, y lleva a un
+cliente; 2) rompe tres conos pegado a un bloque de noche y mira arriba; 3) deja la moto y vete
+andando lejos medio minuto; 4) revienta la moto contra un contenedor a fondo varias veces y
+espera a los bomberos; 5) con dos estrellas ve al anillo azul de "Chapa y pintura Manolo" (a
+unos 120 m de la parada del Mercado) con 100 €; 6) en una rampa, joystick a un lado en el aire.
+
+**El gate de la Pi esta noche:** la Pi ha estado a 74-77 °C toda la noche y ni la build de ayer
+llega a 120 frames (A/B: vieja [63,101]/[54,120], nueva [49,105]/[60,120], iguales). He
+publicado con A/B cuando el gate fallaba y con gate cuando pasaba (124 frames a la 01:08); el último A/B
+(5ee2cfe contra el commit final) dio [81,99]/[39,101] contra [48,102]/[58,124]. Lo
+nuevo cuesta 0,3 ms de update medidos (`u-nuevo` en `scripts/sonda-perfil.mjs`).
+
+**Dudas que he resuelto solo** (en `docs/DECISIONES.md`): bomberos y ambulancia no tienen
+cuerpo físico ni se roban (espectáculo, no obstáculo); el pasajero que sube al 13 reaparece
+lejos (se ha bajado en otra parada); el pique callejero no guarda récords porque la ruta se
+genera al momento; el chapa y pintura de barrio se llama Manolo donde OSM no tiene taller.
+
+**Pendiente de ti:** lo de siempre, el FPS real en tu móvil y si moverse ya es divertido.
+
 ## Plan de la noche del 2026-09-12 (quinta sesión, 00:15 → 04:45)
 
 Sin feedback nuevo en `FEEDBACK.md` y el roadmap vacío salvo lo que depende de ti (ampliar la
@@ -29,7 +66,7 @@ la Local). Todo dentro del modo freestyle, sin misiones.
 - [x] **Bloque 7 (hecho a la 01:04)** — **El corro de mirones**: los vecinos se arremolinan y comentan.
 - [x] **Bloque 8 (hecho a la 01:04, con el 7)** — **Bomberos y el 061**: vienen por las calles a los reventones y a los atropellos en cadena.
 - [x] **Bloque 9 (hecho a la 01:20)** — El 13 del tráfico deja y recoge pasajeros; oficio de **Lipasam** (contenedores con el camión); las pistas ya no pisan avisos.
-- [ ] **Bloque 10 (01:30-03:30)** — Lo que dé tiempo: pique callejero con un motero, sondas, y afinar.
+- [x] **Bloque 10 (hecho a la 01:29)** — **Pique callejero**: un motero a tu lado dos segundos te reta a tres anillos contra el Kevin.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-11 — resumen para leer en el móvil (escrito la noche siguiente)

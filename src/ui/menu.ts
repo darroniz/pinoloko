@@ -69,6 +69,8 @@ los que esperan suben y pagan el billete. Con el camión de Lipasam, párate jun
 estrellas o la moto tocada, párate en el anillo azul de <strong>chapa y pintura</strong> con el vehículo: por 100 € la Local te olvida y sale como nueva.
 En los saltos, mueve el joystick a los lados para girar en el aire: cada 360 son 40 € más. Si revientas un vehículo vienen los
 bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones.</p>
+<p class="peque"><strong>Territorio pijo.</strong> En Los Remedios y Nervión, los de azul marino sin jersey son vigilantes de seguridad: si te ven liarla, la Local
+se entera al momento. Y entre las tres y las cinco y media es la siesta: medio barrio en casa.</p>
 <p class="peque"><strong>Barrios.</strong> A pie y en una parada, el 13 te lleva a la Alameda, a Triana, a Los Remedios o a Nervión (territorio pijo) y al Centro (guiris), y de vuelta. Cuidado con el
 Guadalquivir. Los perros del pasaje ladran pero no muerden.</p>`;
 

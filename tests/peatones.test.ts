@@ -108,3 +108,22 @@ describe('el corro de mirones', () => {
     expect(vecinos.comentario().length).toBeGreaterThan(3);
   });
 });
+
+describe('la siesta', () => {
+  it('entre las tres y las cinco y media, un tercio del barrio se queda en casa y no se mueve', async () => {
+    const { Vecinos, enCasa, esSiesta } = await import('../src/mundo/peatones');
+    expect(esSiesta(16)).toBe(true);
+    expect(esSiesta(12)).toBe(false);
+    const vecinos = new Vecinos(grafo, 90, [], 'canis');
+    const casa = vecinos.lista.filter(enCasa);
+    expect(casa.length).toBeGreaterThan(15);
+    expect(casa.length).toBeLessThan(50);
+    const antes = casa.map((v) => [v.x, v.z]);
+    for (let i = 0; i < 60; i++) vecinos.actualizar(lejos, 1 / 60, true);
+    casa.forEach((v, i) => { expect(v.x).toBe(antes[i]![0]); expect(v.z).toBe(antes[i]![1]); });
+    const fuera = vecinos.lista.find((v) => !enCasa(v) && v.estado === 'pasear')!;
+    const [fx, fz] = [fuera.x, fuera.z];
+    for (let i = 0; i < 60; i++) vecinos.actualizar(lejos, 1 / 60, true);
+    expect(Math.hypot(fuera.x - fx, fuera.z - fz)).toBeGreaterThan(0.3);
+  });
+});

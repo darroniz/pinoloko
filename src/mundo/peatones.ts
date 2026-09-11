@@ -87,6 +87,12 @@ export const TRIBUS: Record<Tribu, { ropa: string[]; gorro: 'gorra' | 'gorro' | 
   },
 };
 
+/** Hora de la siesta: entre las tres y las cinco y media, un tercio del barrio está en casa. */
+export const SIESTA = { desde: 15, hasta: 17.5 };
+export function esSiesta(hora: number): boolean { return hora >= SIESTA.desde && hora < SIESTA.hasta; }
+/** Los que se quedan en casa en la siesta (una tercera parte fija, por el color de la ropa) mientras pasean o están sentados. */
+export function enCasa(v: Vecino): boolean { return (v.color === 2 || v.color === 3) && (v.estado === 'pasear' || v.estado === 'sentado'); }
+
 const RADIO_HUIDA = 9;
 const RADIO_ATROPELLO = 1.1;
 
@@ -232,6 +238,7 @@ export class Vecinos {
   /** Paradas del 13 con su nodo peatonal más cercano: aquí se espera el bus. */
   private readonly paradas: { x: number; z: number; nodo: number }[];
   private tiempoReponer = 0;
+  private siesta = false;
 
   constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = [], tribu: Tribu = 'canis', paradas: { x: number; z: number }[] = []) {
     this.paradas = paradas.map((p) => ({ x: p.x, z: p.z, nodo: grafo.masCercano(p.x, p.z, 'peatonal') }));
@@ -403,11 +410,13 @@ export class Vecinos {
   }
 
   /** Mueve a todos y devuelve los eventos con el jugador. */
-  actualizar(jugador: { x: number; z: number; rapidez: number }, dt: number): { atropellos: number; insulto: string | null } {
+  actualizar(jugador: { x: number; z: number; rapidez: number }, dt: number, siesta = false): { atropellos: number; insulto: string | null } {
     let atropellos = 0;
     let insulto: string | null = null;
+    this.siesta = siesta;
     this.reponerParadas(dt);
     for (const v of this.lista) {
+      if (siesta && enCasa(v)) continue;
       const e = pasoVecino(v, this.grafo, jugador, dt, this.rnd);
       if (e === 'atropello') atropellos++;
       else if (e === 'insulto' && !insulto) insulto = this.insultos[Math.floor(this.rnd() * this.insultos.length)]!;
@@ -420,6 +429,7 @@ export class Vecinos {
     const cuentas = this.cuerpos.map(() => 0);
     let nCabezas = 0, nGorros = 0, nCarritos = 0;
     for (const v of this.lista) {
+      if (this.siesta && enCasa(v)) continue;
       if ((v.x - cx) ** 2 + (v.z - cz) ** 2 > 130 * 130) continue;
       this.p.set(v.x, 0, v.z);
       this.q.setFromAxisAngle(this.eje, -v.rumbo);

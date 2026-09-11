@@ -31,6 +31,7 @@ export const LOGROS: Logro[] = [
   { id: 'vespa', nombre: 'Vespa de pijo', descripcion: 'Roba una Vespa Primavera', cumple: (e) => e.vespas >= 1 },
   { id: 'patadon', nombre: 'Patadón', descripcion: 'Veinticinco patadas a pie', cumple: (e) => e.patadas >= 25 },
   { id: 'radar', nombre: 'Cazado por el radar', descripcion: 'Tres fotos de radar', cumple: (e) => e.multas >= 3 },
+  { id: 'guiris', nombre: 'Atracción turística', descripcion: '100 € de propinas de los guiris', cumple: (e) => e.propinas >= 100 },
   { id: 'mil', nombre: 'Mil euros', descripcion: 'Gana 1.000 € en total', cumple: (e) => e.dineroTotal >= 1000 },
   { id: 'km', nombre: 'Diez kilómetros', descripcion: 'Recorre 10 km', cumple: (e) => e.metros >= 10000 },
   { id: 'trincao', nombre: 'Cliente habitual', descripcion: 'Que te trinquen 3 veces', cumple: (e) => e.trincados >= 3 },

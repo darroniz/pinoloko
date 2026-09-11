@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mallasPorLoseta } from './losetas';
 import type { Edificio, Nivel, Punto, Via } from './tipos';
-import { distanciaPolilinea, distanciaSegmento2, muestrearPolilinea } from './geometria';
+import { cajaPoligono, distanciaPolilinea, distanciaSegmento2, muestrearPolilinea } from './geometria';
 
 export const COLORES = {
   cielo: '#bfe0f2',
@@ -122,7 +122,29 @@ function geometriaLineaCentral(via: Via, y: number, color: THREE.Color): Pieza[]
   return piezas;
 }
 
+/** Las Setas de la Encarnación: seis sombreros de madera sobre columnas, no una caja extruida. */
+function geometriaSetas(e: Edificio): THREE.BufferGeometry {
+  const caja = cajaPoligono(e.poligono);
+  const ancho = caja.maxX - caja.minX, fondo = caja.maxZ - caja.minZ;
+  const columnas = ancho >= fondo ? 3 : 2, filas = ancho >= fondo ? 2 : 3;
+  const radio = Math.min(ancho / columnas, fondo / filas) * 0.72;
+  const piezas: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < columnas; i++) {
+    for (let j = 0; j < filas; j++) {
+      const x = caja.minX + (ancho * (i + 0.5)) / columnas, z = caja.minZ + (fondo * (j + 0.5)) / filas;
+      piezas.push(new THREE.CylinderGeometry(1.8, 2.2, e.altura - 6, 8).translate(x, (e.altura - 6) / 2, z));
+      piezas.push(new THREE.SphereGeometry(radio, 14, 8).scale(1, 0.3, 1).translate(x, e.altura - 4, z));
+    }
+  }
+  const g = normalizar(mergeGeometries(piezas.map((p) => p.toNonIndexed())));
+  g.computeVertexNormals();
+  const madera = new THREE.Color(e.color);
+  pintar(g, madera, madera.clone().multiplyScalar(0.92));
+  return g;
+}
+
 function geometriaEdificio(e: Edificio): THREE.BufferGeometry {
+  if (e.tipo === 'setas') return geometriaSetas(e);
   const forma = formaDe(e.poligono, e.huecos);
   const g = normalizar(new THREE.ExtrudeGeometry(forma, { depth: e.altura, bevelEnabled: false, steps: 1 }));
   g.rotateX(-Math.PI / 2);

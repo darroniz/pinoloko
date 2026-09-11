@@ -67,7 +67,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] El Guadalquivir en Triana como zona de agua (recortada a la caja); caer dentro te devuelve a la parada.
 - [x] Los Remedios (cuarto barrio) y Nervión (quinto, con el Sánchez-Pizjuán): territorio pijo, con
       Vespas y coches de pijo aparcados.
-- [x] El Centro (sexto barrio) con la tribu de los guiris.
+- [x] El Centro (sexto barrio) con la tribu de los guiris, Las Setas como setas y propinas de los guiris por las cafradas.
 - [ ] Ampliar la caja del Mercado hacia fuera cuando Ismael diga que moverse ya es divertido.
 
 ## 6. Freestyle completo

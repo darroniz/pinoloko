@@ -136,6 +136,7 @@ export class Juego {
   private colorSpray = new THREE.Color('#e63946');
   private relojAlarmas = 0;
   private tiempoAgente = 0;
+  private tiempoPropina = 0;
   private tiempoSinPie = 0;
   private aPie = false;
   private botonAccion = document.getElementById('boton-accion')!;
@@ -666,6 +667,7 @@ export class Juego {
         this.ganar(euros);
         this.contador.sumar('saltos');
         this.contador.maximo('vueloMaximo', this.tiempoAire);
+        this.propinaGuiris(this.vehiculo.estado.x, this.vehiculo.estado.z);
         this.hud.avisar(this.tiempoAire > 0.8 ? `¡Vuelo de ${this.tiempoAire.toFixed(1)} s! +${euros} €` : `¡Salto! +${euros} €`, 1.6);
         // Los vecinos de alrededor jalean el vuelo largo.
         if (this.tiempoAire > 0.8 && this.barrio.vecinos.lista.some((v) => (v.x - this.vehiculo.estado.x) ** 2 + (v.z - this.vehiculo.estado.z) ** 2 < 20 * 20)) setTimeout(() => this.hud.avisar(['¡Olé, Wifly!', '¡Vaya salto, illo!', '¡Ese es mi niño!'][Math.floor(Math.random() * 3)]!, 1.6), 1700);
@@ -969,6 +971,21 @@ export class Juego {
     performance.mark('render-fin');
     performance.measure('render', 'render-inicio', 'render-fin');
     window.__pv_frames++;
+  }
+
+  /** En el Centro, los guiris hacen fotos a las cafradas: con dos o más a menos de 14 m, propina. */
+  private propinaGuiris(x: number, z: number): void {
+    const b = this.barrio;
+    if (b.ficha.tribu !== 'guiris' || this.tiempoPropina > 0) return;
+    const cerca = b.vecinos.lista.filter((v) => v.estado !== 'caido' && (v.x - x) ** 2 + (v.z - z) ** 2 < 14 * 14).length;
+    if (cerca < 2) return;
+    this.tiempoPropina = 5;
+    const euros = 5 * Math.min(4, cerca);
+    this.ganar(euros, { x, y: 0, z });
+    this.contador.sumar('propinas', euros);
+    this.hud.avisar(['¡Los guiris te hacen fotos! Propina', '¡Photo, photo! Los guiris sueltan', '"So authentic": los guiris pagan'][Math.floor(Math.random() * 3)]! + ` +${euros} €`, 2);
+    this.audio.pitido(1500, 0.05, 0.12);
+    window.setTimeout(() => this.audio.pitido(1500, 0.05, 0.12), 90);
   }
 
   /** A pie, FRENO / ESPACIO es patada: el balón de la pachanga o el trasto que tengas delante salen volando. */
@@ -1282,6 +1299,7 @@ export class Juego {
           }
         }
         this.hud.ponerRacha(this.racha);
+        if (this.racha >= 4) this.propinaGuiris(jugadorPos.x, jugadorPos.z);
         this.busqueda.fechoria('trasto', derribados.length);
         this.contador.sumar('trastos', derribados.length);
       }
@@ -1297,6 +1315,7 @@ export class Juego {
       this.particulas.actualizar(dt);
       this.trozos.actualizar(dt);
       this.dineroFlotante.actualizar(dt);
+      this.tiempoPropina = Math.max(0, this.tiempoPropina - dt);
       this.relojAlarmas += dt;
       for (const c of b.coches) c.actualizarAlarma(dt, this.relojAlarmas);
       // Logros: se comprueban cada dos segundos contra las estadísticas.

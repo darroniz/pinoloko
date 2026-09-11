@@ -795,3 +795,13 @@ durante 0,9 s: trincao. Se retiran al subirte a un vehículo más de 6 s, al baj
 estrellas o si se quedan a más de 130 m. El camino del grafo peatonal puede ser cuatro veces la
 distancia en línea recta (manzanas cerradas): se ve al agente dar la vuelta a la manzana, que
 es justo lo que hace la Local de verdad.
+
+## 2026-09-11 — Las Setas no son una caja, y los guiris pagan por el espectáculo
+
+El `building=yes` "Setas de Sevilla" salía como un bloque de 11 m tapando la Encarnación. Ahora
+es un tipo de edificio propio (`setas`, por el `name` de OSM, 26 m): el cliente no lo extruye y
+pinta seis sombreros de madera (esferas aplastadas) sobre columnas en una rejilla de 3x2 dentro
+de la huella. Desde arriba se lee como las Setas y la plaza queda debajo. Y los **guiris** del
+Centro hacen fotos a las cafradas: un salto o una racha de cuatro trastos con dos o más guiris a
+menos de 14 m suelta una propina (5 € por guiri, hasta 20 €), con enfriamiento de 5 s para que
+no sea una máquina de dinero. Es el modo de que el Centro tenga su propia economía sin misiones.

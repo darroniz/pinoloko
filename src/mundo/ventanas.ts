@@ -13,7 +13,7 @@ export function construirVentanas(nivel: Nivel): THREE.Group {
   const rnd = azar(4040);
   const piezas: { geometria: THREE.BufferGeometry; x: number; z: number }[] = [];
   for (const e of nivel.edificios) {
-    if (e.tipo === 'garaje' || e.tipo === 'nave' || e.plantas < 1) continue;
+    if (e.tipo === 'garaje' || e.tipo === 'nave' || e.tipo === 'setas' || e.plantas < 1) continue;
     const poli = e.poligono;
     let cx = 0, cz = 0;
     for (const [x, z] of poli) { cx += x; cz += z; }

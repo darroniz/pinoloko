@@ -43,6 +43,7 @@ COLOR_TIPO = {
     "garaje": "#cfd3d8",
     "nave": "#c9cfd6",
     "estadio": "#ece7df",
+    "setas": "#d9b98a",
 }
 PLANTAS_POR_DEFECTO = {"apartments": 5, "residential": 4, "yes": 4, "public": 2, "fire_station": 2,
                        "commercial": 1, "retail": 1, "garage": 1, "garages": 1, "industrial": 1,
@@ -207,6 +208,8 @@ def clasificar_edificio(t: dict) -> str:
         return "mercado"
     if b == "stadium" or t.get("leisure") == "stadium":
         return "estadio"
+    if "setas de sevilla" in t.get("name", "").lower():
+        return "setas"
     if am == "place_of_worship" or b in ("church", "chapel", "cathedral"):
         return "iglesia"
     if am in ("school", "kindergarten", "college", "university") or b == "school":
@@ -301,6 +304,8 @@ def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = No
             altura = float(t["height"])
         except (KeyError, ValueError):
             altura = plantas * alto_planta + (0.8 if tipo == "bloque" else 0.4)
+        if tipo == "setas":
+            altura = 26.0  # el parasol de madera de la Encarnación; el cliente lo pinta como setas
         ed = {
             "id": oid,
             "tipo": tipo,

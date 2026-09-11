@@ -35,7 +35,8 @@ Nervión si da tiempo), que son la mitad de la comedia y no existían.
 - [x] **Bloque 10 (hecho a la 01:51, con el 9)** — **La Local a pie**: a partir de dos estrellas, agentes a pie
       que te persiguen por los pasajes cuando vas andando (donde el coche no entra).
 - [x] **Bloque 11 (hecho a la 01:55)** — Sondas de caos en los barrios nuevos (sin errores), roadmap y decisiones.
-- [ ] **Bloque 12 (02:10-03:00)** — Lo que dé tiempo: guiris que hacen fotos a tus cafradas (propina), Las Setas, y sonda de caos con todo lo nuevo.
+- [x] **Bloque 12 (hecho a las 02:00)** — Las Setas como setas de verdad (seis sombreros de madera sobre columnas) y guiris que hacen fotos a tus cafradas (propina).
+- [ ] **Bloque 13 (02:15-03:15)** — Sonda de caos con todo lo nuevo, A/B final, publicación y lo que quede.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-10 — resumen para leer en el móvil

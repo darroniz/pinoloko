@@ -34,10 +34,11 @@ export class Rivales {
     return this.lista.length > 0;
   }
 
-  empezar(ruta: RutaCarrera): void {
-    this.lista = crearRivales(this.grafo, ruta, this.rnd);
+  /** Arranca los rivales por la ruta; `cuantos` para los piques callejeros (solo el Kevin). */
+  empezar(ruta: RutaCarrera, cuantos = 3): void {
+    this.lista = crearRivales(this.grafo, ruta, this.rnd).slice(0, cuantos);
     this.colocar();
-    for (const m of this.mallas) m.visible = true;
+    this.mallas.forEach((m, i) => { m.visible = i < this.lista.length; });
   }
 
   parar(): void {

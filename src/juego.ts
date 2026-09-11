@@ -30,7 +30,7 @@ import { PENDIENTE } from './mundo/rampas';
 import { BARRIO_INICIAL, BARRIOS } from './mundo/barrios';
 import { Cinematica13 } from './cinematica';
 import { Contador, Garaje } from './estadisticas';
-import { Carrera, Records, formatearTiempo, premio } from './carreras';
+import { Carrera, Records, formatearTiempo, generarRuta, premio } from './carreras';
 import { BONUS_PIQUE, ordinal, puesto } from './piques';
 import { DURACION_PINTADA } from './mundo/pintadas';
 import { MULTA } from './mundo/radares';
@@ -54,7 +54,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -190,6 +190,9 @@ export class Juego {
   private enfriamientoAmbulancia = 0;
   private busesAtendidos = new WeakSet<CocheTrafico>();
   private tiempoContenedor = 0;
+  /** Pique callejero: segundos con un motero al lado a velocidad, y enfriamiento entre retos. */
+  private tiempoAlLado = 0;
+  private enfriamientoReto = 12;
   private tiempoSirenaEmergencia = 0;
   /** Vehículos reventados que los bomberos ya han apagado (sin fuego). */
   private apagados = new Set<Scooter | Coche>();
@@ -342,6 +345,7 @@ export class Juego {
       vecinaFase: () => this.barrio.vecina.fase,
       emergencias: () => this.barrio.emergencias.lista.map((s) => ({ tipo: s.tipo, estado: s.estado, x: Math.round(s.x), z: Math.round(s.z), camino: s.camino.length, indice: s.indice })),
       llamar: (tipo: 'bomberos' | 'ambulancia') => { const p = this.vehiculo.estado; return this.barrio.emergencias.llamar(tipo, p.x, p.z, Math.random); },
+      retar: () => this.retar(),
       levantar: () => this.levantarMoto(),
       chapa: () => ({ taller: this.barrio.chapa.taller, levantada: !!this.motoLevantada, motero: this.motoLevantada ? [Math.round(this.motoLevantada.x), Math.round(this.motoLevantada.z)] : null }),
       sitioTaxi: () => { const v = this.vehiculo.estado; return { desde: [Math.round(v.x), Math.round(v.z)], sitio: this.barrio.clientes.sitio(v.x, v.z), enTaxi: this.coche?.apariencia?.nombre, rota: this.coche?.rota }; },
@@ -948,6 +952,39 @@ export class Juego {
     if (this.subidosEnParada === 1) { this.hud.avisar(['¡Pasajeros al 13! Billete, 2 €', '"¿Va a la Alameda este?" +2 €', '"Illo, para en la próxima" +2 €'][Math.floor(Math.random() * 3)]!, 1.8); this.pista('el13', 'Con el 13 robado, para despacio en las marquesinas: los que esperan suben y pagan el billete'); }
   }
 
+  /** Pique callejero: un motero rodando a tu lado dos segundos, a velocidad, te reta a una ruta corta. */
+  private actualizarReto(pos: THREE.Vector3, rapidez: number, dt: number): void {
+    this.enfriamientoReto = Math.max(0, this.enfriamientoReto - dt);
+    if (this.aPie || this.coche || rapidez < 5 || this.carrera.estado !== 'fuera' || this.recadero.estado === 'en_curso' || this.enfriamientoReto > 0 || this.tiempoTrincao > 0) { this.tiempoAlLado = 0; return; }
+    const b = this.barrio;
+    const alLado = b.motosCalle.lista.some((m) => m.estado === 'rodar' && (m.x - pos.x) ** 2 + (m.z - pos.z) ** 2 < 6 * 6);
+    if (!alLado) { this.tiempoAlLado = Math.max(0, this.tiempoAlLado - dt); return; }
+    this.tiempoAlLado += dt;
+    if (this.tiempoAlLado < 2) return;
+    this.tiempoAlLado = 0;
+    this.enfriamientoReto = 40;
+    this.retar();
+  }
+
+  /** Arranca un pique callejero desde donde estás: ruta corta de anillos y el Kevin de rival. */
+  private retar(): boolean {
+    const b = this.barrio;
+    if (this.carrera.estado !== 'fuera') return false;
+    const salida = b.grafo.masCercano(this.vehiculo.estado.x, this.vehiculo.estado.z, 'peatonal');
+    if (salida < 0) return false;
+    const ruta = generarRuta(b.grafo, salida, 3, Math.random);
+    if (!ruta) return false;
+    this.indiceCarrera = -1;
+    this.carrera.empezar(ruta);
+    b.circuito.mostrarRuta(ruta);
+    b.rivales.empezar(ruta, 1);
+    this.contador.sumar('piquesCallejeros');
+    this.hud.avisar(['"¡Illo, a que no me pillas!" ¡Pique callejero! Sigue los anillos', '"¿Esa moto corre o qué?" ¡Pique callejero!', '"Hasta el mercado y volvemos" ¡Pique callejero!'][Math.floor(Math.random() * 3)]!, 3);
+    this.audio.pitido(660, 0.25, 0.2);
+    this.pista('reto', 'Un motero a tu lado dos segundos es un reto: el pique arranca solo. Ganarle son 60 € extra');
+    return true;
+  }
+
   /** El 13 del tráfico también vive: en cada parada baja uno y suben los que esperan. */
   private actualizarBusTrafico(dt: number): void {
     const b = this.barrio;
@@ -1167,12 +1204,12 @@ export class Juego {
     } else if (r === 'meta') {
       const posicion = puesto(b.rivales.lista);
       const dinero = premio(this.carrera.tiempo, ruta.puntos.length) + (posicion === 1 ? BONUS_PIQUE : 0);
-      const record = this.records.registrar(b.ficha.id, this.indiceCarrera, this.carrera.tiempo);
+      const record = this.indiceCarrera >= 0 ? this.records.registrar(b.ficha.id, this.indiceCarrera, this.carrera.tiempo) : false;
       this.ganar(dinero);
       this.contador.sumar('carreras');
       if (posicion === 1) this.contador.sumar('piquesGanados');
       const ganador = b.rivales.lista.find((x) => x.tiempo >= 0);
-      const puestoTexto = posicion === 1 ? '¡Primero! Los canis muerden el polvo' : `${ordinal(posicion)}: te ha ganado ${ganador?.nombre ?? 'un cani'}`;
+      const puestoTexto = posicion === 1 ? (this.indiceCarrera < 0 ? '¡Primero! El motero, a casa llorando' : '¡Primero! Los canis muerden el polvo') : `${ordinal(posicion)}: te ha ganado ${ganador?.nombre ?? 'un cani'}`;
       this.hud.avisar(`¡Meta! ${formatearTiempo(this.carrera.tiempo)}${record ? ' · ¡RÉCORD!' : ''} · ${puestoTexto} · +${dinero} €`, 3.4);
       this.audio.fanfarria();
       b.rivales.parar();
@@ -1492,6 +1529,7 @@ export class Juego {
         this.hud.avisar(b.mecheros.cuantos === TOTAL_MECHEROS ? `¡Los 20 mecheros! Eres el rey de ${b.ficha.nombre.split(' ·')[0]}` : `Mechero ${b.mecheros.cuantos}/${TOTAL_MECHEROS}`, 1.6);
         if (b.mecheros.cuantos === TOTAL_MECHEROS) this.audio.fanfarria(); else this.audio.pitido(1320, 0.15);
       }
+      this.actualizarReto(jugadorPos, rapidez, dt);
       this.actualizarCarrera(jugadorPos, dt);
       this.actualizarSaltos(dt);
       this.actualizarSemaforos(jugadorPos, rapidez, dt);

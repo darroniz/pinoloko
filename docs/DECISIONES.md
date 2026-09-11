@@ -884,3 +884,13 @@ que esperan, uno cada 0,6 s. Así las paradas tienen movimiento aunque no robes 
 camión de Lipasam robado, parado a menos de 6,5 m de un contenedor durante 1,1 s, el contenedor
 desaparece (se marca como roto, sin trozos) y son 5 €: el tercer oficio (taxi, 13, basura), el
 único honrado. No hay ruta ni cuota: no es una misión.
+
+## 2026-09-12 — Pique callejero: el reto sale de la calle, no de una pancarta
+
+Si vas en moto a más de 5 m/s con un motero callejero a menos de 6 m durante dos segundos (y no
+estás en carrera, encargo ni trincado, con 40 s entre retos), arranca un pique callejero: ruta de
+tres puntos generada al momento desde el nodo peatonal más cercano (`generarRuta`, sin semilla
+fija, así que no hay récords: `indiceCarrera = -1`) con los anillos del circuito y un solo rival
+(el Kevin, el rápido). Mismo premio que las carreras y 60 € por ganarle. Reutiliza todo lo de
+las carreras de pancarta; lo único nuevo es el disparador y que los récords se guardan solo en
+las rutas fijas.

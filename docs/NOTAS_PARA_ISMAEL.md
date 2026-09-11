@@ -13,22 +13,23 @@ oficios de barrio (taxista, conductor del 13), el barrio que responde (la vecina
 cani que te levanta la moto) y sitios donde gastar el dinero (chapa y pintura para quitarte a
 la Local). Todo dentro del modo freestyle, sin misiones.
 
-- [ ] **Bloque 1 (00:30-01:15)** — **Taxis** en el tráfico (blancos con la franja amarilla y el
+- [x] **Bloque 1 (hecho a las 00:32)** — **Taxis** en el tráfico (blancos con la franja amarilla y el
       cartel en el techo), robables como los demás; al llevar uno, **clientes** con la mano
       levantada en las aceras: paras, suben y los llevas a un local con nombre real contra el
       reloj. Dinero por rapidez, encadenado. Tests, estadística y logro.
-- [ ] **Bloque 2 (01:15-01:45)** — **Conductor del 13**: gente esperando en las marquesinas; si
+- [x] **Bloque 2 (hecho a las 00:32, con el 1)** — **Conductor del 13**: gente esperando en las marquesinas; si
       llevas el 13 robado y paras en la parada, suben y pagan el billete. Estadística y logro.
-- [ ] **Bloque 3 (01:45-02:00)** — Gate, commit y push de los dos primeros bloques.
-- [ ] **Bloque 4 (02:00-02:35)** — **La vecina del quinto**: si armas lío pegado a un bloque,
-      sale a la azotea y te tira una maceta (de noche, más). Si te da, al suelo.
-- [ ] **Bloque 5 (02:35-03:05)** — **Te han levantado la moto**: si dejas la scooter aparcada
-      lejos un rato, un cani se la lleva y hay que ir a por ella. **Chapa y pintura**: un taller
-      por barrio (los de OSM en Los Remedios, uno de barrio en el resto) donde por 100 € te
-      quitas a la Local de encima y te dejan la moto nueva.
-- [ ] **Bloque 6 (03:05-03:40)** — **Trucos en el aire**: girar la moto en los saltos (360º) para
-      más euros. Sondas de caos, ayuda, roadmap, decisiones.
-- [ ] **Bloque 7 (03:40-04:15)** — Gate, commit y push del resto; lo que sobre, más trabajo.
+- [x] **Bloque 3 (hecho a las 00:44)** — Gate (dos fallos por calor, A/B contra la build anterior idéntico), commit y push.
+- [x] **Bloque 4 (hecho a las 00:51)** — **La vecina del quinto**: si armas lío pegado a un bloque,
+      sale a la azotea y te tira una maceta (de noche, más). Si te da, macetazo.
+- [x] **Bloque 5 (hecho a las 00:51, con el 4)** — **Te han levantado la moto** (un cani se lleva la scooter
+      aparcada lejos; sale en el minimapa y se recupera a pie) y **chapa y pintura** (un taller por barrio,
+      100 €: la Local te olvida y el vehículo como nuevo).
+- [x] **Bloque 6 (hecho a las 00:51, con el 4)** — **Trucos en el aire**: girar la moto en los saltos, 40 € por 360.
+- [x] **Bloque 7 (hecho a la 01:04)** — **El corro de mirones**: los vecinos se arremolinan y comentan.
+- [x] **Bloque 8 (hecho a la 01:04, con el 7)** — **Bomberos y el 061**: vienen por las calles a los reventones y a los atropellos en cadena.
+- [x] **Bloque 9 (hecho a la 01:20)** — El 13 del tráfico deja y recoge pasajeros; oficio de **Lipasam** (contenedores con el camión); las pistas ya no pisan avisos.
+- [ ] **Bloque 10 (01:30-03:30)** — Lo que dé tiempo: pique callejero con un motero, sondas, y afinar.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-11 — resumen para leer en el móvil (escrito la noche siguiente)

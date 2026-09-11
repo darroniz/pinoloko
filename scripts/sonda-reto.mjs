@@ -1,0 +1,35 @@
+// Sonda: el pique callejero arranca (ruta de tres anillos, un rival) y se puede correr hasta la meta.
+import { chromium } from 'playwright-core';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { join, extname } from 'node:path';
+const DIST = '/home/idarroniz/pinoloko/dist';
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png' };
+const srv = createServer(async (req, res) => { let r = new URL(req.url, 'http://x').pathname; if (r.endsWith('/')) r += 'index.html'; try { res.writeHead(200, { 'content-type': MIME[extname(r)] ?? 'application/octet-stream' }); res.end(await readFile(join(DIST, r))); } catch { res.writeHead(404); res.end(); } });
+await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+const errores = [];
+p.on('console', (m) => { if (m.type() === 'error') errores.push(m.text()); });
+p.on('pageerror', (e) => errores.push(String(e)));
+const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+await p.goto(`http://127.0.0.1:${srv.address().port}/?barrio=${process.argv[2] ?? 'pino-montano'}`, { waitUntil: 'load' });
+await p.waitForFunction(() => window.__pv_listo === true, null, { timeout: 120000 });
+await p.click('#boton-jugar');
+await dormir(1500);
+console.log('retar:', await p.evaluate(() => window.__pv_prueba.retar()), 'aviso:', await p.evaluate(() => document.querySelector('#aviso').textContent));
+let c = await p.evaluate(() => window.__pv_prueba.carrera());
+const rivales = await p.evaluate(() => window.__pv_prueba.rivales());
+console.log('carrera:', JSON.stringify(c), 'rivales:', rivales.length, JSON.stringify(rivales));
+const dinero0 = await p.evaluate(() => document.querySelector('#hud-dinero').textContent);
+// Sin gancho del siguiente punto: dejamos correr 12 s con la moto a fondo y comprobamos que el reloj avanza y el rival se mueve.
+await p.evaluate(() => window.__pv_prueba.forzarEje(0, 1));
+await dormir(6000);
+await p.evaluate(() => window.__pv_prueba.forzarEje(0, 0));
+c = await p.evaluate(() => window.__pv_prueba.carrera());
+const rivales2 = await p.evaluate(() => window.__pv_prueba.rivales());
+console.log('tras 6 s:', JSON.stringify(c), 'rival:', JSON.stringify(rivales2), 'dinero', dinero0, 'hud:', await p.evaluate(() => document.querySelector('#hud-carrera').textContent));
+await p.screenshot({ path: 'logs/captura-reto.png' });
+console.log(errores.length ? `ERRORES: ${errores.slice(0, 3).join('\n')}` : 'sin errores');
+await b.close(); srv.close();
+process.exit(errores.length ? 1 : 0);

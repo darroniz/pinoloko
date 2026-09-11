@@ -57,7 +57,7 @@ helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dire
 <p class="peque"><strong>Radares.</strong> Poste con cámara y raya blanca en las avenidas: pasarla a más de 50 km/h es foto multa, 50 € menos.</p>
 <p class="peque"><strong>A pie.</strong> ESPACIO / FRENO es patada: el cono, la maceta o el balón que tengas delante salen volando (y cuentan
 para la racha). Manteniéndolo, Wifly corre.</p>
-<p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: pique por los pasajes contra el reloj y contra tres canis en moto (el Kevin, el Jonathan y la Vanessa); ganarles vale 60 € más. Bolsa naranja en un bar: encargo
+<p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: pique por los pasajes contra el reloj y contra tres canis en moto (el Kevin, el Jonathan y la Vanessa); ganarles vale 60 € más. Si un motero rueda a tu lado dos segundos, te reta: pique callejero de tres anillos. Bolsa naranja en un bar: encargo
 para llevar a otro local, y cada entrega encadena la siguiente. Rampas para volar. Balón de los niños: gol son 40 €. Los 20
 mecheros de cada barrio se buscan (el MAPA del menú no los chiva). Bote de spray en un cruce de pasajes: a pie y con E, Wifly firma
 la pintada (en territorio pijo vale el doble y la Local se calienta).</p>

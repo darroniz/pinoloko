@@ -53,6 +53,8 @@ export const LOGROS: Logro[] = [
   { id: 'levantada', nombre: 'Así es el barrio', descripcion: 'Recupera una moto que te han levantado', cumple: (e) => e.motosRecuperadas >= 1 },
   { id: 'chapa', nombre: 'Como nueva', descripcion: 'Pasa por chapa y pintura', cumple: (e) => e.chapas >= 1 },
   { id: 'truco', nombre: 'Trescientos sesenta', descripcion: 'Un giro completo en el aire', cumple: (e) => e.trucos >= 1 },
+  { id: 'manguerazo', nombre: 'Manguerazo', descripcion: 'Que vengan los bomberos a apagar tu moto', cumple: (e) => e.bomberos >= 1 },
+  { id: 'el061', nombre: 'El 061 ya te conoce', descripcion: 'Tres salidas de la ambulancia por tu culpa', cumple: (e) => e.ambulancias >= 3 },
   { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20 },
 ];
 

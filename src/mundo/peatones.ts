@@ -6,7 +6,7 @@ import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type EstadoPeaton = 'pasear' | 'huir' | 'caido' | 'levantarse' | 'sentado' | 'esperando';
+export type EstadoPeaton = 'pasear' | 'huir' | 'caido' | 'levantarse' | 'sentado' | 'esperando' | 'mirando';
 
 export interface Vecino {
   x: number;
@@ -33,6 +33,9 @@ export const INSULTOS = [
   '¡Ay mi madre!', '¡Pisha, frena un poco!', '¡Que te veo, Wifly!', '¡Eso se lo digo yo a tu madre!',
   '¡Vaya tela con el niño!', '¡Ni un respeto, ni un respeto!',
 ];
+
+/** Lo que dicen los del corro cuando pasa algo gordo (un reventón, una alarma, un motero al suelo). */
+export const COMENTARIOS_CORRO = ['¡Ozú, qué tela!', '¿Has llamado al seguro, niño?', 'Eso lo pagas tú, ¿eh?', '¡Que alguien llame a la Local!', 'Yo lo he visto todo', 'Esto en mis tiempos no pasaba', '¡Grábalo, grábalo!', 'Ese es el hijo de la Mari'];
 
 export type Tribu = 'canis' | 'modernos' | 'trianeros' | 'pijos' | 'guiris';
 
@@ -116,8 +119,15 @@ export function pasoVecino(
   }
   // Sentado en la terraza (o esperando el 13): no se mueve hasta que la moto viene lanzada;
   // entonces se levanta y corre. Los de la parada aguantan un poco más (el 13 llega despacio).
-  if (v.estado === 'sentado' || v.estado === 'esperando') {
-    if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > (v.estado === 'esperando' ? 6 : 4)) {
+  if (v.estado === 'mirando' && v.tiempo <= 0) {
+    v.estado = 'pasear';
+    v.nodo = grafo.masCercano(v.x, v.z, 'peatonal');
+    v.anterior = -1;
+    v.destino = grafo.siguienteAlAzar(v.nodo, v.anterior, 'peatonal', rnd);
+    return null;
+  }
+  if (v.estado === 'sentado' || v.estado === 'esperando' || v.estado === 'mirando') {
+    if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > (v.estado === 'sentado' ? 4 : 6)) {
       v.estado = 'huir';
       v.parada = -1;
       v.tiempo = 2 + rnd() * 2;
@@ -129,7 +139,13 @@ export function pasoVecino(
   if (v.estado === 'pasear' && v.objetivo) {
     const ex = v.objetivo.x - v.x, ez = v.objetivo.z - v.z;
     const dist = Math.hypot(ex, ez);
-    if (dist < 0.5) { v.estado = 'esperando'; v.rumbo = v.objetivo.rumbo; v.objetivo = null; return evento; }
+    if (dist < 0.5) {
+      v.rumbo = v.objetivo.rumbo;
+      v.objetivo = null;
+      if (v.parada >= 0) v.estado = 'esperando';
+      else { v.estado = 'mirando'; v.tiempo = 7 + rnd() * 6; }
+      return evento;
+    }
     v.rumbo = Math.atan2(ex, -ez);
     v.x += Math.sin(v.rumbo) * v.velocidad * dt;
     v.z += -Math.cos(v.rumbo) * v.velocidad * dt;
@@ -340,6 +356,31 @@ export class Vecinos {
       v.parada = i;
       v.objetivo = this.sitioEspera(i, ya);
     });
+  }
+
+  /**
+   * Un corro de mirones: hasta `cuantos` vecinos que pasean a menos de `radio` m se acercan
+   * a un círculo de 4-5 m alrededor de (x, z) y se quedan mirando un rato. Devuelve cuántos van.
+   */
+  congregar(x: number, z: number, radio: number, cuantos: number): number {
+    let n = 0;
+    for (const v of this.lista) {
+      if (n >= cuantos) break;
+      if (v.estado !== 'pasear' || v.parada >= 0 || v.objetivo) continue;
+      const d2 = (v.x - x) ** 2 + (v.z - z) ** 2;
+      if (d2 > radio * radio || d2 < 9) continue;
+      const angulo = this.rnd() * Math.PI * 2;
+      const r = 4 + this.rnd() * 1.5;
+      const ox = x + Math.sin(angulo) * r, oz = z + Math.cos(angulo) * r;
+      v.objetivo = { x: ox, z: oz, rumbo: Math.atan2(x - ox, -(z - oz)) };
+      n++;
+    }
+    return n;
+  }
+
+  /** Una frase del corro, al azar. */
+  comentario(): string {
+    return COMENTARIOS_CORRO[Math.floor(this.rnd() * COMENTARIOS_CORRO.length)]!;
   }
 
   /** Un bocinazo: los que estén a menos de `radio` salen corriendo. */

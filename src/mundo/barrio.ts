@@ -19,6 +19,7 @@ import { TRIBUS, Vecinos } from './peatones';
 import { Clientes } from './clientes';
 import { Vecina } from './vecina';
 import { Chapa, elegirTaller } from './chapa';
+import { Emergencias } from './emergencias';
 import { Trafico } from './trafico';
 import { Trastos } from './trastos';
 import { Semaforos } from './semaforos';
@@ -70,6 +71,8 @@ export class Barrio {
   readonly vecina = new Vecina();
   /** Chapa y pintura: donde la Local se olvida de ti por 100 €. */
   readonly chapa: Chapa;
+  /** Bomberos y ambulancia: vienen a los reventones y a los atropellos en cadena. */
+  readonly emergencias: Emergencias;
   /** Charcos de luz de las farolas: solo visibles de noche. */
   readonly farolasLuz: THREE.Group;
   /** Carreras del barrio: nodo de salida y su ruta fija. */
@@ -170,6 +173,8 @@ export class Barrio {
     this.grupo.add(this.vecina.grupo);
     this.chapa = new Chapa(elegirTaller(nivel, this.grafo, this.arranque));
     this.grupo.add(this.chapa.grupo);
+    this.emergencias = new Emergencias(this.grafo);
+    this.grupo.add(this.emergencias.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
     this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);

@@ -855,3 +855,23 @@ En un salto, pasados 0,2 s en el aire, el eje horizontal gira la moto sobre sí 
 solo la malla, no el rumbo físico) y al aterrizar cada vuelta completa (85 % de 360º para no ser
 tacaño) son 40 € extra y cuenta como truco. Es la razón para tocar el joystick en el aire, que
 hasta ahora no hacía nada.
+
+## 2026-09-12 — El corro de mirones
+
+Cuando pasa algo gordo (un reventón, una alarma, un macetazo, un motero al suelo, la llegada de
+los bomberos o del 061), hasta cinco vecinos que pasean a menos de 28 m se acercan a un círculo
+de 4-5,5 m alrededor y se quedan mirando entre 7 y 13 s (estado `mirando`, huyen si vienes a más
+de 6 m/s), y uno comenta ("¡Ozú, qué tela!", "¿Has llamado al seguro, niño?"). Reutiliza el
+`objetivo` fuera del grafo que ya tenían los que van a la marquesina. Es lo que hace que el
+barrio parezca que reacciona a lo que haces, y no cuesta nada.
+
+## 2026-09-12 — Bomberos y el 061: espectáculo, no obstáculo
+
+Al reventar un vehículo vienen los bomberos (camión rojo con escalera) y con una racha de tres
+atropellos, la ambulancia del 061 (enfriamiento de 45 s). Entran por un nodo rodado a 110-220 m
+con camino hasta el suceso (Dijkstra por el grafo rodado), a 11-13 m/s, trabajan siete o cinco
+segundos junto al sitio (agua a chorros sobre la moto, que deja de arder; los atropellados de
+alrededor "se van en camilla" y reaparecen lejos) y se vuelven por donde vinieron. Sin cuerpo
+físico y no se pueden robar: son cinemáticos como los moteros, porque un cuerpo más de 7,5 m
+persiguiendo caminos con Rapier era la clase de cosa que se atasca en un cruce y se queda ahí
+toda la partida. Sirena de dos tonos con pitidos si andan a menos de 90 m. Uno de cada tipo a la vez.

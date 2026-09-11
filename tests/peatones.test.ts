@@ -88,3 +88,23 @@ describe('los que esperan el 13', () => {
     expect(Math.hypot(otro.x - parada.x, otro.z - (parada.z + 1))).toBeLessThan(0.6);
   });
 });
+
+describe('el corro de mirones', () => {
+  it('los que pasean cerca se acercan, se quedan mirando un rato y vuelven a pasear', async () => {
+    const { Vecinos } = await import('../src/mundo/peatones');
+    const vecinos = new Vecinos(grafo, 60, [], 'canis');
+    const v = vecinos.lista.find((c) => c.estado === 'pasear')!;
+    const x = v.x + 8, z = v.z;
+    expect(vecinos.congregar(x, z, 28, 5)).toBeGreaterThanOrEqual(1);
+    expect(v.objetivo).not.toBeNull();
+    const rnd = azar(4);
+    for (let i = 0; i < 60 * 15 && v.estado === 'pasear'; i++) pasoVecino(v, grafo, lejos, 1 / 60, rnd);
+    expect(v.estado).toBe('mirando');
+    const d = Math.hypot(v.x - x, v.z - z);
+    expect(d).toBeGreaterThan(3.5);
+    expect(d).toBeLessThan(6);
+    for (let i = 0; i < 60 * 14 && v.estado === 'mirando'; i++) pasoVecino(v, grafo, lejos, 1 / 60, rnd);
+    expect(v.estado).toBe('pasear');
+    expect(vecinos.comentario().length).toBeGreaterThan(3);
+  });
+});

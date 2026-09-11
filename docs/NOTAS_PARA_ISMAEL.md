@@ -20,7 +20,9 @@ calles y con sirena; y un motero rodando a tu lado dos segundos te reta a un **p
 Para gastar: **chapa y pintura** (anillo azul; en Los Remedios son los talleres reales de OSM):
 100 € y la Local te olvida y la moto sale nueva. Y en los saltos, joystick a los lados para girar
 en el aire: cada **360** son 40 €. Las marquesinas viven solas (el 13 del tráfico deja y recoge
-gente), y las pistas ya no pisan los avisos. Doce logros nuevos.
+gente), y las pistas ya no pisan los avisos. En Los Remedios y Nervión, los de **azul marino sin
+jersey son vigilantes**: si te ven liarla, la Local se entera. Y entre las tres y las cinco y media
+es **la siesta**: medio barrio en casa. Trece logros nuevos.
 
 **Qué probar primero en el móvil:** 1) bájate delante de un taxi parado, E, y lleva a un
 cliente; 2) rompe tres conos pegado a un bloque de noche y mira arriba; 3) deja la moto y vete
@@ -66,6 +68,7 @@ la Local). Todo dentro del modo freestyle, sin misiones.
 - [x] **Bloque 7 (hecho a la 01:04)** — **El corro de mirones**: los vecinos se arremolinan y comentan.
 - [x] **Bloque 8 (hecho a la 01:04, con el 7)** — **Bomberos y el 061**: vienen por las calles a los reventones y a los atropellos en cadena.
 - [x] **Bloque 9 (hecho a la 01:20)** — El 13 del tráfico deja y recoge pasajeros; oficio de **Lipasam** (contenedores con el camión); las pistas ya no pisan avisos.
+- [x] **Bloque 11 (hecho a la 01:46)** — **Vigilantes** de seguridad en los barrios pijos (avisan a la Local), la **siesta** (15:00-17:30, medio barrio en casa) y el siseo de las puertas del 13.
 - [x] **Bloque 10 (hecho a la 01:29)** — **Pique callejero**: un motero a tu lado dos segundos te reta a tres anillos contra el Kevin.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 

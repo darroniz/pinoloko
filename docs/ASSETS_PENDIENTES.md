@@ -173,3 +173,43 @@ Formato:
 - Descripción para generarlo: puede reutilizar el GLB de la scooter del jugador con un piloto
   distinto (chándal de otro color, gorra); low-poly, mismas proporciones.
 - Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 1,7 m.
+
+## Taxi de Sevilla
+- Dónde se usa: `src/fisica/coche.ts` (`geometriaTaxi`), tráfico y minijuego del taxista.
+- Placeholder actual: el utilitario de cajas en blanco con dos cajas amarillas en las puertas
+  delanteras y el cartel del techo (caja blanca con luz verde).
+- Descripción para generarlo: taxi de Sevilla low-poly (~400 triángulos): utilitario blanco,
+  franja amarilla diagonal en las puertas delanteras, cartel luminoso "TAXI" en el techo con luz
+  verde de libre. Proporciones de juguete.
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante, 3,9 m de largo.
+
+## Cliente del taxi
+- Dónde se usa: `src/mundo/clientes.ts`.
+- Placeholder actual: cápsula con cabeza y un brazo levantado que saluda, anillo amarillo en el suelo.
+- Descripción para generarlo: puede ser el mismo vecino de la tribu con una animación de brazo
+  levantado (o pose fija). Low-poly.
+- Formato y tamaño deseados: GLB, Y arriba, 1,7 m.
+
+## Camión de bomberos y ambulancia del 061
+- Dónde se usa: `src/mundo/emergencias.ts` (`geometriaEmergencia`).
+- Placeholder actual: cajas rojas con una escalera gris encima (bomberos); furgoneta blanca con
+  franja amarilla y cruces rojas (ambulancia); luz azul parpadeante de caja.
+- Descripción para generarlo: camión de bomberos rojo con escalera plegada, low-poly (~500
+  triángulos), 7,5 m; ambulancia tipo furgón blanca con franja amarilla, cruz roja y luces azules,
+  4,6 m. Proporciones de juguete, sin texto legible.
+- Formato y tamaño deseados: GLB, Y arriba, -Z hacia delante.
+
+## La vecina del quinto
+- Dónde se usa: `src/mundo/vecina.ts`.
+- Placeholder actual: cápsula rosa (bata), cabeza, moño gris y un brazo que lanza; maceta de cilindro.
+- Descripción para generarlo: señora mayor en bata rosa y moño, con una maceta en la mano
+  levantada, vista desde arriba; low-poly (~300 triángulos). Muy exagerada y cariñosa.
+- Formato y tamaño deseados: GLB, Y arriba, 1,7 m; maceta aparte (0,4 m).
+
+## Cartel de chapa y pintura
+- Dónde se usa: `src/mundo/chapa.ts`.
+- Placeholder actual: poste con un plano de canvas "CHAPA Y PINTURA", una lata de spray gigante y
+  un anillo azul en el suelo.
+- Descripción para generarlo: rótulo de taller de barrio (chapa, pintura, neumáticos), poste con
+  cartel azul y blanco, y una lata de spray de juguete de 1,3 m. Low-poly.
+- Formato y tamaño deseados: GLB, Y arriba, cartel a 4 m de altura.

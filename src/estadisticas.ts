@@ -34,11 +34,13 @@ export interface Estadisticas {
   goles: number;
   ciclistas: number;
   mejoras: number;
+  carrerasTaxi: number;
+  pasajeros: number;
 }
 
 export const ESTADISTICAS_VACIAS: Estadisticas = {
   segundos: 0, metros: 0, trastos: 0, atropellos: 0, dineroTotal: 0, trincados: 0,
-  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0, carreras: 0, piquesGanados: 0, pintadas: 0, pintadasPijas: 0, pijosAtropellados: 0, alarmas: 0, vespas: 0, patadas: 0, multas: 0, propinas: 0, saltos: 0, vueloMaximo: 0, chapuzones: 0, semaforos: 0, recados: 0, cadenaRecados: 0, mecheros: 0, barriosCompletos: 0, goles: 0, ciclistas: 0, mejoras: 0,
+  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0, carreras: 0, piquesGanados: 0, pintadas: 0, pintadasPijas: 0, pijosAtropellados: 0, alarmas: 0, vespas: 0, patadas: 0, multas: 0, propinas: 0, saltos: 0, vueloMaximo: 0, chapuzones: 0, semaforos: 0, recados: 0, cadenaRecados: 0, mecheros: 0, barriosCompletos: 0, goles: 0, ciclistas: 0, mejoras: 0, carrerasTaxi: 0, pasajeros: 0,
 };
 
 const CLAVE_STATS = 'pinoloko.estadisticas.v1';
@@ -121,6 +123,8 @@ export function resumen(e: Estadisticas): [string, string][] {
     ['Ciclistas del Sevici tirados', String(e.ciclistas)],
     ['Mejor cadena de encargos', String(e.cadenaRecados)],
     ['Mejoras compradas en el taller', String(e.mejoras)],
+    ['Carreras de taxi', String(e.carrerasTaxi)],
+    ['Pasajeros del 13', String(e.pasajeros)],
   ];
 }
 

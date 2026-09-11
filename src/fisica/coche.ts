@@ -83,6 +83,33 @@ export function geometriaFurgoneta(color: string): THREE.BufferGeometry {
   return g;
 }
 
+let geoTaxi: THREE.BufferGeometry | null = null;
+
+/** Taxi de Sevilla: utilitario blanco con la franja amarilla en las puertas delanteras y el cartel
+ *  luminoso en el techo (verde: libre). */
+export function geometriaTaxi(): THREE.BufferGeometry {
+  if (geoTaxi) return geoTaxi;
+  const pintar = (g: THREE.BufferGeometry, c: string): THREE.BufferGeometry => {
+    const col = new THREE.Color(c);
+    const n = g.getAttribute('position').count;
+    const arr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) { arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b; }
+    g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+    g.deleteAttribute('uv');
+    return g.index ? g.toNonIndexed() : g;
+  };
+  const piezas: THREE.BufferGeometry[] = [geometriaCoche('#f7f7f7').clone()];
+  // Franja amarilla en diagonal en las dos puertas delanteras.
+  for (const lado of [-1, 1]) piezas.push(pintar(new THREE.BoxGeometry(0.05, 0.42, 0.9).rotateX(-0.6 * lado).translate(lado * (ANCHO / 2 + 0.01), 0.55, -0.35), '#ffd200'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.62, 0.2, 0.28).translate(0, 1.37, 0.05), '#f7f7f7'));
+  piezas.push(pintar(new THREE.BoxGeometry(0.22, 0.14, 0.2).translate(0, 1.42, -0.12), '#39d353'));
+  const g = mergeGeometries(piezas, false);
+  g.computeVertexNormals();
+  g.computeBoundingSphere();
+  geoTaxi = g;
+  return g;
+}
+
 export const CAMION_LARGO = 7.5, CAMION_ANCHO = 2.4;
 let geoCamion: THREE.BufferGeometry | null = null;
 

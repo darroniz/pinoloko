@@ -4,6 +4,33 @@ Un párrafo por sesión nocturna, el más reciente arriba. Corto, para leer en e
 
 ---
 
+## Plan de la noche del 2026-09-12 (quinta sesión, 00:15 → 04:45)
+
+Sin feedback nuevo en `FEEDBACK.md` y el roadmap vacío salvo lo que depende de ti (ampliar la
+caja, el FPS real). La noche del 11 se cortó a las 02:04 sin cerrar las notas; el resumen va
+abajo con el de hoy. Esta noche va de **más cosas que hacer en freestyle con lo que ya hay**:
+oficios de barrio (taxista, conductor del 13), el barrio que responde (la vecina del quinto, el
+cani que te levanta la moto) y sitios donde gastar el dinero (chapa y pintura para quitarte a
+la Local). Todo dentro del modo freestyle, sin misiones.
+
+- [ ] **Bloque 1 (00:30-01:15)** — **Taxis** en el tráfico (blancos con la franja amarilla y el
+      cartel en el techo), robables como los demás; al llevar uno, **clientes** con la mano
+      levantada en las aceras: paras, suben y los llevas a un local con nombre real contra el
+      reloj. Dinero por rapidez, encadenado. Tests, estadística y logro.
+- [ ] **Bloque 2 (01:15-01:45)** — **Conductor del 13**: gente esperando en las marquesinas; si
+      llevas el 13 robado y paras en la parada, suben y pagan el billete. Estadística y logro.
+- [ ] **Bloque 3 (01:45-02:00)** — Gate, commit y push de los dos primeros bloques.
+- [ ] **Bloque 4 (02:00-02:35)** — **La vecina del quinto**: si armas lío pegado a un bloque,
+      sale a la azotea y te tira una maceta (de noche, más). Si te da, al suelo.
+- [ ] **Bloque 5 (02:35-03:05)** — **Te han levantado la moto**: si dejas la scooter aparcada
+      lejos un rato, un cani se la lleva y hay que ir a por ella. **Chapa y pintura**: un taller
+      por barrio (los de OSM en Los Remedios, uno de barrio en el resto) donde por 100 € te
+      quitas a la Local de encima y te dejan la moto nueva.
+- [ ] **Bloque 6 (03:05-03:40)** — **Trucos en el aire**: girar la moto en los saltos (360º) para
+      más euros. Sondas de caos, ayuda, roadmap, decisiones.
+- [ ] **Bloque 7 (03:40-04:15)** — Gate, commit y push del resto; lo que sobre, más trabajo.
+- [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
+
 ## Plan de la noche del 2026-09-11 (cuarta sesión, 00:15 → 04:45)
 
 Sin feedback nuevo en `FEEDBACK.md`. El roadmap está casi vacío y el brief dice que la caja

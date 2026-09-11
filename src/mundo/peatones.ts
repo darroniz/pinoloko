@@ -6,7 +6,7 @@ import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type EstadoPeaton = 'pasear' | 'huir' | 'caido' | 'levantarse' | 'sentado';
+export type EstadoPeaton = 'pasear' | 'huir' | 'caido' | 'levantarse' | 'sentado' | 'esperando';
 
 export interface Vecino {
   x: number;
@@ -21,6 +21,10 @@ export interface Vecino {
   color: number;
   velocidad: number;
   insultado: number;
+  /** Parada del 13 a la que va o en la que espera (-1 si ninguna). */
+  parada: number;
+  /** Punto fuera del grafo al que anda (la marquesina); al llegar se queda esperando. */
+  objetivo: { x: number; z: number; rumbo: number } | null;
 }
 
 export const INSULTOS = [
@@ -110,17 +114,32 @@ export function pasoVecino(
     if (v.tiempo <= 0) { v.estado = 'huir'; v.tiempo = 3; }
     return null;
   }
-  // Sentado en la terraza: no se mueve hasta que la moto viene lanzada; entonces se levanta y corre.
-  if (v.estado === 'sentado') {
-    if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > 4) {
+  // Sentado en la terraza (o esperando el 13): no se mueve hasta que la moto viene lanzada;
+  // entonces se levanta y corre. Los de la parada aguantan un poco más (el 13 llega despacio).
+  if (v.estado === 'sentado' || v.estado === 'esperando') {
+    if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > (v.estado === 'esperando' ? 6 : 4)) {
       v.estado = 'huir';
+      v.parada = -1;
       v.tiempo = 2 + rnd() * 2;
       if (v.insultado <= 0 && d2 < 36) { v.insultado = 6; return 'insulto'; }
     }
     return null;
   }
+  // Camino de la marquesina: anda en línea recta al punto y al llegar se queda esperando.
+  if (v.estado === 'pasear' && v.objetivo) {
+    const ex = v.objetivo.x - v.x, ez = v.objetivo.z - v.z;
+    const dist = Math.hypot(ex, ez);
+    if (dist < 0.5) { v.estado = 'esperando'; v.rumbo = v.objetivo.rumbo; v.objetivo = null; return evento; }
+    v.rumbo = Math.atan2(ex, -ez);
+    v.x += Math.sin(v.rumbo) * v.velocidad * dt;
+    v.z += -Math.cos(v.rumbo) * v.velocidad * dt;
+    v.fase += dt * 7;
+    return evento;
+  }
   if (v.estado === 'pasear' && d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > 4) {
     v.estado = 'huir';
+    v.parada = -1;
+    v.objetivo = null;
     v.tiempo = 2 + rnd() * 2;
     if (v.insultado <= 0 && d2 < 25) { v.insultado = 6; evento = 'insulto'; }
   }
@@ -171,7 +190,7 @@ export function crearVecino(grafo: GrafoBarrio, nodo: number, rnd: () => number)
   return {
     x: x + (rnd() - 0.5), z: z + (rnd() - 0.5), rumbo: rnd() * Math.PI * 2, estado: 'pasear',
     nodo, anterior: -1, destino: grafo.siguienteAlAzar(nodo, -1, 'peatonal', rnd), tiempo: 0,
-    fase: rnd() * 10, color: Math.floor(rnd() * 6), velocidad: 1.1 + rnd() * 0.6, insultado: 0,
+    fase: rnd() * 10, color: Math.floor(rnd() * 6), velocidad: 1.1 + rnd() * 0.6, insultado: 0, parada: -1, objetivo: null,
   };
 }
 
@@ -194,8 +213,12 @@ export class Vecinos {
   /** Carritos de la compra: los llevan una de cada cinco (las abuelas del barrio), delante. */
   private carritos: THREE.InstancedMesh;
   private readonly insultos: string[];
+  /** Paradas del 13 con su nodo peatonal más cercano: aquí se espera el bus. */
+  private readonly paradas: { x: number; z: number; nodo: number }[];
+  private tiempoReponer = 0;
 
-  constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = [], tribu: Tribu = 'canis') {
+  constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = [], tribu: Tribu = 'canis', paradas: { x: number; z: number }[] = []) {
+    this.paradas = paradas.map((p) => ({ x: p.x, z: p.z, nodo: grafo.masCercano(p.x, p.z, 'peatonal') }));
     const geoCuerpo = new THREE.CapsuleGeometry(0.28, 0.6, 3, 8).translate(0, 0.72, 0);
     const geoCabeza = new THREE.SphereGeometry(0.24, 8, 6).translate(0, 1.42, 0);
     const t = TRIBUS[tribu];
@@ -252,10 +275,71 @@ export class Vecinos {
       v.x = a.x; v.z = a.z; v.rumbo = a.rumbo; v.estado = 'sentado';
       this.lista.push(v);
     }
-    for (let i = sentados; i < cuantos && candidatos.length; i++) {
+    // Y en cada marquesina hay uno o dos esperando el 13 desde el principio.
+    let colocados = sentados;
+    this.paradas.forEach((p, i) => {
+      for (let k = 0; k < 1 + (i % 2) && colocados < cuantos; k++, colocados++) {
+        const v = crearVecino(grafo, Math.max(0, p.nodo), this.rnd);
+        const sitio = this.sitioEspera(i, k);
+        v.x = sitio.x; v.z = sitio.z; v.rumbo = sitio.rumbo; v.estado = 'esperando'; v.parada = i;
+        this.lista.push(v);
+      }
+    });
+    for (let i = colocados; i < cuantos && candidatos.length; i++) {
       const nodo = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
       this.lista.push(crearVecino(grafo, nodo, this.rnd));
     }
+  }
+
+  /** Dónde se pone el que espera número `k` en la parada `i` (delante de la marquesina). */
+  private sitioEspera(i: number, k: number): { x: number; z: number; rumbo: number } {
+    const p = this.paradas[i]!;
+    return { x: p.x + (k - 0.5) * 1.5, z: p.z + 1.1, rumbo: Math.PI };
+  }
+
+  /** Los que esperan el 13 en la parada `i` (o van de camino a ella). */
+  esperandoEn(i: number): Vecino[] {
+    return this.lista.filter((v) => v.parada === i && (v.estado === 'esperando' || v.estado === 'pasear'));
+  }
+
+  /** Los que están ya en la parada `i` a menos de `radio` m de un punto (el 13 parado). */
+  enLaParada(i: number, x: number, z: number, radio: number): Vecino[] {
+    return this.lista.filter((v) => v.parada === i && v.estado === 'esperando' && (v.x - x) ** 2 + (v.z - z) ** 2 < radio * radio);
+  }
+
+  /** Se sube al 13: desaparece de la parada y reaparece paseando lejos (se ha bajado en otra). */
+  subirAlBus(v: Vecino): void {
+    v.parada = -1;
+    v.objetivo = null;
+    v.estado = 'pasear';
+    let mejor = -1, mejorD = 0;
+    for (let intento = 0; intento < 8; intento++) {
+      const n = Math.floor(this.rnd() * this.grafo.nodos.length);
+      if (!this.grafo.vecinos(n, 'peatonal').length) continue;
+      const [nx, nz] = this.grafo.nodos[n]!;
+      const d = (nx - v.x) ** 2 + (nz - v.z) ** 2;
+      if (d > mejorD) { mejorD = d; mejor = n; }
+    }
+    if (mejor < 0) return;
+    const [nx, nz] = this.grafo.nodos[mejor]!;
+    v.x = nx; v.z = nz; v.nodo = mejor; v.anterior = -1;
+    v.destino = this.grafo.siguienteAlAzar(mejor, -1, 'peatonal', this.rnd);
+  }
+
+  /** Cada pocos segundos, si en una parada falta gente, un vecino que pasa por su nodo se acerca a esperar. */
+  private reponerParadas(dt: number): void {
+    this.tiempoReponer -= dt;
+    if (this.tiempoReponer > 0 || !this.paradas.length) return;
+    this.tiempoReponer = 2.5;
+    this.paradas.forEach((p, i) => {
+      if (p.nodo < 0) return;
+      const ya = this.esperandoEn(i).length;
+      if (ya >= 2) return;
+      const v = this.lista.find((c) => c.estado === 'pasear' && c.parada < 0 && !c.objetivo && (c.nodo === p.nodo || c.destino === p.nodo) && (c.x - p.x) ** 2 + (c.z - p.z) ** 2 < 30 * 30);
+      if (!v || this.rnd() < 0.4) return;
+      v.parada = i;
+      v.objetivo = this.sitioEspera(i, ya);
+    });
   }
 
   /** Un bocinazo: los que estén a menos de `radio` salen corriendo. */
@@ -270,6 +354,7 @@ export class Vecinos {
   actualizar(jugador: { x: number; z: number; rapidez: number }, dt: number): { atropellos: number; insulto: string | null } {
     let atropellos = 0;
     let insulto: string | null = null;
+    this.reponerParadas(dt);
     for (const v of this.lista) {
       const e = pasoVecino(v, this.grafo, jugador, dt, this.rnd);
       if (e === 'atropello') atropellos++;

@@ -46,6 +46,9 @@ export const LOGROS: Logro[] = [
   { id: 'taller', nombre: 'Tubarro', descripcion: 'Compra una mejora en el taller', cumple: (e) => e.mejoras >= 1 },
   { id: 'tuneada', nombre: 'Tuneá', descripcion: 'Doce mejoras del taller', cumple: (e) => e.mejoras >= 12 },
   { id: 'reventon', nombre: 'Petó la Jog', descripcion: 'Revienta un vehículo', cumple: (e) => e.reventones >= 1 },
+  { id: 'taxista', nombre: 'Taxista', descripcion: 'Cinco carreras de taxi', cumple: (e) => e.carrerasTaxi >= 5 },
+  { id: 'tele_taxi', nombre: 'Tele Taxi', descripcion: 'Veinticinco carreras de taxi', cumple: (e) => e.carrerasTaxi >= 25 },
+  { id: 'conductor13', nombre: 'Conductor del 13', descripcion: 'Treinta pasajeros en el 13', cumple: (e) => e.pasajeros >= 30 },
 ];
 
 const CLAVE = 'pinoloko.logros.v1';

@@ -15,7 +15,8 @@ import { Circuito } from './circuito';
 import { Rampas } from './rampas';
 import { azar } from './geometria';
 import { generarRuta, type RutaCarrera } from '../carreras';
-import { Vecinos } from './peatones';
+import { TRIBUS, Vecinos } from './peatones';
+import { Clientes } from './clientes';
 import { Trafico } from './trafico';
 import { Trastos } from './trastos';
 import { Semaforos } from './semaforos';
@@ -61,6 +62,8 @@ export class Barrio {
   readonly pintadas: Pintadas;
   readonly radares: Radares;
   readonly agentes: Agentes;
+  /** Clientes del taxi con la mano levantada (solo mientras llevas un taxi). */
+  readonly clientes: Clientes;
   /** Charcos de luz de las farolas: solo visibles de noche. */
   readonly farolasLuz: THREE.Group;
   /** Carreras del barrio: nodo de salida y su ruta fija. */
@@ -84,7 +87,9 @@ export class Barrio {
     this.trastos = new Trastos(fisica);
     this.trastos.poblar(nivel, [...arboles.posiciones, ...farolas.posiciones]);
     this.grupo.add(this.trastos.grupo);
-    this.vecinos = new Vecinos(this.grafo, ficha.poblacion.vecinos, this.trastos.asientos, ficha.tribu);
+    this.paradas = new Paradas(nivel, ficha.destinos13);
+    this.grupo.add(this.paradas.grupo);
+    this.vecinos = new Vecinos(this.grafo, ficha.poblacion.vecinos, this.trastos.asientos, ficha.tribu, this.paradas.lista);
     this.grupo.add(this.vecinos.grupo);
     this.trafico = new Trafico(fisica, this.grafo, ficha.poblacion.trafico, ficha.poblacion.buses, nivel.pois.filter((p) => p.clase === 'bus_stop'), 1, ficha.tribu === 'pijos' ? COLORES_COCHE_PIJO : COLORES_COCHE);
     this.grupo.add(this.trafico.grupo);
@@ -95,8 +100,6 @@ export class Barrio {
     this.grupo.add(this.patrullas.grupo);
     this.mecheros = new Mecheros(nivel, ficha.id);
     this.grupo.add(this.mecheros.grupo);
-    this.paradas = new Paradas(nivel, ficha.destinos13);
-    this.grupo.add(this.paradas.grupo);
     this.rotulos = new Rotulos(nivel);
     this.grupo.add(this.rotulos.grupo);
     this.ventanas = construirVentanas(nivel);
@@ -156,6 +159,8 @@ export class Barrio {
     this.grupo.add(this.radares.grupo);
     this.agentes = new Agentes(this.grafo, 3);
     this.grupo.add(this.agentes.grupo);
+    this.clientes = new Clientes(nivel, TRIBUS[ficha.tribu].ropa);
+    this.grupo.add(this.clientes.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
     this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);

@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { MundoFisico } from '../fisica/mundo';
 import { RAPIER as R } from '../fisica/mundo';
-import { ALTO, ANCHO, CAMION_ANCHO, CAMION_LARGO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaCamion, geometriaCoche, geometriaFurgoneta } from '../fisica/coche';
+import { ALTO, ANCHO, CAMION_ANCHO, CAMION_LARGO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaCamion, geometriaCoche, geometriaFurgoneta, geometriaTaxi } from '../fisica/coche';
 import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
 import { geometriaBus } from '../cinematica';
@@ -14,8 +14,9 @@ import type { Semaforos } from './semaforos';
 
 export type TipoTrafico = 'coche' | 'bus' | 'camion';
 
-/** Silueta de los coches del tráfico: utilitario o furgoneta de reparto (una de cada cuatro). */
-export type VarianteCoche = 'utilitario' | 'furgoneta';
+/** Silueta de los coches del tráfico: utilitario, furgoneta de reparto (una de cada cuatro) o
+ *  taxi (el primero de cada barrio seguro, y luego uno de cada siete). */
+export type VarianteCoche = 'utilitario' | 'furgoneta' | 'taxi';
 
 export interface CocheTrafico {
   tipo: TipoTrafico;
@@ -69,21 +70,22 @@ export class Trafico {
       const origen = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
       const destino = grafo.siguienteAlAzar(origen, -1, 'rodada', this.rnd);
       if (destino === origen) continue;
-      this.crear(origen, destino, this.rnd() * 0.8, i < buses ? 'bus' : i < buses + camiones ? 'camion' : 'coche');
+      this.crear(origen, destino, this.rnd() * 0.8, i < buses ? 'bus' : i < buses + camiones ? 'camion' : 'coche', i === buses + camiones);
     }
   }
 
-  private crear(origen: number, destino: number, t: number, tipo: TipoTrafico): void {
-    const variante: VarianteCoche = tipo === 'coche' && this.rnd() < 0.25 ? 'furgoneta' : 'utilitario';
-    // Las furgonetas van casi siempre de blanco, como las de reparto.
-    const color = tipo === 'bus' || tipo === 'camion' ? '#f4f4f4' : variante === 'furgoneta' && this.rnd() < 0.7 ? '#f0f0ee' : this.colores[Math.floor(this.rnd() * this.colores.length)]!;
+  private crear(origen: number, destino: number, t: number, tipo: TipoTrafico, taxiSeguro = false): void {
+    const r = this.rnd();
+    const variante: VarianteCoche = tipo !== 'coche' ? 'utilitario' : taxiSeguro || r < 0.14 ? 'taxi' : r < 0.39 ? 'furgoneta' : 'utilitario';
+    // Las furgonetas van casi siempre de blanco, como las de reparto; los taxis, siempre.
+    const color = tipo === 'bus' || tipo === 'camion' || variante === 'taxi' ? '#f4f4f4' : variante === 'furgoneta' && this.rnd() < 0.7 ? '#f0f0ee' : this.colores[Math.floor(this.rnd() * this.colores.length)]!;
     const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.dynamic().lockRotations().setLinearDamping(2));
     const [ancho, largo] = tipo === 'bus' ? [BUS_ANCHO, BUS_LARGO] : tipo === 'camion' ? [CAMION_ANCHO, CAMION_LARGO] : [ANCHO, LARGO];
     this.fisica.world.createCollider(
       R.ColliderDesc.cuboid(ancho / 2, ALTO / 2, largo / 2).setDensity(tipo === 'coche' ? 6 : 9).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
       cuerpo,
     );
-    const malla = new THREE.Mesh(tipo === 'bus' ? geometriaBus() : tipo === 'camion' ? geometriaCamion() : variante === 'furgoneta' ? geometriaFurgoneta(color) : geometriaCoche(color), MATERIAL_COCHE);
+    const malla = new THREE.Mesh(tipo === 'bus' ? geometriaBus() : tipo === 'camion' ? geometriaCamion() : variante === 'furgoneta' ? geometriaFurgoneta(color) : variante === 'taxi' ? geometriaTaxi() : geometriaCoche(color), MATERIAL_COCHE);
     malla.scale.setScalar(tipo === 'bus' ? BUS_ESCALA : tipo === 'camion' ? 1 : 1.35);
     malla.castShadow = true;
     this.grupo.add(malla);

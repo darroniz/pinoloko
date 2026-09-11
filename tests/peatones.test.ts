@@ -63,3 +63,28 @@ describe('vecinos del barrio', () => {
     expect(pasoVecino(v, grafo, moto, 1 / 60, rnd)).toBeNull();
   });
 });
+
+describe('los que esperan el 13', () => {
+  it('andan hasta la marquesina, se quedan esperando y al subir al bus reaparecen lejos', async () => {
+    const { Vecinos } = await import('../src/mundo/peatones');
+    const parada = nivel.pois.find((p) => p.clase === 'bus_stop')!;
+    const vecinos = new Vecinos(grafo, 40, [], 'canis', [{ x: parada.x, z: parada.z }]);
+    const esperando = vecinos.lista.filter((v) => v.estado === 'esperando');
+    expect(esperando.length).toBeGreaterThanOrEqual(1);
+    const v = esperando[0]!;
+    expect(Math.hypot(v.x - parada.x, v.z - parada.z)).toBeLessThan(3);
+    expect(vecinos.enLaParada(0, parada.x, parada.z, 5)).toContain(v);
+    vecinos.subirAlBus(v);
+    expect(v.estado).toBe('pasear');
+    expect(v.parada).toBe(-1);
+    expect(Math.hypot(v.x - parada.x, v.z - parada.z)).toBeGreaterThan(60);
+    // Uno que va de camino llega y se queda.
+    const otro = vecinos.lista.find((c) => c.estado === 'pasear')!;
+    otro.x = parada.x + 4; otro.z = parada.z + 4;
+    otro.objetivo = { x: parada.x, z: parada.z + 1, rumbo: 0 };
+    otro.parada = 0;
+    for (let i = 0; i < 60 * 10 && otro.estado === 'pasear'; i++) pasoVecino(otro, grafo, lejos, 1 / 60, azar(3));
+    expect(otro.estado).toBe('esperando');
+    expect(Math.hypot(otro.x - parada.x, otro.z - (parada.z + 1))).toBeLessThan(0.6);
+  });
+});

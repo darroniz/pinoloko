@@ -36,6 +36,8 @@ import { DURACION_PINTADA } from './mundo/pintadas';
 import { MULTA } from './mundo/radares';
 import { Recadero, elegirDestino, premioRecado } from './recados';
 import { Taxista, premioTaxi } from './taxista';
+import { PRECIO_CHAPA } from './mundo/chapa';
+import type { Motero } from './mundo/motosCalle';
 import type { Mejora } from './taller';
 import { Logros } from './logros';
 import { Repeticion } from './efectos/repeticion';
@@ -52,7 +54,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void };
   }
 }
 
@@ -180,6 +182,10 @@ export class Juego {
   private recadero = new Recadero();
   private taxista = new Taxista();
   private tiempoEmbarque = 0;
+  /** La moto de Wifly que se ha llevado un cani (escondida hasta recuperarla), y el motero que la lleva. */
+  private motoLevantada: Motero | null = null;
+  private tiempoMotoSola = 0;
+  private colorAgua = new THREE.Color('#9fd3e8');
   private subidosEnParada = 0;
   private enfriamientoRecado = 0;
   readonly calidad: Calidad;
@@ -325,6 +331,10 @@ export class Juego {
       viajar: async (destino?: string) => { await this.viajar(destino ?? this.barrio.ficha.destinos13[0]!); return this.barrio.ficha.id; },
       taxi: () => ({ estado: this.taxista.estado, clientes: this.taxista.clientes.map((c) => [Math.round(c.x), Math.round(c.z)]), destino: this.taxista.destino, restante: Math.round(this.taxista.restante), cadena: this.taxista.cadena }),
       paradaLlegada: () => { const p = this.barrio.paradaLlegada; return { x: p?.x ?? 0, z: p?.z ?? 0 }; },
+      vecina: () => this.provocarVecina(this.aPie ? this.peaton.posicion : this.vehiculo.posicion, 1),
+      vecinaFase: () => this.barrio.vecina.fase,
+      levantar: () => this.levantarMoto(),
+      chapa: () => ({ taller: this.barrio.chapa.taller, levantada: !!this.motoLevantada, motero: this.motoLevantada ? [Math.round(this.motoLevantada.x), Math.round(this.motoLevantada.z)] : null }),
       sitioTaxi: () => { const v = this.vehiculo.estado; return { desde: [Math.round(v.x), Math.round(v.z)], sitio: this.barrio.clientes.sitio(v.x, v.z), enTaxi: this.coche?.apariencia?.nombre, rota: this.coche?.rota }; },
       irCoche: (x: number, z: number) => {
         if (!this.coche) return false;
@@ -385,6 +395,8 @@ export class Juego {
     if (this.carrera.estado === 'en_curso') { this.carrera.abandonar(); this.hud.ponerCarrera(null); }
     this.recadero.abandonar();
     this.taxista.abandonar();
+    this.motoLevantada = null;
+    this.tiempoMotoSola = 0;
     this.reventado.clear();
     this.motosRobadas.clear();
     this.barrio = await Barrio.cargar(ficha, this.calidad, this.escena);
@@ -487,8 +499,18 @@ export class Juego {
       const moto = b.motosCalle.robar(callejera, b.fisica);
       b.scooters.push(moto);
       b.grupo.add(moto.malla);
-      this.hud.avisar(callejera.estado === 'caido' ? '¡La moto del que se ha caído!' : ['¡Bájate, illo, que es un momento!', '¡Esa Zip es mía!', '¡Al suelo, motero!'][Math.floor(Math.random() * 3)]!, 1.8);
-      this.busqueda.fechoria('robo_moto');
+      if (callejera === this.motoLevantada) {
+        // Era la tuya: la recuperas (sin calor, que es tuya) y la escondida se va.
+        this.motoLevantada = null;
+        this.motosRobadas.add(moto);
+        this.contador.sumar('motosRecuperadas');
+        this.hud.avisar(`¡Recuperada la ${moto.modelo.nombre}! Así es el barrio`, 2.2);
+        this.audio.fanfarria();
+        this.destruirMotoEscondida();
+      } else {
+        this.hud.avisar(callejera.estado === 'caido' ? '¡La moto del que se ha caído!' : ['¡Bájate, illo, que es un momento!', '¡Esa Zip es mía!', '¡Al suelo, motero!'][Math.floor(Math.random() * 3)]!, 1.8);
+        this.busqueda.fechoria('robo_moto');
+      }
     }
     for (const m of b.scooters) {
       const d = (m.estado.x - p.x) ** 2 + (m.estado.z - p.z) ** 2;
@@ -620,6 +642,7 @@ export class Juego {
     this.busqueda.limpiar();
     this.barrio.patrullas.retirarTodas();
     this.barrio.agentes.retirarTodos();
+    this.barrio.vecina.retirar();
     this.helicoptero.retirar(true);
     this.audio.actualizarHelicoptero(false, 0);
     this.dinero = Math.max(0, Math.floor(this.dinero * 0.8));
@@ -637,6 +660,7 @@ export class Juego {
     const arranque = this.barrio.arranque;
     if (this.coche) { this.coche.montar(false); this.coche = null; }
     if (this.aPie) { this.peaton.esconder(); this.aPie = false; }
+    if (this.motoLevantada) { this.motoLevantada = null; this.scooter.malla.visible = true; this.scooter.cuerpo.setEnabled(true); }
     this.scooter.salud = 100;
     this.reventado.delete(this.scooter);
     this.scooter.teletransportar(arranque.x, arranque.z, arranque.rumbo);
@@ -687,16 +711,25 @@ export class Juego {
     if (this.aPie || this.coche) { this.enAire = false; return; }
     const y = this.vehiculo.posicion.y;
     const volando = y > 1.0;
-    if (volando) { this.tiempoAire += dt; this.enAire = true; return; }
+    if (volando) {
+      this.tiempoAire += dt;
+      this.enAire = true;
+      // Trucos: en el aire, el eje horizontal hace girar la moto sobre sí misma (360, 720...).
+      if (this.tiempoAire > 0.2 && this.tiempoTrincao <= 0) this.scooter.truco += this.controles.eje.x * dt * 7.5;
+      return;
+    }
     if (this.enAire) {
       this.enAire = false;
+      const vueltas = Math.floor(Math.abs(this.scooter.truco) / (Math.PI * 2 * 0.85));
+      this.scooter.truco = 0;
       if (this.tiempoAire > 0.35) {
-        const euros = 10 + Math.round(this.tiempoAire * 20);
+        const euros = 10 + Math.round(this.tiempoAire * 20) + vueltas * 40;
         this.ganar(euros);
         this.contador.sumar('saltos');
+        if (vueltas > 0) this.contador.sumar('trucos', vueltas);
         this.contador.maximo('vueloMaximo', this.tiempoAire);
         this.propinaGuiris(this.vehiculo.estado.x, this.vehiculo.estado.z);
-        this.hud.avisar(this.tiempoAire > 0.8 ? `¡Vuelo de ${this.tiempoAire.toFixed(1)} s! +${euros} €` : `¡Salto! +${euros} €`, 1.6);
+        this.hud.avisar(vueltas > 0 ? `¡${vueltas * 360}! ${vueltas > 1 ? 'Ni el Fonsi' : 'Trucazo'} +${euros} €` : this.tiempoAire > 0.8 ? `¡Vuelo de ${this.tiempoAire.toFixed(1)} s! +${euros} €` : `¡Salto! +${euros} €`, 1.6);
         // Los vecinos de alrededor jalean el vuelo largo.
         if (this.tiempoAire > 0.8 && this.barrio.vecinos.lista.some((v) => (v.x - this.vehiculo.estado.x) ** 2 + (v.z - this.vehiculo.estado.z) ** 2 < 20 * 20)) setTimeout(() => this.hud.avisar(['¡Olé, Wifly!', '¡Vaya salto, illo!', '¡Ese es mi niño!'][Math.floor(Math.random() * 3)]!, 1.6), 1700);
         this.audio.pitido(this.tiempoAire > 0.8 ? 1100 : 800, 0.18, 0.18);
@@ -896,6 +929,111 @@ export class Juego {
     if (this.subidosEnParada === 1) { this.hud.avisar(['¡Pasajeros al 13! Billete, 2 €', '"¿Va a la Alameda este?" +2 €', '"Illo, para en la próxima" +2 €'][Math.floor(Math.random() * 3)]!, 1.8); this.pista('el13', 'Con el 13 robado, para despacio en las marquesinas: los que esperan suben y pagan el billete'); }
   }
 
+  /** Quita del barrio la moto escondida (la que se llevó el cani) una vez recuperada. */
+  private destruirMotoEscondida(): void {
+    const vieja = this.scooter;
+    const i = this.barrio.scooters.indexOf(vieja);
+    if (i >= 0) this.barrio.scooters.splice(i, 1);
+    this.barrio.grupo.remove(vieja.malla);
+    vieja.destruir(this.barrio.fisica);
+    this.motosRobadas.delete(vieja);
+    this.reventado.delete(vieja);
+    // La recuperada es ahora la tuya (la última que ha entrado en la lista).
+    const nueva = this.barrio.scooters[this.barrio.scooters.length - 1];
+    if (nueva) { this.scooter = nueva; this.aplicarTaller(nueva); }
+  }
+
+  /** Un cani se lleva tu moto aparcada: se esconde y nace un motero encima de ella. */
+  private levantarMoto(): boolean {
+    if (this.motoLevantada || this.scooter.rota || this.scooter.conducida) return false;
+    const e = this.scooter.estado;
+    const m = this.barrio.motosCalle.levantar(e.x, e.z, MODELOS.indexOf(this.scooter.modelo));
+    if (!m) return false;
+    this.motoLevantada = m;
+    this.scooter.malla.visible = false;
+    this.scooter.cuerpo.setEnabled(false);
+    this.tiempoMotoSola = 0;
+    this.contador.sumar('motosLevantadas');
+    this.hud.avisar(this.barrio.ficha.tribu === 'pijos' ? `¡Un pijo se lleva tu ${this.scooter.modelo.nombre} para un TikTok! Ve a por ella` : `¡Te han levantado la ${this.scooter.modelo.nombre}! Ese cani va por ahí: ve a por ella`, 3.2);
+    this.pista('levantada', 'Tu moto sale en el minimapa mientras la lleve el cani: pilla otra, alcánzalo, y a pie con E se la quitas');
+    this.audio.claxon(0.7);
+    return true;
+  }
+
+  /** Cada segundo que la moto lleva sola y lejos, pasado el rato de gracia, hay una posibilidad de que se la lleven. */
+  private actualizarMotoSola(pos: THREE.Vector3, dt: number): void {
+    if (this.motoLevantada || this.scooter.conducida || this.scooter.rota || this.cine.activa || this.tiempoTrincao > 0) { this.tiempoMotoSola = 0; return; }
+    const e = this.scooter.estado;
+    const lejos = (e.x - pos.x) ** 2 + (e.z - pos.z) ** 2 > 16 * 16;
+    if (!lejos) { this.tiempoMotoSola = Math.max(0, this.tiempoMotoSola - dt); return; }
+    const antes = this.tiempoMotoSola;
+    this.tiempoMotoSola += dt;
+    if (this.tiempoMotoSola < 25 || Math.floor(antes) === Math.floor(this.tiempoMotoSola)) return;
+    if (Math.random() < 0.08) this.levantarMoto();
+  }
+
+  /** La vecina del quinto se asoma si hay bloque a mano; `probabilidad` de noche sube. */
+  private provocarVecina(pos: THREE.Vector3, probabilidad: number): boolean {
+    const b = this.barrio;
+    if (b.vecina.activa || Math.random() > probabilidad * (this.cielo.esDeNoche ? 1 : 0.55)) return false;
+    const grito = b.vecina.asomar(b.nivel.edificios, { x: pos.x, z: pos.z }, Math.random);
+    if (!grito) return false;
+    this.hud.avisar(grito, 2);
+    this.pista('vecina', 'La vecina del quinto: si armas lío pegado a un bloque, sale a la azotea y tira macetas. Muévete');
+    return true;
+  }
+
+  /** La maceta en el aire y lo que pasa cuando cae. */
+  private actualizarVecina(pos: THREE.Vector3, lv: { x: number; z: number }, dt: number): void {
+    const b = this.barrio;
+    const r = b.vecina.actualizar({ x: pos.x, z: pos.z, vx: lv.x, vz: lv.z }, dt);
+    if (!r.evento) return;
+    const colores = (ROMPIBLES['maceta'] ?? ['#d98a5a']).map((c) => new THREE.Color(c));
+    this.trozos.estallar(r.x, 0.3, r.z, colores, 0, 0, 3.5);
+    this.particulas.emitir(r.x, 0.4, r.z, 8, this.colorPolvo, 3);
+    if (r.evento === 'cascos') { this.audio.golpe(4); if (Math.hypot(pos.x - r.x, pos.z - r.z) < 6) this.hud.avisar('¡Casi! La maceta de la vecina, en cascos', 1.6); return; }
+    this.contador.sumar('macetazos');
+    this.audio.golpe(10);
+    this.camara.sacudir(0.9);
+    this.vibrar(90);
+    if (!this.aPie) {
+      const v = this.vehiculo;
+      const m = v.cuerpo.mass();
+      v.cuerpo.applyImpulse({ x: (Math.random() - 0.5) * 8 * m, y: 0, z: (Math.random() - 0.5) * 8 * m }, true);
+      v.salud = Math.max(0, v.salud - 12);
+    }
+    this.hud.avisar(['¡Macetazo! La vecina del quinto no falla', '¡En toda la cabeza! "Y la próxima, el cubo de fregar"', '¡Macetazo! "¡Eso por cafre!"'][Math.floor(Math.random() * 3)]!, 2.2);
+  }
+
+  /** Chapa y pintura: parado un segundo en el anillo con el vehículo, por 100 € la Local te olvida y el vehículo sale nuevo. */
+  private actualizarChapa(pos: THREE.Vector3, rapidez: number, dt: number): void {
+    const b = this.barrio;
+    const r = b.chapa.actualizar({ x: pos.x, z: pos.z, rapidez, enVehiculo: !this.aPie }, dt);
+    if (!r || !b.chapa.taller) return;
+    const v = this.vehiculo;
+    const haceFalta = this.busqueda.estrellas > 0 || v.salud < 100;
+    if (r === 'llegas') {
+      this.hud.avisar(!haceFalta ? `${b.chapa.taller.nombre}: "Esto está como nuevo, niño. Vuelve cuando la líes"` : this.dinero < PRECIO_CHAPA ? `${b.chapa.taller.nombre}: chapa y pintura son ${PRECIO_CHAPA} €, y no los tienes` : `${b.chapa.taller.nombre}: chapa y pintura, ${PRECIO_CHAPA} €. Quieto un segundo`, 2.2);
+      this.pista('chapa', 'Chapa y pintura: con estrellas o la moto tocada, párate en el anillo azul con el vehículo y por 100 € la Local se olvida de ti');
+      return;
+    }
+    if (!haceFalta || this.dinero < PRECIO_CHAPA) return;
+    this.dinero -= PRECIO_CHAPA;
+    this.hud.ponerDinero(this.dinero);
+    this.contador.sumar('chapas');
+    v.salud = 100;
+    this.reventado.delete(v);
+    this.busqueda.limpiar();
+    this.hud.ponerEstrellas(0);
+    b.patrullas.retirarTodas();
+    b.agentes.retirarTodos();
+    this.helicoptero.retirar(true);
+    this.audio.actualizarHelicoptero(false, 0);
+    this.audio.siseo(1.2);
+    for (let i = 0; i < 4; i++) this.particulas.emitir(pos.x + (Math.random() - 0.5) * 2, 0.6, pos.z + (Math.random() - 0.5) * 2, 6, this.colorAgua, 2);
+    this.hud.avisar(`Chapa y pintura: -${PRECIO_CHAPA} €. La Local ya no sabe quién eres y ${this.coche ? 'el coche' : 'la moto'} sale como nuevo`, 2.8);
+  }
+
   private abandonarCarrera(aviso: string | null): void {
     if (this.carrera.estado !== 'en_curso') return;
     this.carrera.abandonar();
@@ -1005,7 +1143,8 @@ export class Juego {
     const modelo = MODELOS[indice];
     if (!modelo || modelo === this.scooter.modelo) return;
     const vieja = this.scooter;
-    const e = vieja.estado;
+    const e = this.motoLevantada ? { x: this.peaton.posicion.x + 1.2, z: this.peaton.posicion.z, rumbo: vieja.estado.rumbo } : vieja.estado;
+    this.motoLevantada = null;
     const montado = !this.aPie && !this.coche;
     const nueva = new Scooter(this.barrio.fisica, e.x, e.z, e.rumbo, modelo);
     this.barrio.scooters.splice(this.barrio.scooters.indexOf(vieja), 1, nueva);
@@ -1102,6 +1241,7 @@ export class Juego {
     this.contador.sumar('alarmas');
     this.busqueda.fechoria('trasto', 3);
     this.barrio.vecinos.asustar(c.estado.x, c.estado.z, 10);
+    this.provocarVecina(c.posicion, 0.7);
     this.hud.avisar(this.barrio.ficha.tribu === 'pijos' ? '¡La alarma del Mini! Eso lo oye todo el barrio' : '¡La alarma del coche! Media Sevilla despierta', 1.8);
   }
 
@@ -1262,6 +1402,9 @@ export class Juego {
       this.actualizarRecados(jugadorPos, dt);
       this.actualizarTaxi(jugadorPos, rapidez, dt);
       this.actualizarPasajeros(jugadorPos, rapidez, dt);
+      this.actualizarChapa(jugadorPos, rapidez, dt);
+      this.actualizarMotoSola(jugadorPos, dt);
+      this.actualizarVecina(jugadorPos, this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel(), dt);
       this.actualizarPachangas(jugadorPos, rapidez, dt);
       // Sevici por el carril bici: timbre si te tienen delante y al suelo si los atropellas.
       const sevici = b.sevici.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
@@ -1342,6 +1485,7 @@ export class Juego {
         if (musical > 0) this.tiempoClaxon = Math.max(0.6, this.audio.melodia(musical - 1));
         else { this.tiempoClaxon = 0.6; this.audio.claxon(this.coche?.apariencia && this.coche.apariencia.largo > 6 ? 0.55 : 1); }
         b.vecinos.asustar(jugadorPos.x, jugadorPos.z, musical > 0 ? 20 : 14);
+        this.provocarVecina(jugadorPos, musical > 0 ? 0.6 : 0.3);
       }
       // Faros de noche, pegados al vehículo que lleves; y las ventanas del barrio encendidas.
       this.faros.visible = this.cielo.esDeNoche && !this.aPie;
@@ -1382,6 +1526,7 @@ export class Juego {
         }
         this.hud.ponerRacha(this.racha);
         if (this.racha >= 4) this.propinaGuiris(jugadorPos.x, jugadorPos.z);
+        if (this.racha >= 3) this.provocarVecina(jugadorPos, 0.5);
         this.busqueda.fechoria('trasto', derribados.length);
         this.contador.sumar('trastos', derribados.length);
       }
@@ -1426,7 +1571,8 @@ export class Juego {
     if (this.jugando && !this.sinMinimapa) {
       const rumbo = this.aPie ? Math.atan2(v.x, -v.z) : this.vehiculo.estado.rumbo;
       const destinoRecado: [number, number] | undefined = this.recadero.estado === 'en_curso' && this.recadero.destino ? [this.recadero.destino.x, this.recadero.destino.z] : this.taxista.destino ? [this.taxista.destino.x, this.taxista.destino.z] : undefined;
-      const siguiente = this.carrera.estado === 'en_curso' ? b.grafo.nodos[this.carrera.siguiente] : destinoRecado;
+      const motoLejos: [number, number] | undefined = this.motoLevantada ? [this.motoLevantada.x, this.motoLevantada.z] : undefined;
+      const siguiente = this.carrera.estado === 'en_curso' ? b.grafo.nodos[this.carrera.siguiente] : destinoRecado ?? motoLejos;
       this.minimapa.actualizar(dt, {
         jugador: { x: pos.x, z: pos.z, rumbo: this.aPie && Math.hypot(v.x, v.z) < 0.5 ? this.scooter.estado.rumbo : rumbo },
         paradas: b.paradas.lista,

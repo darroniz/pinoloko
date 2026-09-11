@@ -17,6 +17,8 @@ import { azar } from './geometria';
 import { generarRuta, type RutaCarrera } from '../carreras';
 import { TRIBUS, Vecinos } from './peatones';
 import { Clientes } from './clientes';
+import { Vecina } from './vecina';
+import { Chapa, elegirTaller } from './chapa';
 import { Trafico } from './trafico';
 import { Trastos } from './trastos';
 import { Semaforos } from './semaforos';
@@ -64,6 +66,10 @@ export class Barrio {
   readonly agentes: Agentes;
   /** Clientes del taxi con la mano levantada (solo mientras llevas un taxi). */
   readonly clientes: Clientes;
+  /** La vecina del quinto, que sale a la azotea a tirarte macetas. */
+  readonly vecina = new Vecina();
+  /** Chapa y pintura: donde la Local se olvida de ti por 100 €. */
+  readonly chapa: Chapa;
   /** Charcos de luz de las farolas: solo visibles de noche. */
   readonly farolasLuz: THREE.Group;
   /** Carreras del barrio: nodo de salida y su ruta fija. */
@@ -161,6 +167,9 @@ export class Barrio {
     this.grupo.add(this.agentes.grupo);
     this.clientes = new Clientes(nivel, TRIBUS[ficha.tribu].ropa);
     this.grupo.add(this.clientes.grupo);
+    this.grupo.add(this.vecina.grupo);
+    this.chapa = new Chapa(elegirTaller(nivel, this.grafo, this.arranque));
+    this.grupo.add(this.chapa.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);
     this.grupo.add(this.rampas.grupo);
     escena.add(this.grupo);

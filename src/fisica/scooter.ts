@@ -94,6 +94,8 @@ export class Scooter {
   conducida = false;
   /** 100 = nueva; por debajo de 30 echa humo; a 0 revienta y ya no arranca. */
   salud = 100;
+  /** Giro extra de la malla en el aire (trucos): radianes acumulados en el salto. */
+  truco = 0;
   get rota(): boolean {
     return this.salud <= 0;
   }
@@ -288,7 +290,7 @@ export class Scooter {
     this.estado.z = t.z;
     this.estado.rumbo = this.rumbo;
     this.malla.position.set(t.x, t.y - RADIO, t.z);
-    this.malla.rotation.set(0, -this.rumbo, 0, 'YXZ');
+    this.malla.rotation.set(0, -this.rumbo + this.truco, 0, 'YXZ');
     this.chasis.rotation.z = this.inclinacion;
     // Caballito: pivota sobre la rueda trasera (el chasis sube lo que baje el trasero al girar).
     this.chasis.rotation.x = this.caballito;

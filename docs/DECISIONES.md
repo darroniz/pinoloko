@@ -805,3 +805,53 @@ de la huella. Desde arriba se lee como las Setas y la plaza queda debajo. Y los 
 Centro hacen fotos a las cafradas: un salto o una racha de cuatro trastos con dos o más guiris a
 menos de 14 m suelta una propina (5 € por guiri, hasta 20 €), con enfriamiento de 5 s para que
 no sea una máquina de dinero. Es el modo de que el Centro tenga su propia economía sin misiones.
+
+## 2026-09-12 — Taxis y taxista: el minijuego clásico, sin misiones
+
+Un taxi seguro por barrio en el tráfico (el primer coche) y uno de cada siete después: blanco
+con la franja amarilla en las puertas y el cartel verde en el techo, como los de Sevilla. Se roba
+como cualquier coche del tráfico. Al llevarlo, salen clientes con la mano levantada en las aceras
+(muestreo de tramos de calle rodada a 40-150 m, filtrados por distancia porque el azar puro
+fallaba en las esquinas de la caja), como mucho dos a la vez y se cansan a los 45 s. Parar a
+menos de 4,5 m y a menos de 1,2 m/s los sube; el destino es un local con nombre real a 80-320 m
+(`elegirDestino` del recadero) y el reloj, el del recadero más 8 s. Se cobra banderazo más
+distancia, con más si sobra reloj y si encadenas. Bajarte deja al cliente tirado y rompe la
+cadena. Es un minijuego de freestyle como el recadero: nada de historia.
+
+## 2026-09-12 — Conductor del 13: los vecinos esperan en las marquesinas
+
+Cada parada tiene uno o dos vecinos esperando desde el principio (estado `esperando`: quietos,
+huyen solo si vienes a más de 6 m/s) y cada 2,5 s, si en una parada hay menos de dos, un vecino
+que pase por su nodo se acerca andando en línea recta hasta la marquesina. Con el 13 robado y
+parado a menos de 11 m, suben de uno en uno cada medio segundo y pagan 2 € (billete y propina,
+redondeado). El que sube reaparece paseando en el nodo peatonal más lejano que salga en ocho
+intentos: se ha bajado en otra parada. No hay bajada de pasajeros ni ruta: sería una misión.
+
+## 2026-09-12 — La vecina del quinto: el barrio responde
+
+Racha de tres trastos, alarma de coche o claxon pegado a un bloque (`tipo=bloque`, altura ≥ 8 m,
+fachada a menos de 16 m) y la vecina se asoma al borde de la azotea en bata, grita y al segundo
+tira una maceta a donde vas a estar (adelanta el 75 % de tu velocidad durante el vuelo). Vuelo
+de 0,8 s más la distancia entre 30. A menos de 2,1 m del punto de caída: macetazo (empujón,
+sacudida, 12 de salud). Si no, cascos en el suelo. Enfriamiento de 22 s y de día la mitad de
+probable. Los gritos son de barrio y cariñosos; nunca a costa de nadie.
+
+## 2026-09-12 — Te han levantado la moto (y chapa y pintura para recuperarte)
+
+Si dejas la moto sola a más de 16 m durante 25 s, cada segundo hay un 8 % de que un cani (o un
+pijo "para un TikTok" en Los Remedios y Nervión) se la lleve: la moto se esconde (malla oculta,
+cuerpo desactivado) y nace un motero callejero encima con su modelo, que sale en el minimapa
+como objetivo si no hay otro. Se recupera como se roba cualquier motero (a pie, E), sin calor
+porque es tuya. Si te trincan o vas a la parada con R te la devuelven; cambiarla en el garaje
+la sustituye junto a Wifly. Chapa y pintura: en Los Remedios el `car_repair` con nombre más
+cercano a la parada (Talleres Ebenezer y compañía); en el resto, "Chapa y pintura Manolo" en un
+nodo rodado a unos 120 m de la parada. Parado un segundo en el anillo azul con el vehículo y
+100 €: la Local te olvida (calor a cero, patrullas, agentes y helicóptero fuera) y el vehículo a
+100 de salud, incluida una moto reventada. Es lo que en GTA era el Pay 'n' Spray.
+
+## 2026-09-12 — Trucos en el aire
+
+En un salto, pasados 0,2 s en el aire, el eje horizontal gira la moto sobre sí misma (7,5 rad/s;
+solo la malla, no el rumbo físico) y al aterrizar cada vuelta completa (85 % de 360º para no ser
+tacaño) son 40 € extra y cuenta como truco. Es la razón para tocar el joystick en el aire, que
+hasta ahora no hacía nada.

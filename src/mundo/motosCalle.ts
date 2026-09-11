@@ -120,7 +120,7 @@ export class MotosCalle {
     }
     // Una malla instanciada por modelo (el color de la moto es el del modelo), con un cani encima.
     for (const modelo of MODELOS) {
-      const im = new THREE.InstancedMesh(geometriaMotero(modelo.color), new THREE.MeshLambertMaterial({ vertexColors: true }), cuantas);
+      const im = new THREE.InstancedMesh(geometriaMotero(modelo.color), new THREE.MeshLambertMaterial({ vertexColors: true }), cuantas + 2);
       im.count = 0;
       im.castShadow = true;
       im.frustumCulled = false;
@@ -137,6 +137,19 @@ export class MotosCalle {
       if (d < mejorD) { mejorD = d; mejor = m; }
     }
     return mejor;
+  }
+
+  /** Un cani se lleva la moto de Wifly: nace un motero encima de ella en el nodo más cercano y arranca. */
+  levantar(x: number, z: number, modelo: number): Motero | null {
+    if (this.lista.length >= this.mallas[0]!.instanceMatrix.count) return null;
+    const origen = this.grafo.masCercano(x, z);
+    if (origen < 0 || !this.grafo.vecinos(origen).length) return null;
+    const s = siguiente(this.grafo, origen, -1, this.rnd);
+    const [ox, oz] = this.grafo.nodos[origen] ?? [x, z];
+    const [px, pz] = this.grafo.nodos[s.nodo] ?? [x, z];
+    const m: Motero = { origen, destino: s.nodo, t: 0, x, z, rumbo: Math.atan2(px - ox, -(pz - oz)), estado: 'rodar', tiempo: 0, modelo, golpeado: 9 };
+    this.lista.push(m);
+    return m;
   }
 
   /** Wifly se la lleva: la moto pasa a ser una Scooter de verdad y el motero desaparece de la lista. */

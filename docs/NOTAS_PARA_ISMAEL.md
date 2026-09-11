@@ -31,6 +31,25 @@ la Local). Todo dentro del modo freestyle, sin misiones.
 - [ ] **Bloque 7 (03:40-04:15)** — Gate, commit y push del resto; lo que sobre, más trabajo.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
+## Noche del 2026-09-11 — resumen para leer en el móvil (escrito la noche siguiente)
+
+La sesión se cortó a las 02:04 sin cerrar las notas; esto es lo que quedó publicado en
+https://pinoloko.com/ (doce bloques, todos en `main` y con el gate pasado): la rama
+`pendiente-2026-09-10` fusionada (bancos de OSM con abuelo sentado, pitido de combo) y el
+**dinero flotante** como sprites dentro del WebGL; **Los Remedios** y **Nervión** (con el
+Sánchez-Pizjuán) como barrios de **pijos** (polo pastel, jersey a los hombros, Vespas y coches
+de pijo aparcados, gritos propios); **piques** en scooter contra el Kevin, el Jonathan y la
+Vanessa en cada carrera; **pintadas** (seis botes de spray por barrio, a pie y con E; en el MAPA);
+**alarmas** de los coches aparcados al golpearlos; **patada a pie** (FRENO a pie); **el Centro**
+con los **guiris** (sombrero de paja, spanglish) y **Las Setas** como setas de verdad, con
+propinas de los guiris por las cafradas; **radares** en las avenidas (más de 50, foto y 50 €
+menos) y **la Local a pie** por los pasajes a partir de dos estrellas.
+
+**Qué probar primero:** 1) súbete al 13 hasta Los Remedios y dale a un Mini aparcado (alarma,
+vecinos corriendo, y la pintada de la plaza vale el doble); 2) en el Centro, salta con una rampa
+con guiris al lado y mira la propina; 3) a dos estrellas, bájate en un pasaje y verás a la Local
+venir andando: corre con FRENO; 4) en Nervión pasa a 60 por Eduardo Dato y espera el flash.
+
 ## Plan de la noche del 2026-09-11 (cuarta sesión, 00:15 → 04:45)
 
 Sin feedback nuevo en `FEEDBACK.md`. El roadmap está casi vacío y el brief dice que la caja

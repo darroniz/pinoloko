@@ -49,6 +49,11 @@ export const LOGROS: Logro[] = [
   { id: 'taxista', nombre: 'Taxista', descripcion: 'Cinco carreras de taxi', cumple: (e) => e.carrerasTaxi >= 5 },
   { id: 'tele_taxi', nombre: 'Tele Taxi', descripcion: 'Veinticinco carreras de taxi', cumple: (e) => e.carrerasTaxi >= 25 },
   { id: 'conductor13', nombre: 'Conductor del 13', descripcion: 'Treinta pasajeros en el 13', cumple: (e) => e.pasajeros >= 30 },
+  { id: 'vecina', nombre: 'La vecina del quinto', descripcion: 'Que te dé una maceta desde la azotea', cumple: (e) => e.macetazos >= 1 },
+  { id: 'levantada', nombre: 'Así es el barrio', descripcion: 'Recupera una moto que te han levantado', cumple: (e) => e.motosRecuperadas >= 1 },
+  { id: 'chapa', nombre: 'Como nueva', descripcion: 'Pasa por chapa y pintura', cumple: (e) => e.chapas >= 1 },
+  { id: 'truco', nombre: 'Trescientos sesenta', descripcion: 'Un giro completo en el aire', cumple: (e) => e.trucos >= 1 },
+  { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20 },
 ];
 
 const CLAVE = 'pinoloko.logros.v1';

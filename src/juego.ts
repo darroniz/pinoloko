@@ -30,7 +30,7 @@ import { Barrio } from './mundo/barrio';
 import { PENDIENTE } from './mundo/rampas';
 import { BARRIO_INICIAL, BARRIOS } from './mundo/barrios';
 import { Cinematica13 } from './cinematica';
-import { Contador, Garaje } from './estadisticas';
+import { Contador, Garaje, type Estadisticas } from './estadisticas';
 import { Carrera, Records, formatearTiempo, generarRuta, premio } from './carreras';
 import { BONUS_PIQUE, ordinal, puesto } from './piques';
 import { DURACION_PINTADA } from './mundo/pintadas';
@@ -60,7 +60,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number };
   }
 }
 
@@ -165,6 +165,8 @@ export class Juego {
   private garaje = new Garaje();
   private logros = new Logros();
   private retos: RetosDelDia;
+  /** Foto de las estadísticas al abrir el juego, para el resumen de la sesión en STATS. */
+  private statsInicio: Estadisticas;
   private taller = new Taller();
   private tiempoLogros = 0;
   private repeticion = new Repeticion();
@@ -216,6 +218,9 @@ export class Juego {
   private cercaEstilo: unknown[] = [];
   /** La moto que le quitaste a un motero callejero (si te pilla, se la lleva de vuelta). */
   private motoDelMotero: Scooter | null = null;
+  /** Coches que ya has robado (el dueño solo sale la primera vez) y el del dueño que te persigue ahora. */
+  private cochesRobados = new WeakSet<Coche>();
+  private cocheDelDueno: Coche | null = null;
   private enfriamientoCamarero = 0;
   /** Dentro de una piscina o fuente (agua poco honda: frena, no hunde). */
   private enPiscina = false;
@@ -237,6 +242,7 @@ export class Juego {
     this.lienzo = document.getElementById('lienzo') as HTMLCanvasElement;
     this.calidad = detectarCalidad();
     this.retos = new RetosDelDia(this.contador.datos);
+    this.statsInicio = { ...this.contador.datos };
     this.renderer = new THREE.WebGLRenderer({ canvas: this.lienzo, antialias: this.calidad === 'alta', powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(this.calidad === 'baja' ? 0.5 : this.calidad === 'media' ? 1 : Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = this.calidad !== 'baja';
@@ -283,6 +289,11 @@ export class Juego {
       },
       alComprar: (mejora) => this.comprarMejora(mejora),
       retos: () => this.retos.resumen(this.contador.datos),
+      sesion: () => {
+        const d = { ...this.contador.datos };
+        for (const k of Object.keys(d) as (keyof Estadisticas)[]) d[k] = k.endsWith('Maximo') ? d[k] : Math.max(0, d[k] - this.statsInicio[k]);
+        return d;
+      },
     });
     document.getElementById('boton-menu')!.addEventListener('click', () => this.abrirMenu());
     this.foto = new Foto(this.lienzo, () => `${this.hud.calleActual} · ${this.cielo.textoHora} · ${this.barrio.ficha.nombre.split(' ·')[0]}`, (t) => this.hud.avisar(t, 1.2));
@@ -382,7 +393,7 @@ export class Juego {
       llamar: (tipo: 'bomberos' | 'ambulancia') => { const p = this.vehiculo.estado; return this.barrio.emergencias.llamar(tipo, p.x, p.z, Math.random); },
       retar: () => this.retar(),
       estilo: () => ({ ...this.estilo.enCurso, contramano: this.enContramano() }),
-      perseguir: (tipo: 'camarero' | 'motero') => { const p = this.aPie ? this.peaton.posicion : this.vehiculo.posicion; if (tipo === 'motero') this.motoDelMotero = this.scooter; return !!this.barrio.perseguidores.aparecer(tipo, p.x + 9, p.z, tipo === 'camarero' ? 'Bar de prueba' : this.scooter.modelo.nombre); },
+      perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => { const p = this.aPie ? this.peaton.posicion : this.vehiculo.posicion; if (tipo === 'motero') this.motoDelMotero = this.scooter; if (tipo === 'dueno') this.cocheDelDueno = this.coche; return !!this.barrio.perseguidores.aparecer(tipo, p.x + 9, p.z, tipo === 'camarero' ? 'Bar de prueba' : this.scooter.modelo.nombre); },
       ambulantes: () => this.barrio.trafico.lista.filter((c) => c.variante === 'butano' || c.variante === 'chatarrero').map((c) => ({ variante: c.variante, x: Math.round(c.x * 10) / 10, z: Math.round(c.z * 10) / 10, rumbo: c.rumbo, carga: c.carga })),
       aficion: () => ({ sitio: this.barrio.aficion.sitio, activo: this.barrio.aficion.activo, cuantos: this.barrio.aficion.cuantos, disuelto: this.barrio.aficion.disuelto, estados: this.barrio.aficion.estados }),
       robarSevici: () => {
@@ -477,6 +488,7 @@ export class Juego {
     this.apagados.clear();
     this.motosRobadas.clear();
     this.motoDelMotero = null;
+    this.cocheDelDueno = null;
     this.estilo.cortar();
     this.barrio = await Barrio.cargar(ficha, this.calidad, this.escena);
     const inicio = donde ?? this.barrio.arranque;
@@ -646,6 +658,11 @@ export class Juego {
     if (mejorCoche && mejorCoche.rota && mejorDc < mejorD) { this.hud.avisar('Ese coche está para el desguace', 1.4); return false; }
     if (mejorMoto && mejorMoto.rota && (!mejorCoche || mejorD < mejorDc)) { this.hud.avisar('Esa moto ha petado', 1.4); return false; }
     if (mejorCoche && mejorDc < mejorD) {
+      // El dueño (o el conductor) sale detrás de ti la primera vez que te llevas ese coche.
+      if (!this.cochesRobados.has(mejorCoche) && !mejorCoche.apariencia) {
+        this.cochesRobados.add(mejorCoche);
+        if (b.perseguidores.aparecer('dueno', mejorCoche.estado.x + 2.2, mejorCoche.estado.z + 1.5, 'el coche')) { this.cocheDelDueno = mejorCoche; this.pista('dueno', 'El dueño del coche te corre detrás: si te pilla parado, te saca del coche. Arranca'); }
+      }
       this.coche = mejorCoche;
       this.coche.montar(true);
       if (this.coche.apariencia?.nombre === 'el taxi') { this.taxista.empezar(); this.pista('taxi', 'Llevas un taxi: los que levantan la mano en la acera son clientes. Para a su lado y llévalos a donde te digan'); }
@@ -1155,7 +1172,7 @@ export class Juego {
     this.enfriamientoCamarero = Math.max(0, this.enfriamientoCamarero - dt);
     if (!b.perseguidores.lista.length) return;
     const r = b.perseguidores.actualizar({ x: pos.x, z: pos.z }, dt);
-    for (const p of r.gritos) if (this.tiempoInsulto <= 0 && (p.agente.x - pos.x) ** 2 + (p.agente.z - pos.z) ** 2 < 40 * 40) { this.tiempoInsulto = 2.5; this.hud.avisar(`${p.tipo === 'camarero' ? `El de ${p.nombre}` : 'El motero'}: "${GRITOS[p.tipo][Math.floor(Math.random() * GRITOS[p.tipo].length)]}"`, 1.8); }
+    for (const p of r.gritos) if (this.tiempoInsulto <= 0 && (p.agente.x - pos.x) ** 2 + (p.agente.z - pos.z) ** 2 < 40 * 40) { this.tiempoInsulto = 2.5; this.hud.avisar(`${p.tipo === 'camarero' ? `El de ${p.nombre}` : p.tipo === 'dueno' ? 'El dueño del coche' : 'El motero'}: "${GRITOS[p.tipo][Math.floor(Math.random() * GRITOS[p.tipo].length)]}"`, 1.8); }
     for (const p of r.alcanzan) this.alcanzado(p, pos);
   }
 
@@ -1180,6 +1197,15 @@ export class Juego {
       this.contador.sumar('escobazos');
       if (!this.aPie) this.vehiculo.salud = Math.max(0, this.vehiculo.salud - 6);
       this.hud.avisar(`¡Escobazo! El de ${p.nombre}: "${['¡Y no vuelvas!', '¡Eso por las sillas!', '¡La próxima, el cubo de la fregona!'][Math.floor(Math.random() * 3)]}" -${ESCOBAZO} €`, 2.4);
+      return;
+    }
+    if (tipo === 'dueno') {
+      const enSuCoche = !!this.coche && this.coche === this.cocheDelDueno && !this.aPie;
+      empujar(enSuCoche ? 3 : 5);
+      if (enSuCoche) { this.bajarse(); this.hud.avisar(`El dueño te saca del coche: "${['¡Fuera, que lo estoy pagando!', '¡Y me has rayado la puerta!', '¡A tu casa andando, chaval!'][Math.floor(Math.random() * 3)]}"`, 2.4); }
+      else this.hud.avisar(`El dueño del coche te empuja: "${['¡La próxima te denuncio!', '¡Ladrón!', '¡Que te vea yo otra vez!'][Math.floor(Math.random() * 3)]}"`, 2);
+      this.contador.sumar('sacados');
+      this.cocheDelDueno = null;
       return;
     }
     const suya = this.motoDelMotero;
@@ -1938,7 +1964,8 @@ export class Juego {
       if (this.controles.claxon && this.tiempoClaxon <= 0 && !this.aPie) {
         // Claxon musical del taller en la moto; en el 13 y el camión, bocina grave.
         const musical = !this.coche ? this.taller.nivel(MODELOS.indexOf(this.scooter.modelo), 'claxon') : 0;
-        if (musical > 0) this.tiempoClaxon = Math.max(0.6, this.audio.melodia(musical - 1));
+        if (!this.coche && this.scooter.modelo.bici) { this.tiempoClaxon = 0.5; this.audio.pitido(2200, 0.06, 0.1); window.setTimeout(() => this.audio.pitido(2200, 0.06, 0.1), 90); }
+        else if (musical > 0) this.tiempoClaxon = Math.max(0.6, this.audio.melodia(musical - 1));
         else { this.tiempoClaxon = 0.6; this.audio.claxon(this.coche?.apariencia && this.coche.apariencia.largo > 6 ? 0.55 : 1); }
         b.vecinos.asustar(jugadorPos.x, jugadorPos.z, musical > 0 ? 20 : 14);
         this.provocarVecina(jugadorPos, musical > 0 ? 0.6 : 0.3);

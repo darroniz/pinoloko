@@ -31,6 +31,8 @@ con lo que OSM ya trae y aún no uso (piscinas de Nervión, parques infantiles).
 - [x] **Bloque 8 (hecho a la 01:03)** — **Día de partido** (la afición a la puerta del Sánchez-Pizjuán con cánticos) y
       **escalerazo** (bajar las escaleras de OSM con la moto).
 - [x] **Bloque 9 (hecho a la 01:05)** — **El Sevici se pedalea**: a pie y con E junto a un ciclista.
+- [x] **Bloque 10 (hecho a la 01:35)** — **El dueño del coche** te persigue al robárselo (te saca si te pilla parado); el tráfico
+      que se salía de la caja reaparece dentro; pestaña STATS con "Esta sesión".
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-12 — resumen para leer en el móvil

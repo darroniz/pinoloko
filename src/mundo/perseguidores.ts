@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { GrafoBarrio } from './grafo';
 import { pasoAgente, type Agente } from '../policia/agentes';
 
-export type TipoPerseguidor = 'camarero' | 'motero';
+export type TipoPerseguidor = 'camarero' | 'motero' | 'dueno';
 
 export interface Perseguidor {
   tipo: TipoPerseguidor;
@@ -18,14 +18,15 @@ export interface Perseguidor {
   grito: number;
 }
 
-export const VELOCIDAD: Record<TipoPerseguidor, number> = { camarero: 4.2, motero: 4.9 };
-export const AGUANTE: Record<TipoPerseguidor, number> = { camarero: 16, motero: 22 };
+export const VELOCIDAD: Record<TipoPerseguidor, number> = { camarero: 4.2, motero: 4.9, dueno: 4.4 };
+export const AGUANTE: Record<TipoPerseguidor, number> = { camarero: 16, motero: 22, dueno: 18 };
 /** Multa del escobazo. */
 export const ESCOBAZO = 20;
 
 export const GRITOS: Record<TipoPerseguidor, string[]> = {
   camarero: ['¡Mi terraza, desgraciao!', '¡Ven aquí, que te vas a enterar!', '¡Las sillas las pagas tú!', '¡Que te doy con la escoba!', '¡Niñato, ven pa acá!'],
   motero: ['¡Mi moto, ladrón!', '¡Que es de mi primo, illo!', '¡Bájate de mi Zip!', '¡Te voy a pillar, chaval!', '¡Esa moto tiene mi nombre!'],
+  dueno: ['¡Mi coche! ¡Que lo estoy pagando!', '¡Para, desgraciao, que es de leasing!', '¡Fuera de mi coche!', '¡Que llevo el carrito del niño en el maletero!', '¡Te he visto la cara, chaval!'],
 };
 
 export function crearPerseguidor(tipo: TipoPerseguidor, grafo: GrafoBarrio, x: number, z: number, nombre: string): Perseguidor {
@@ -46,7 +47,7 @@ export function pasoPerseguidor(p: Perseguidor, grafo: GrafoBarrio, jugador: { x
 export class Perseguidores {
   readonly grupo = new THREE.Group();
   readonly lista: Perseguidor[] = [];
-  private mallas: { grupo: THREE.Group; piernaIz: THREE.Mesh; piernaDe: THREE.Mesh; escoba: THREE.Group; gorra: THREE.Group }[] = [];
+  private mallas: { grupo: THREE.Group; piernaIz: THREE.Mesh; piernaDe: THREE.Mesh; escoba: THREE.Group; gorra: THREE.Group; delantal: THREE.Mesh; camisa: THREE.Mesh }[] = [];
 
   constructor(private readonly grafo: GrafoBarrio, maximo = 2) {
     this.grupo.name = 'perseguidores';
@@ -85,12 +86,15 @@ export class Perseguidores {
       const chaqueta = new THREE.Mesh(new THREE.CapsuleGeometry(0.175, 0.3, 3, 8), chandal);
       chaqueta.position.set(0, 0.95, 0);
       gorra.add(copa, visera, chaqueta);
-      g.add(tronco, delantal, piernaIz, piernaDe, cabeza, escoba, gorra);
+      // El dueño del coche: camisa de cuadros (a rayas de color) y sin nada más.
+      const camisa = new THREE.Mesh(new THREE.CapsuleGeometry(0.175, 0.3, 3, 8), new THREE.MeshLambertMaterial({ color: '#c94f3d' }));
+      camisa.position.set(0, 0.95, 0);
+      g.add(tronco, delantal, piernaIz, piernaDe, cabeza, escoba, gorra, camisa);
       g.scale.setScalar(1.6);
       g.visible = false;
       g.traverse((o) => { if (o instanceof THREE.Mesh) o.castShadow = true; });
       this.grupo.add(g);
-      this.mallas.push({ grupo: g, piernaIz, piernaDe, escoba, gorra });
+      this.mallas.push({ grupo: g, piernaIz, piernaDe, escoba, gorra, delantal, camisa });
     }
   }
 
@@ -126,6 +130,8 @@ export class Perseguidores {
       m.grupo.rotation.y = -a.rumbo;
       m.escoba.visible = p.tipo === 'camarero';
       m.gorra.visible = p.tipo === 'motero';
+      m.delantal.visible = p.tipo === 'camarero';
+      m.camisa.visible = p.tipo === 'dueno';
       const paso = Math.sin(a.fase) * 0.6;
       m.piernaIz.rotation.x = paso;
       m.piernaDe.rotation.x = -paso;

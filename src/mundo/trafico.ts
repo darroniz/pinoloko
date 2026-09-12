@@ -65,9 +65,15 @@ export class Trafico {
   /** Bocinazos de este paso (coches a los que el jugador corta el paso); el juego lo lee y lo pone a cero. */
   pitidos = 0;
 
-  constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number, buses = 0, private readonly paradas: { x: number; z: number }[] = [], camiones = 0, private readonly colores: string[] = COLORES_COCHE) {
-    const candidatos: number[] = [];
-    for (let i = 0; i < grafo.nodos.length; i++) if (grafo.vecinos(i, 'rodada').length > 0) candidatos.push(i);
+  /** Nodos rodados dentro de la caja del barrio: donde nace el tráfico y donde reaparece el que se sale. */
+  private readonly candidatos: number[] = [];
+
+  constructor(private readonly fisica: MundoFisico, private readonly grafo: GrafoBarrio, cuantos: number, buses = 0, private readonly paradas: { x: number; z: number }[] = [], camiones = 0, private readonly colores: string[] = COLORES_COCHE, private readonly caja: [number, number] = [1e9, 1e9]) {
+    const candidatos = this.candidatos;
+    for (let i = 0; i < grafo.nodos.length; i++) {
+      const [x, z] = grafo.nodos[i]!;
+      if (grafo.vecinos(i, 'rodada').length > 0 && Math.abs(x) < caja[0] / 2 && Math.abs(z) < caja[1] / 2) candidatos.push(i);
+    }
     for (let i = 0; i < cuantos + buses + camiones && candidatos.length; i++) {
       const origen = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
       const destino = grafo.siguienteAlAzar(origen, -1, 'rodada', this.rnd);
@@ -233,7 +239,13 @@ export class Trafico {
         this.colocar(c);
       } else if (c.activo) this.guiar(c, dt);
       else {
-        // Lejos: avanza por el carril sin física.
+        // Lejos: avanza por el carril sin física. Si se ha salido de la caja (las calles siguen
+        // fuera), reaparece en una calle de dentro: si no, medio tráfico acaba fuera del barrio.
+        if (this.candidatos.length && (Math.abs(c.x) > this.caja[0] / 2 + 25 || Math.abs(c.z) > this.caja[1] / 2 + 25)) {
+          const origen = this.candidatos[Math.floor(this.rnd() * this.candidatos.length)]!;
+          const destino = this.grafo.siguienteAlAzar(origen, -1, 'rodada', this.rnd);
+          if (destino !== origen) { c.origen = origen; c.destino = destino; c.t = this.rnd() * 0.8; c.parado = 0; this.colocar(c); continue; }
+        }
         c.t = Math.min(0.995, c.t + (c.velocidad * dt) / largo);
         const p = this.puntoCarril(c, c.t);
         c.x = p.x; c.z = p.z; c.rumbo = p.rumbo;

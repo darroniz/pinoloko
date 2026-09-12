@@ -52,5 +52,13 @@ for (let i = 0; i < 60 && !alcanzado; i++) { await dormir(500); const l = await 
 await dormir(500);
 console.log('tras el motero:', await aviso(), '· chapa/levantada:', JSON.stringify(await p.evaluate(() => window.__pv_prueba.chapa())), '· info aPie:', await p.evaluate(() => window.__pv_info().aPie));
 await p.screenshot({ path: 'logs/captura-motero.png' });
+// El dueño del coche: Wifly roba un coche del tráfico, se queda parado y el dueño lo saca.
+console.log('coche robado:', await p.evaluate(() => window.__pv_prueba.robarCoche()));
+await dormir(800);
+console.log('dueño sale:', await p.evaluate(() => window.__pv_prueba.perseguir('dueno')));
+alcanzado = false;
+for (let i = 0; i < 60 && !alcanzado; i++) { await dormir(500); const l = await p.evaluate(() => window.__pv_prueba.perseguidores()); alcanzado = l.length === 0; }
+await dormir(500);
+console.log('tras el dueño:', await aviso(), '· aPie:', await p.evaluate(() => window.__pv_info().aPie), '· enCoche:', await p.evaluate(() => window.__pv_info().enCoche));
 console.log('arranque', JSON.stringify(arranque));
 await b.close(); srv.close();

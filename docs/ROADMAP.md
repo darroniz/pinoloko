@@ -95,6 +95,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] El botellón nocturno en la plaza (litronas y reggaetón) y la afición a la puerta del estadio en Nervión; disolverlos paga.
 - [x] Escalerazo: bajar las escaleras de OSM con la moto.
 - [x] El Sevici se pedalea: a pie y con E junto a un ciclista.
+- [x] El dueño del coche te persigue al robárselo; el tráfico nace y se queda dentro de la caja; "Esta sesión" en STATS.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

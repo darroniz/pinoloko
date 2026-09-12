@@ -1,7 +1,7 @@
 // Menú: garaje (elegir moto entre las robadas), estadísticas y créditos. Se abre desde la
 // portada y, en partida, con Escape / botón ☰ (el juego se pausa mientras está abierto).
 import type { ModeloScooter } from '../fisica/scooter';
-import { Contador, Garaje, resumen } from '../estadisticas';
+import { Contador, ESTADISTICAS_VACIAS, Garaje, resumen, type Estadisticas } from '../estadisticas';
 import type { Calidad } from '../juego';
 import { MEJORAS, NIVEL_MAXIMO, type Mejora, type Taller } from '../taller';
 import { LOGROS, type Logros } from '../logros';
@@ -40,6 +40,8 @@ export interface OpcionesMenu {
   alComprar: (mejora: Mejora) => boolean;
   /** Los tres retos de hoy con su progreso. */
   retos: () => { reto: Reto; progreso: number; hecho: boolean }[];
+  /** Lo hecho desde que se abrió el juego (diferencia de estadísticas). */
+  sesion: () => Estadisticas;
 }
 
 const AYUDA = `
@@ -76,7 +78,7 @@ estrellas o la moto tocada, párate en el anillo azul de <strong>chapa y pintura
 En los saltos, mueve el joystick a los lados para girar en el aire: cada 360 son 40 € más. Si revientas un vehículo vienen los
 bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones. Si rompes la terraza de un bar, el camarero
 sale con la escoba y te persigue a pie (si te pilla parado, escobazo y 20 €); y el motero al que le quitas la moto te corre detrás: si te
-pilla, se la lleva de vuelta.</p>
+pilla, se la lleva de vuelta. Y el dueño del coche que robas también sale detrás: si te pilla parado, te saca.</p>
 <p class="peque"><strong>El botellón.</strong> De diez de la noche a cuatro, un corro de vecinos con litronas y reggaetón en la plaza del barrio.
 Pasar por medio a toda pastilla lo disuelve: 40 € y un poco de calor.</p>
 <p class="peque"><strong>Día de partido.</strong> En Nervión, de ocho y media a diez y media, la afición se junta a la puerta del Sánchez-Pizjuán
@@ -252,7 +254,10 @@ export class Menu {
   }
 
   private htmlEstadisticas(): string {
+    // Esta sesión: solo las filas que han cambiado desde que se abrió el juego.
+    const vacias = new Map(resumen({ ...ESTADISTICAS_VACIAS }));
+    const hoy = resumen(this.op.sesion()).filter(([k, v]) => vacias.get(k) !== v).map(([k, v]) => `<div class="fila"><span>${k}</span><strong>${v}</strong></div>`);
     const filas = resumen(this.op.contador.datos).map(([k, v]) => `<div class="fila"><span>${k}</span><strong>${v}</strong></div>`);
-    return filas.join('');
+    return `${hoy.length ? `<h3>Esta sesión</h3>${hoy.join('')}` : ''}<h3>De siempre</h3>${filas.join('')}`;
   }
 }

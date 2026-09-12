@@ -1004,3 +1004,14 @@ estrangulada, y el A/B en los dos órdenes da la build de anoche un 15-25 % por 
 perfil por tramos dice que el `update()` es igual (13,7 frente a 14,1 ms) y que la diferencia
 está en el render de SwiftShader. Se ha buscado el coste con los interruptores `?estilo=0` y
 `?ambulantes=0` (ver el resultado en `docs/NOTAS_PARA_ISMAEL.md`).
+
+## 2026-09-13 — El dueño del coche, el tráfico dentro de la caja y "esta sesión"
+
+Tercer perseguidor (`dueno`, camisa roja): sale la primera vez que te llevas cada coche (aparcado
+o del tráfico; los especiales con `apariencia` no) y, si te pilla parado dentro, te saca del
+coche (empujón y a pie; el coche se queda donde está). Fuera del coche solo te empuja. El
+tráfico: el 42 % de los nodos rodados del Mercado están fuera de la caja (OSM trae las calles
+enteras), y el tráfico nacía y vagaba por ahí sin que nadie lo viera; ahora nace solo en nodos
+de dentro y el que se aleja más de 25 m de la caja reaparece en una calle de dentro. La pestaña
+STATS lleva arriba "Esta sesión": lo hecho desde que se abrió el juego (diferencia contra la
+foto del arranque), para que se vea de un vistazo qué ha pasado en la prueba del móvil.

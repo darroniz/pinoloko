@@ -72,6 +72,7 @@ export const LOGROS: Logro[] = [
   { id: 'escalerazo', nombre: 'Escalerazo', descripcion: 'Baja cinco escaleras con la moto', cumple: (e) => e.escaleras >= 5 },
   { id: 'aficion', nombre: 'Día de partido', descripcion: 'Dispersa a la afición a la puerta del estadio', cumple: (e) => e.aficiones >= 1 },
   { id: 'sevici_sin_tarjeta', nombre: 'Sin tarjeta', descripcion: 'Quítale el Sevici a un ciclista y pedalea', cumple: (e) => e.sevicis >= 1 },
+  { id: 'sacado', nombre: 'Que lo estoy pagando', descripcion: 'Que el dueño te saque de su coche', cumple: (e) => e.sacados >= 1 },
   { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20 },
 ];
 

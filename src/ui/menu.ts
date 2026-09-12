@@ -62,6 +62,7 @@ parado), pasar rozando coches y vecinos sin tocarlos ("por los pelos") y tirar e
 segundos más, y calienta un poco a la Local).</p>
 <p class="peque"><strong>La Local.</strong> Sus coches no entran en los pasajes; a tres estrellas salen motos que sí, y a cinco el
 helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dirección lo pierdes.</p>
+<p class="peque"><strong>Salida de semáforo.</strong> Parado en rojo con un coche del tráfico al lado: al ponerse verde, sal a fondo y le ganas la salida (15 €).</p>
 <p class="peque"><strong>Radares.</strong> Poste con cámara y raya blanca en las avenidas: pasarla a más de 50 km/h es foto multa, 50 € menos.</p>
 <p class="peque"><strong>A pie.</strong> ESPACIO / FRENO es patada: el cono, la maceta o el balón que tengas delante salen volando (y cuentan
 para la racha). Manteniéndolo, Wifly corre.</p>
@@ -248,7 +249,13 @@ export class Menu {
 
   private htmlLogros(): string {
     const tiene = this.op.logros.desbloqueados;
-    const filas = LOGROS.map((l) => `<div class="logro ${tiene.has(l.id) ? 'hecho' : ''}"><span class="sello">${tiene.has(l.id) ? '★' : '☆'}</span><span><strong>${l.nombre}</strong><br><span class="peque">${l.descripcion}</span></span></div>`);
+    const e = this.op.contador.datos;
+    const progreso = (l: typeof LOGROS[number]): string => {
+      if (tiene.has(l.id) || !l.medida || l.objetivo === undefined) return '';
+      const v = l.medida(e);
+      return ` · ${Number.isInteger(l.objetivo) ? Math.min(l.objetivo, Math.floor(v)) : Math.min(l.objetivo, Math.round(v * 10) / 10)} / ${l.objetivo}`;
+    };
+    const filas = LOGROS.map((l) => `<div class="logro ${tiene.has(l.id) ? 'hecho' : ''}"><span class="sello">${tiene.has(l.id) ? '★' : '☆'}</span><span><strong>${l.nombre}</strong><br><span class="peque">${l.descripcion}${progreso(l)}</span></span></div>`);
     const retos = this.op.retos().map((r) => `<div class="logro ${r.hecho ? 'hecho' : ''}"><span class="sello">${r.hecho ? '★' : '☆'}</span><span><strong>${r.reto.texto}</strong><br><span class="peque">${r.hecho ? `Hecho · +${PREMIO_RETO} €` : `${r.progreso} / ${r.reto.objetivo} · ${PREMIO_RETO} €`}</span></span></div>`);
     return `<h3>Retos de hoy</h3><p class="peque">Cambian cada día. Cuentan desde que has arrancado hoy.</p>${retos.join('')}<h3>Logros</h3><p class="peque">${tiene.size} de ${LOGROS.length}. Se consiguen haciendo el cafre por el barrio.</p>${filas.join('')}`;
   }

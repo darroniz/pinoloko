@@ -1015,3 +1015,31 @@ enteras), y el tráfico nacía y vagaba por ahí sin que nadie lo viera; ahora n
 de dentro y el que se aleja más de 25 m de la caja reaparece en una calle de dentro. La pestaña
 STATS lleva arriba "Esta sesión": lo hecho desde que se abrió el juego (diferencia contra la
 foto del arranque), para que se vea de un vistazo qué ha pasado en la prueba del móvil.
+
+## 2026-09-13 — El grafo se queda en la caja
+
+OSM trae las calles enteras aunque salgan de la caja, y el generador metía todos sus nodos en el
+grafo: en el Mercado, 85 de 275 nodos peatonales y 85 de 192 rodados caían fuera. Vecinos,
+perros, moteros y tráfico nacían allí y vagaban por donde nadie los ve (y el A/B de la noche
+medía a medio barrio fuera de plano). Ahora `genera_nivel.py` recorta el grafo a la caja más
+30 m (las calles se siguen pintando enteras) y el tráfico, además, reaparece dentro si se aleja
+más de 25 m del borde. Como todo el tráfico está ahora dentro, la población baja a la densidad
+efectiva de antes (Mercado 14 → 9, Alameda 10 → 8, Triana 12 → 9, Los Remedios 16 → 10,
+Nervión 16 → 9, Centro 8 → 6): el gate de la Pi lo notó (98 frames y 9,2 ms con todo dentro).
+El test del grafo pedía más de 100 nodos rodados alcanzables; con 124 en la caja, ahora pide 60.
+
+## 2026-09-13 — Progreso en los logros, silbato y frases del botellón
+
+Los 64 logros de umbral (`e.x >= n`) llevan ahora `medida` y `objetivo`, generados de la propia
+condición, y la pestaña LOGROS enseña "12 / 40" en los pendientes; los tres logros compuestos
+(récord, etc.) no lo enseñan. El agente a pie sale con silbato (dos pitidos con trino) y, parado
+junto al botellón, los del corro te dicen cosas según la tribu del barrio (cada 9 s, sin pisar
+otros avisos).
+
+## 2026-09-13 — Pique de semáforo
+
+Parado (menos de 0,6 m/s) con un semáforo en rojo a menos de 7 m por delante y un coche del
+tráfico parado a menos de 6,5 m durante más de un segundo, queda armado; al ponerse verde, si
+pasas de 7 m/s en 2,5 s, has ganado la salida (15 €). Reutiliza `luzDelante` y el tráfico que ya
+para en rojo; solo existe donde OSM tiene semáforos (dos en el Mercado, más en Triana, Nervión,
+Los Remedios y el Centro). Es otra razón para parar en rojo en vez de saltárselo.

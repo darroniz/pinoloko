@@ -460,6 +460,32 @@ export class AudioJuego {
     }
   }
 
+  /** El silbato del agente a pie: dos pitidos agudos con trino. */
+  silbato(): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    for (const dt of [0, 0.28]) {
+      const t = ctx.currentTime + dt;
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(2600, t);
+      const trino = ctx.createOscillator();
+      trino.type = 'sine';
+      trino.frequency.value = 38;
+      const prof = ctx.createGain();
+      prof.gain.value = 180;
+      trino.connect(prof).connect(osc.frequency);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.09, t + 0.01);
+      g.gain.setValueAtTime(0.09, t + 0.16);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      osc.connect(g).connect(this.maestro);
+      trino.start(t); osc.start(t);
+      trino.stop(t + 0.24); osc.stop(t + 0.24);
+    }
+  }
+
   /** El butanero golpea dos bombonas: dos toques metálicos secos. */
   butano(volumen = 0.12): void {
     if (!this.ctx || !this.maestro) return;

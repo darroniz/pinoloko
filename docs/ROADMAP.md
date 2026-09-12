@@ -96,6 +96,9 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Escalerazo: bajar las escaleras de OSM con la moto.
 - [x] El Sevici se pedalea: a pie y con E junto a un ciclista.
 - [x] El dueño del coche te persigue al robárselo; el tráfico nace y se queda dentro de la caja; "Esta sesión" en STATS.
+- [x] El grafo se recorta a la caja (nadie nace ni vaga fuera de plano) y los pregones del Mercado.
+- [x] Progreso numérico en los logros pendientes; silbato de la Local a pie; frases del botellón.
+- [x] Pique de semáforo: ganarle la salida al coche de al lado cuando se pone en verde.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

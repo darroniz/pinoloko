@@ -245,6 +245,9 @@ export class Juego {
   private viaActual: Via | null = null;
   private cercaniaBotellon = 0;
   private tiempoPregon = 8;
+  private tiempoFraseBotellon = 4;
+  /** Pique de semáforo: parado en rojo con un coche al lado; al verde, el primero en arrancar gana. */
+  private piqueSemaforo: { armado: number; verde: number } = { armado: 0, verde: -1 };
   private cercaniaAficion = 0;
   private enfriamientoEscalera = 0;
   /** La calle de sentido único sobre la que vas (se mira cada 0,3 s, no por frame). */
@@ -745,7 +748,7 @@ export class Juego {
     if (this.aPie) this.tiempoSinPie = 0; else this.tiempoSinPie += dt;
     if (b.agentes.lista.length < objetivoAgentes && this.tiempoAgente <= 0) {
       this.tiempoAgente = 2.5;
-      if (b.agentes.aparecer({ x: pos.x, z: pos.z })) { this.hud.avisar('¡La Local a pie por los pasajes!', 1.6); this.pista('agentes', 'A pie la Local también entra en los pasajes: corre (mantén FRENO) o coge una moto'); }
+      if (b.agentes.aparecer({ x: pos.x, z: pos.z })) { this.audio.silbato(); this.hud.avisar('¡La Local a pie por los pasajes!', 1.6); this.pista('agentes', 'A pie la Local también entra en los pasajes: corre (mantén FRENO) o coge una moto'); }
     }
     if (b.agentes.lista.length && (this.busqueda.estrellas < 2 || this.tiempoSinPie > 6)) b.agentes.retirarTodos();
     if (b.agentes.lista.some((a) => (a.x - pos.x) ** 2 + (a.z - pos.z) ** 2 > 130 * 130)) b.agentes.retirarLejano({ x: pos.x, z: pos.z });
@@ -939,6 +942,37 @@ export class Juego {
       this.tiempoGolNinos = 12;
       if (this.barrio.pachangas.lista.some((p) => Math.hypot(p.x - pos.x, p.z - pos.z) < 40)) this.hud.avisar('¡Gol de los niños del pasaje!', 1.6);
     }
+  }
+
+  /** Pique de semáforo: un segundo parado en rojo con un coche del tráfico al lado; cuando se
+   *  pone verde, si sales a más de 7 m/s en dos segundos y medio, le has ganado la salida. */
+  private actualizarPiqueSemaforo(pos: THREE.Vector3, rapidez: number, dt: number): void {
+    const b = this.barrio;
+    const q = this.piqueSemaforo;
+    if (this.aPie || !b.semaforos.cruces.length) { q.armado = 0; q.verde = -1; return; }
+    if (q.verde >= 0) {
+      q.verde += dt;
+      if (rapidez > 7) {
+        q.verde = -1;
+        this.ganar(15);
+        this.contador.sumar('salidas');
+        this.hud.avisar(['¡Le has ganado la salida! +15 €', '¡Salida de semáforo! El de al lado, con la boca abierta +15 €', '¡Verde y a fondo! +15 €'][Math.floor(Math.random() * 3)]!, 1.8);
+        this.audio.pitido(1100, 0.1, 0.14);
+        this.pista('salida', 'Parado en rojo con un coche al lado, al ponerse verde sal a fondo: ganarle la salida son 15 €');
+      } else if (q.verde > 2.5) q.verde = -1;
+      return;
+    }
+    if (rapidez > 0.6) { q.armado = 0; return; }
+    const luz = b.semaforos.luzDelante(pos.x, pos.z, this.vehiculo.estado.rumbo, 7);
+    if (!luz) { q.armado = 0; return; }
+    if (luz.luz !== 'rojo') {
+      // Armado y se ha puesto verde: empieza la cuenta.
+      if (q.armado > 1) q.verde = 0;
+      q.armado = 0;
+      return;
+    }
+    const alLado = b.trafico.lista.some((c) => c.activo && c.velocidad < 0.5 && (c.x - pos.x) ** 2 + (c.z - pos.z) ** 2 < 6.5 * 6.5);
+    q.armado = alLado ? q.armado + dt : 0;
   }
 
   /** Semáforos: ciclan solos; pasar uno en rojo en vehículo y con prisa calienta a la Local. */
@@ -1884,6 +1918,7 @@ export class Juego {
       this.actualizarSaltos(dt);
       if (!this.sinEstilo) this.actualizarEstilo(jugadorPos, rapidez, dt);
       this.actualizarSemaforos(jugadorPos, rapidez, dt);
+      this.actualizarPiqueSemaforo(jugadorPos, rapidez, dt);
       this.actualizarRecados(jugadorPos, dt);
       performance.mark('u4b');
       this.actualizarTaxi(jugadorPos, rapidez, dt);
@@ -2117,6 +2152,13 @@ export class Juego {
         const bot = b.botellon.actualizar(this.cielo.hora, { x: pos.x, z: pos.z });
         this.cercaniaBotellon = bot.cercania;
         if (bot.empieza && b.botellon.sitio && Math.hypot(b.botellon.sitio.x - pos.x, b.botellon.sitio.z - pos.z) < 140) { this.hud.avisar('Botellón en la plaza: ya suena el reggaetón del altavoz', 2.4); this.pista('botellon', 'De diez a cuatro hay botellón en la plaza del barrio. Pasar por medio a toda pastilla lo disuelve, y eso paga (y calienta)'); }
+        // Pasando despacio junto al botellón, te dicen cosas.
+        this.tiempoFraseBotellon -= 0.3;
+        if (b.botellon.activo && !b.botellon.disuelto && b.botellon.sitio && this.tiempoFraseBotellon <= 0 && !this.hud.avisoReciente(2) && (b.botellon.sitio.x - pos.x) ** 2 + (b.botellon.sitio.z - pos.z) ** 2 < 14 * 14) {
+          this.tiempoFraseBotellon = 9;
+          const frases = b.ficha.tribu === 'pijos' ? ['¿Tú de qué urbanización eres?', '¡Ponte algo, que suena Quevedo!', '¿Esa moto es de tu padre?'] : b.ficha.tribu === 'modernos' ? ['¿Vienes a la sesión de vinilos?', '¡Esto es un picnic sonoro, tío!', '¿Tienes tabaco de liar?'] : ['¡Wifly, una litrona, illo!', '¿Tú no eres el hijo de la Mari?', '¡Ponte una, que es viernes!', '¡Baja el volumen, que viene la Local!', '¿Me llevas al Mercado en la moto?'];
+          this.hud.avisar(`Los del botellón: "${frases[Math.floor(Math.random() * frases.length)]}"`, 2.2);
+        }
         if (bot.disuelto && b.botellon.sitio) {
           const s = b.botellon.sitio;
           this.ganar(40, { x: s.x, y: 0, z: s.z });

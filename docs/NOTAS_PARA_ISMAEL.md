@@ -33,6 +33,12 @@ con lo que OSM ya trae y aún no uso (piscinas de Nervión, parques infantiles).
 - [x] **Bloque 9 (hecho a la 01:05)** — **El Sevici se pedalea**: a pie y con E junto a un ciclista.
 - [x] **Bloque 10 (hecho a la 01:35)** — **El dueño del coche** te persigue al robárselo (te saca si te pilla parado); el tráfico
       que se salía de la caja reaparece dentro; pestaña STATS con "Esta sesión".
+- [x] **Bloque 11 (hecho a la 01:49)** — El grafo se recorta a la caja (un tercio de los nodos del Mercado estaba fuera y
+      medio barrio vivía fuera de plano), densidad de tráfico ajustada y los pregones del Mercado.
+- [x] **Bloque 12 (hecho a la 01:55)** — Progreso numérico en cada logro pendiente (12 / 40), silbato de la Local a pie
+      y frases de los del botellón al pasar.
+- [x] **Bloque 13 (hecho a la 01:55)** — **Pique de semáforo**: parado en rojo con un coche al lado, al verde a fondo
+      y le ganas la salida (15 €).
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-12 — resumen para leer en el móvil

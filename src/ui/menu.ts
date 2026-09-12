@@ -52,6 +52,9 @@ const AYUDA = `
 el camión de Lipasam y el 13. Las motos que robas se quedan en el garaje; el taller las mejora con lo que ganes.</p>
 <p class="peque"><strong>Lío.</strong> Conos, macetas, contenedores, terrazas, cajas del mercado y los puestos del mercadillo dan dinero y
 racha. Saltarse un semáforo en rojo, atropellar vecinos, ciclistas del Sevici o moteros calienta a la Policía Local.</p>
+<p class="peque"><strong>Estilo.</strong> Conducir bien también paga: una derrapada larga (frenar girando), un caballito largo (a fondo desde
+parado), pasar rozando coches y vecinos sin tocarlos ("por los pelos") y tirar en contramano por una calle de sentido único (cada tres
+segundos más, y calienta un poco a la Local).</p>
 <p class="peque"><strong>La Local.</strong> Sus coches no entran en los pasajes; a tres estrellas salen motos que sí, y a cinco el
 helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dirección lo pierdes.</p>
 <p class="peque"><strong>Radares.</strong> Poste con cámara y raya blanca en las avenidas: pasarla a más de 50 km/h es foto multa, 50 € menos.</p>
@@ -68,7 +71,9 @@ los que esperan suben y pagan el billete. Con el camión de Lipasam, párate jun
 (de noche, más). Si dejas la moto sola un rato, un cani se la lleva: sale en el minimapa, alcánzalo y a pie con E la recuperas. Con
 estrellas o la moto tocada, párate en el anillo azul de <strong>chapa y pintura</strong> con el vehículo: por 100 € la Local te olvida y sale como nueva.
 En los saltos, mueve el joystick a los lados para girar en el aire: cada 360 son 40 € más. Si revientas un vehículo vienen los
-bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones.</p>
+bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones. Si rompes la terraza de un bar, el camarero
+sale con la escoba y te persigue a pie (si te pilla parado, escobazo y 20 €); y el motero al que le quitas la moto te corre detrás: si te
+pilla, se la lleva de vuelta.</p>
 <p class="peque"><strong>Territorio pijo.</strong> En Los Remedios y Nervión, los de azul marino sin jersey son vigilantes de seguridad: si te ven liarla, la Local
 se entera al momento. Y entre las tres y las cinco y media es la siesta: medio barrio en casa.</p>
 <p class="peque"><strong>Barrios.</strong> A pie y en una parada, el 13 te lleva a la Alameda, a Triana, a Los Remedios o a Nervión (territorio pijo) y al Centro (guiris), y de vuelta. Cuidado con el

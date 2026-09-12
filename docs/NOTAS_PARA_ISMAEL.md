@@ -4,6 +4,30 @@ Un párrafo por sesión nocturna, el más reciente arriba. Corto, para leer en e
 
 ---
 
+## Plan de la noche del 2026-09-13 (sexta sesión, 00:15 → 04:45)
+
+Sin feedback nuevo en `FEEDBACK.md` y el roadmap vacío salvo lo que depende de ti. La noche va
+de dos cosas: que **conducir por conducir dé dinero** (el hito 1 pide que moverse sea
+divertido, y hasta ahora solo pagaban los destrozos) y que **el barrio se defienda y viva**
+con lo que OSM ya trae y aún no uso (piscinas de Nervión, parques infantiles). Todo freestyle.
+
+- [ ] **Bloque 1 (00:30-01:15)** — **Conducir con estilo**: derrapadas largas, caballitos
+      largos, pasar "por los pelos" junto a coches y vecinos y tirar por una calle en
+      contramano dan euros y racha. Lógica pura con tests, estadísticas, logros y pistas.
+- [ ] **Bloque 2 (01:15-01:50)** — **El barrio se venga**: el dueño del bar sale con la escoba
+      si le rompes la terraza y te persigue por el pasaje (escobazo = al suelo y 20 € menos);
+      el motero al que le robas la moto te corre detrás gritando. Tests. Gate y push.
+- [ ] **Bloque 3 (01:50-02:30)** — **Retos del día**: tres retos que cambian cada día
+      (semilla por fecha), 150 € cada uno, en la pestaña de LOGROS. Tests.
+- [ ] **Bloque 4 (02:30-03:05)** — **Piscinas y parques de OSM**: las piscinas de Nervión, la
+      Alameda y Triana como agua (chapuzón con la moto: salpicón, euros y calor) y los parques
+      infantiles con columpios y toboganes derribables. Regenerar niveles. Gate y push.
+- [ ] **Bloque 5 (03:05-03:40)** — **Vendedores ambulantes**: el butanero (camión naranja con
+      bombonas que ruedan al golpearlo), el chatarrero con megáfono y el afilador con el chiflo.
+- [ ] **Bloque 6 (03:40-04:10)** — **El fantasma del récord** en las carreras: tu mejor vuelta
+      corre contigo como una moto translúcida. Gate y push.
+- [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
+
 ## Noche del 2026-09-12 — resumen para leer en el móvil
 
 **Qué hay nuevo** (todo en https://pinoloko.com/, cinco commits): el barrio tiene **oficios** y

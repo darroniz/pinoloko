@@ -100,6 +100,11 @@ export class Scooter {
     return this.salud <= 0;
   }
 
+  /** Ángulo del caballito ahora mismo (radianes; 0 = ruedas en el suelo). */
+  get anguloCaballito(): number {
+    return this.caballito;
+  }
+
   constructor(fisica: MundoFisico, x: number, z: number, rumbo: number, modelo: ModeloScooter = MODELOS[0]!) {
     this.modelo = modelo;
     this.ajustes = modelo.ajustes;
@@ -240,7 +245,8 @@ export class Scooter {
     }
     if (this.rota) acelerador = 0;
     if (acelerador > 0) {
-      vf += a.aceleracion * acelerador * dt;
+      // Con el morro arriba la rueda trasera empuja menos: el caballito dura más y se puede aguantar.
+      vf += a.aceleracion * acelerador * (this.caballito > 0.12 ? 0.55 : 1) * dt;
       if (vf > a.velocidadMaxima) vf = a.velocidadMaxima;
     } else if (!entrada.freno) {
       vf -= vf * a.rozamiento * dt;
@@ -268,8 +274,9 @@ export class Scooter {
     const objetivo = -this.giroActual * Math.min(1, rapidez / 6) * a.inclinacionMaxima;
     this.inclinacion += (objetivo - this.inclinacion) * Math.min(1, dt * 8);
     // Caballito: acelerando a fondo por debajo de media punta, el morro sube (más con más variador).
-    const umbral = a.velocidadMaxima * 0.45;
-    const objetivoCaballito = acelerador > 0.8 && !entrada.freno && rapidez > 0.5 && rapidez < umbral ? 0.38 * (1 - rapidez / umbral) * Math.min(1.3, a.aceleracion / 11) : 0;
+    // Con histéresis: una vez arriba, aguanta hasta bastante más velocidad que la que hace falta para subirlo.
+    const umbral = a.velocidadMaxima * (this.caballito > 0.12 ? 0.7 : 0.45);
+    const objetivoCaballito = acelerador > 0.8 && !entrada.freno && rapidez > 0.5 && rapidez < umbral ? Math.max(this.caballito > 0.12 ? 0.2 : 0, 0.38 * (1 - rapidez / umbral)) * Math.min(1.3, a.aceleracion / 11) : 0;
     this.caballito += (objetivoCaballito - this.caballito) * Math.min(1, dt * (objetivoCaballito > this.caballito ? 5 : 3));
   }
 

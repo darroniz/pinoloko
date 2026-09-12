@@ -57,6 +57,12 @@ export const LOGROS: Logro[] = [
   { id: 'el061', nombre: 'El 061 ya te conoce', descripcion: 'Tres salidas de la ambulancia por tu culpa', cumple: (e) => e.ambulancias >= 3 },
   { id: 'semaforo_pique', nombre: 'Pique de semáforo', descripcion: 'Acepta un pique callejero de un motero', cumple: (e) => e.piquesCallejeros >= 1 },
   { id: 'lipasam', nombre: 'Empleado del mes de Lipasam', descripcion: 'Recoge 20 contenedores con el camión', cumple: (e) => e.contenedores >= 20 },
+  { id: 'derrapador', nombre: 'Rey del derrape', descripcion: 'Diez derrapadas largas', cumple: (e) => e.derrapadas >= 10 },
+  { id: 'caballito', nombre: 'A una rueda', descripcion: 'Un caballito de más de 2 s', cumple: (e) => e.caballitoMaximo >= 2 },
+  { id: 'pelos', nombre: 'Por los pelos', descripcion: 'Veinticinco pasadas rozando sin tocar', cumple: (e) => e.porLosPelos >= 25 },
+  { id: 'contramano', nombre: 'Contramano', descripcion: 'Cinco tramos en dirección prohibida', cumple: (e) => e.contramanos >= 5 },
+  { id: 'escobazo', nombre: 'Escobazo', descripcion: 'Que el camarero te dé con la escoba', cumple: (e) => e.escobazos >= 1 },
+  { id: 'devuelta', nombre: 'Era de su primo', descripcion: 'Que un motero recupere su moto', cumple: (e) => e.motosDevueltas >= 1 },
   { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20 },
 ];
 

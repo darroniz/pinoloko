@@ -32,6 +32,7 @@ import { Rivales } from './rivales';
 import { Pintadas } from './pintadas';
 import { Radares } from './radares';
 import { Agentes } from '../policia/agentes';
+import { Perseguidores } from './perseguidores';
 import { construirFarolas } from './farolas';
 import { localesConNombre, type Local } from '../recados';
 import type { Nivel } from './tipos';
@@ -65,6 +66,8 @@ export class Barrio {
   readonly pintadas: Pintadas;
   readonly radares: Radares;
   readonly agentes: Agentes;
+  /** El camarero con la escoba y el motero desplumado: gente del barrio que sale a por ti. */
+  readonly perseguidores: Perseguidores;
   /** Clientes del taxi con la mano levantada (solo mientras llevas un taxi). */
   readonly clientes: Clientes;
   /** La vecina del quinto, que sale a la azotea a tirarte macetas. */
@@ -168,6 +171,8 @@ export class Barrio {
     this.grupo.add(this.radares.grupo);
     this.agentes = new Agentes(this.grafo, 3);
     this.grupo.add(this.agentes.grupo);
+    this.perseguidores = new Perseguidores(this.grafo, 2);
+    this.grupo.add(this.perseguidores.grupo);
     this.clientes = new Clientes(nivel, TRIBUS[ficha.tribu].ropa);
     this.grupo.add(this.clientes.grupo);
     this.grupo.add(this.vecina.grupo);

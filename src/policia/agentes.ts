@@ -42,7 +42,7 @@ export function crearAgente(grafo: GrafoBarrio, jugador: { x: number; z: number 
 }
 
 /** Un paso de un agente. Devuelve 'trinca' si te ha echado el guante. */
-export function pasoAgente(a: Agente, grafo: GrafoBarrio, jugador: { x: number; z: number }, dt: number): 'trinca' | null {
+export function pasoAgente(a: Agente, grafo: GrafoBarrio, jugador: { x: number; z: number }, dt: number, velocidad = VELOCIDAD_AGENTE): 'trinca' | null {
   const dx = jugador.x - a.x, dz = jugador.z - a.z;
   const d = Math.hypot(dx, dz);
   a.fase += dt * 9;
@@ -55,8 +55,8 @@ export function pasoAgente(a: Agente, grafo: GrafoBarrio, jugador: { x: number; 
   // Cerca y a la vista: va a por ti en línea recta; si no, por el grafo.
   if (d < 12) {
     a.rumbo = Math.atan2(dx / d, -dz / d);
-    a.x += Math.sin(a.rumbo) * VELOCIDAD_AGENTE * dt;
-    a.z += -Math.cos(a.rumbo) * VELOCIDAD_AGENTE * dt;
+    a.x += Math.sin(a.rumbo) * velocidad * dt;
+    a.z += -Math.cos(a.rumbo) * velocidad * dt;
     a.nodo = grafo.masCercano(a.x, a.z, 'peatonal');
     a.camino = [];
     a.t = 0;
@@ -76,15 +76,15 @@ export function pasoAgente(a: Agente, grafo: GrafoBarrio, jugador: { x: number; 
   if (siguiente === undefined) {
     // Sin camino (no debería pasar): a campo través, despacio.
     a.rumbo = Math.atan2(dx / d, -dz / d);
-    a.x += Math.sin(a.rumbo) * VELOCIDAD_AGENTE * 0.6 * dt;
-    a.z += -Math.cos(a.rumbo) * VELOCIDAD_AGENTE * 0.6 * dt;
+    a.x += Math.sin(a.rumbo) * velocidad * 0.6 * dt;
+    a.z += -Math.cos(a.rumbo) * velocidad * 0.6 * dt;
     return null;
   }
   const [sx, sz] = grafo.nodos[siguiente] ?? [a.x, a.z];
   const ex = sx - a.x, ez = sz - a.z;
   const l = Math.hypot(ex, ez);
   if (l < 0.3) { a.nodo = siguiente; a.camino.shift(); return null; }
-  const paso = Math.min(l, VELOCIDAD_AGENTE * dt);
+  const paso = Math.min(l, velocidad * dt);
   a.rumbo = Math.atan2(ex / l, -ez / l);
   a.x += (ex / l) * paso;
   a.z += (ez / l) * paso;

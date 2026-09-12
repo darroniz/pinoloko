@@ -127,3 +127,29 @@ describe('la siesta', () => {
     expect(Math.hypot(fuera.x - fx, fuera.z - fz)).toBeGreaterThan(0.3);
   });
 });
+
+describe('el corro del botellón', () => {
+  it('planta a los vecinos en círculo y los deja ahí hasta que se acaba la fiesta', async () => {
+    const { Vecinos } = await import('../src/mundo/peatones');
+    const { GrafoBarrio } = await import('../src/mundo/grafo');
+    const { readFileSync } = await import('node:fs');
+    const nivel = JSON.parse(readFileSync(new URL('../public/barrios/pino-montano/nivel.json', import.meta.url), 'utf8')) as import('../src/mundo/tipos').Nivel;
+    const grafo = new GrafoBarrio(nivel.grafo);
+    const vecinos = new Vecinos(grafo, 30);
+    const [x, z] = grafo.nodos[grafo.masCercano(0, 0, 'peatonal')]!;
+    const miembros = vecinos.fiesta(x, z, 7, 3);
+    expect(miembros).toHaveLength(7);
+    for (const v of miembros) {
+      expect(v.fiesta).toBe(true);
+      expect(v.objetivo).not.toBeNull();
+      expect(Math.hypot(v.objetivo!.x - x, v.objetivo!.z - z)).toBeLessThan(4.5);
+      expect(Math.hypot(v.x - x, v.z - z)).toBeLessThanOrEqual(40.01);
+    }
+    // Andan hasta su sitio y se quedan mirando al centro sin caducar.
+    for (let i = 0; i < 60 * 30; i++) vecinos.actualizar({ x: 500, z: 500, rapidez: 0 }, 1 / 30, false);
+    expect(miembros.filter((v) => v.estado === 'mirando').length).toBeGreaterThanOrEqual(5);
+    vecinos.acabarFiesta(miembros);
+    for (let i = 0; i < 30; i++) vecinos.actualizar({ x: 500, z: 500, rapidez: 0 }, 1 / 30, false);
+    expect(miembros.every((v) => !v.fiesta && v.estado !== 'mirando')).toBe(true);
+  });
+});

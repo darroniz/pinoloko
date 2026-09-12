@@ -904,3 +904,103 @@ por la regla del jersey ya salía sin él) son vigilantes de seguridad privada: 
 nadie llama a nadie. La siesta: de 15:00 a 17:30 (hora del juego) un tercio fijo de los vecinos
 (por color de ropa) no se mueve ni se pinta mientras pasea o está sentado; los que esperan el 13
 o miran un corro siguen. Y el 13 sisea al abrir las puertas (el siseo del spray, más corto).
+
+## 2026-09-13 — Conducir con estilo: la moto paga por cómo la llevas
+
+El hito 1 pide que moverse sea divertido, y hasta hoy solo pagaban los destrozos. `src/estilo.ts`
+(lógica pura, tests) premia cuatro cosas: derrapada larga (≥ 0,8 s derrapando a más de 4 m/s;
+5 € + 15 €/s), caballito largo (≥ 0,8 s con el morro a más de 0,15 rad; 10 € + 15 €/s), "por
+los pelos" (algo que entra a menos de 3,1 m si es coche o 1,8 m si es vecino yendo a más de
+7 m/s y sale sin que haya golpe: 8 €, con 0,8 s entre premios) y contramano (sobre una rodada
+de sentido único de OSM yendo contra su sentido: cada 3 s paga 15 € × tramo hasta ×4, calienta
+un poco y el primer tramo va con bocinazo). Para que el caballito sea sostenible, la scooter
+lleva histéresis (una vez arriba aguanta hasta el 70 % de la punta, no el 45 %) y con el morro
+arriba la rueda trasera empuja al 55 %: el caballito de a fondo desde parado dura ~1,5 s en vez
+de 0,4. La calle de sentido único se mira en el tick de 0,3 s (`viaUnica`), no por frame: la
+primera versión recorría todas las vías cada frame y el gate lo notó.
+
+## 2026-09-13 — El barrio se venga: el camarero y el motero desplumado
+
+`src/mundo/perseguidores.ts` reutiliza la persecución de la Local a pie (`pasoAgente` con
+velocidad propia): el camarero (4,2 m/s, 16 s de aguante) sale de la puerta del bar con nombre
+más cercano (a menos de 16 m) cuando rompes una mesa o una silla, con 40 s de enfriamiento; si
+te pilla parado, escobazo (empujón, 20 € menos, 6 de salud al vehículo). El motero al que le
+quitas la moto en marcha (4,9 m/s, 22 s) te corre detrás: si te pilla llevando su moto, te tira
+y se la lleva de vuelta (reutiliza el flujo de "te han levantado la moto": sale en el minimapa y
+se recupera); si vas a pie o en coche y su moto está a menos de 8 m, se la lleva igual; si no,
+empujón y grito. Los dos se rinden pasado su tiempo o a más de 140 m. Máximo uno de cada.
+
+## 2026-09-13 — Retos del día
+
+Tres retos por fecha (`src/retos.ts`: FNV del AAAA-MM-DD como semilla, tres del catálogo de 22),
+150 € cada uno. Se miden contra una foto de las estadísticas hecha la primera vez que arrancas
+ese día, así que valen con la partida que tengas y no piden empezar de cero. Viven en la pestaña
+LOGROS (encima de los logros) y al arrancar la partida salen en un aviso a los tres segundos. No
+son misiones: son metas del freestyle con fecha de caducidad, para que haya motivo de entrar
+cada día en el móvil.
+
+## 2026-09-13 — Piscinas, fuentes y parques infantiles de OSM
+
+`leisure=swimming_pool` y `amenity=fountain` salen como zona `pool` (12 en Nervión, 4 en la
+Alameda, 2 en Triana, 1 en Los Remedios y 1 en el Centro): agua poco honda, distinta del río.
+Entrar frena (la velocidad baja un 2,2 %/frame·s) y con la moto es chapuzón: salpicón, 30 €
+(40 en barrio pijo), calor de tres trastos, los vecinos huyen, corro y vigilante; 20 s entre
+chapuzones. A pie solo salpica. Las piscinas de patio interior quedan tapadas por el bloque y no
+se ven: no pasa nada. Los `leisure=playground` (3 en el Mercado) llevan un columpio y un tobogán
+derribables (25 y 30 €) en su centroide, si cabe dentro del polígono.
+
+## 2026-09-13 — Vendedores ambulantes: butanero, chatarrero y afilador
+
+Un camión del butano (tipo camión, variante `butano`, 12 bombonas de carga) y una furgoneta del
+chatarrero (variante `chatarrero`) por barrio, además del tráfico normal. Golpe a más de 3 con
+el camión a menos de 7,5 m: caen tres bombonas (trasto `bombona`, 10 €) por detrás, ya
+despiertas y con empujón; ruedan y cuentan como derribadas. Los dos se roban como los demás
+(`el camión del butano`, `la furgoneta del chatarrero`); el de Lipasam sigue siendo el único que
+recoge contenedores. Sonido: dos toques metálicos cada 2,8 s a menos de 55 m del butanero; el
+megáfono del chatarrero es sierra por paso banda (1.100 Hz, Q 3) en catorce sílabas a menos de
+75 m cada ~10 s, con el texto en el HUD a menos de 45 m cada 30 s; el chiflo del afilador es la
+escala en triángulo, de día, si vas por un pasaje, cada 70-130 s. Sin TTS: la voz de verdad es
+un asset pendiente.
+
+## 2026-09-13 — El fantasma del récord
+
+En las carreras de pancarta (`indiceCarrera >= 0`) se graba tu trazada cada 0,2 s (tope 760
+muestras) y, si es récord, se guarda en `pinoloko.fantasmas.v1` por barrio y carrera. La
+siguiente vez corre contigo una moto translúcida (0,42 de opacidad, sin escribir profundidad)
+que la repite interpolando. Los piques callejeros no tienen fantasma porque su ruta se genera
+al momento. Sin cuerpo físico: es un fantasma.
+
+## 2026-09-13 — El botellón, la afición y el escalerazo
+
+Un corro nocturno reutilizable (`src/mundo/botellon.ts`): `Vecinos.fiesta` planta a N vecinos
+que paseaban en círculo alrededor de un punto (los que estaban a más de 40 m aparecen a 14 m
+andando: nadie los ve llegar) con `fiesta = true`, que al llegar los deja en `mirando` sin
+caducidad. El botellón es de 22:00 a 04:00 en la plaza (nodo peatonal más cercano al centro de
+la zona verde más grande, o el cruce de pasajes con más salidas): siete vecinos, cinco litronas
+(trasto que se cae y rueda, sin romperse: seguimos sin cristales) y el reggaetón sintetizado
+(dembow a 95: bombo de seno que cae, caja de ruido, charles) que sube con la cercanía hasta 65 m.
+La afición es el mismo corro a la puerta del estadio (edificio `estadio`: Nervión) de 20:30 a
+22:30, doce vecinos en un radio de 5 m, con rumor de gente, palmas y un "¡Se-vi-lla!" grave.
+Pasar por medio a más de 6 m/s los hace huir; cuando la mitad ha salido corriendo, el corro se
+disuelve una vez por noche (40 € el botellón, 30 € la afición, algo de calor y, en barrio pijo,
+el vigilante). El escalerazo: en el tick de 0,3 s, sobre una vía `steps` de OSM en vehículo a
+más de 4 m/s, 20 € y traqueteo, con 8 s de enfriamiento. En el Mercado no hay escaleras; en el
+Centro hay quince.
+
+## 2026-09-13 — El Sevici se pedalea
+
+`SEVICI` es un `ModeloScooter` con `bici: true` fuera de `MODELOS`: sin motor (silencio), sin
+caballito, 7,5 m/s de punta, gira mucho y agarra mucho. A pie y con E junto a un ciclista (si no
+hay una moto más cerca), el ciclista sale de la lista del Sevici y nace una bici de verdad.
+Calienta poco (dos trastos): coger un Sevici sin tarjeta no es robar una moto. No entra en el
+garaje ni en el taller (índice -1 en `MODELOS`, que ya se toleraba), nadie te lo levanta y al
+guardar la partida sales con la Jog. Es la bici de los modernos de la Alameda y la forma más
+silenciosa de pasar por delante de la Local.
+
+## 2026-09-13 — El gate y el A/B de esta noche
+
+El gate ha fallado dos veces (107 y 84 frames, update 8,9-9,4 ms) con la Pi a 67 °C ya
+estrangulada, y el A/B en los dos órdenes da la build de anoche un 15-25 % por encima. El
+perfil por tramos dice que el `update()` es igual (13,7 frente a 14,1 ms) y que la diferencia
+está en el render de SwiftShader. Se ha buscado el coste con los interruptores `?estilo=0` y
+`?ambulantes=0` (ver el resultado en `docs/NOTAS_PARA_ISMAEL.md`).

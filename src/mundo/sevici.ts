@@ -124,6 +124,23 @@ export class Sevici {
     this.grupo.add(this.malla);
   }
 
+  /** Un ciclista a mano (pedaleando o en el suelo), para robarle la bici. */
+  cercano(x: number, z: number, radio: number): Ciclista | null {
+    let mejor: Ciclista | null = null, mejorD = radio * radio;
+    for (const c of this.lista) {
+      const d = (c.x - x) ** 2 + (c.z - z) ** 2;
+      if (d < mejorD) { mejorD = d; mejor = c; }
+    }
+    return mejor;
+  }
+
+  /** Le quitas la bici: el ciclista desaparece de la lista (se queda en la acera, se supone). */
+  robar(c: Ciclista): void {
+    const i = this.lista.indexOf(c);
+    if (i >= 0) this.lista.splice(i, 1);
+    if (this.malla) this.malla.count = this.lista.length;
+  }
+
   actualizar(jugador: { x: number; z: number; rapidez: number }, dt: number): { atropellos: number; timbre: boolean } {
     let atropellos = 0, timbre = false;
     if (!this.malla) return { atropellos, timbre };

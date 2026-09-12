@@ -25,6 +25,8 @@ export interface Vecino {
   parada: number;
   /** Punto fuera del grafo al que anda (la marquesina); al llegar se queda esperando. */
   objetivo: { x: number; z: number; rumbo: number } | null;
+  /** De botellón: al llegar a su sitio se queda ahí toda la noche. */
+  fiesta?: boolean;
 }
 
 export const INSULTOS = [
@@ -134,6 +136,8 @@ export function pasoVecino(
   }
   if (v.estado === 'sentado' || v.estado === 'esperando' || v.estado === 'mirando') {
     if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > (v.estado === 'sentado' ? 4 : 6)) {
+      // El del botellón que sale corriendo ya no vuelve al corro.
+      if (v.fiesta) { v.fiesta = false; v.objetivo = null; }
       v.estado = 'huir';
       v.parada = -1;
       v.tiempo = 2 + rnd() * 2;
@@ -142,6 +146,14 @@ export function pasoVecino(
     return null;
   }
   // Camino de la marquesina: anda en línea recta al punto y al llegar se queda esperando.
+  if (v.estado === 'pasear' && v.objetivo && d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > 4) {
+    // Iba a la marquesina o al corro y le pasas rozando: sale corriendo (y si era del botellón, no vuelve).
+    if (v.fiesta) v.fiesta = false;
+    v.objetivo = null;
+    v.estado = 'huir';
+    v.tiempo = 2 + rnd() * 2;
+    return evento;
+  }
   if (v.estado === 'pasear' && v.objetivo) {
     const ex = v.objetivo.x - v.x, ez = v.objetivo.z - v.z;
     const dist = Math.hypot(ex, ez);
@@ -149,7 +161,7 @@ export function pasoVecino(
       v.rumbo = v.objetivo.rumbo;
       v.objetivo = null;
       if (v.parada >= 0) v.estado = 'esperando';
-      else { v.estado = 'mirando'; v.tiempo = 7 + rnd() * 6; }
+      else { v.estado = 'mirando'; v.tiempo = v.fiesta ? 1e9 : 7 + rnd() * 6; }
       return evento;
     }
     v.rumbo = Math.atan2(ex, -ez);
@@ -159,6 +171,7 @@ export function pasoVecino(
     return evento;
   }
   if (v.estado === 'pasear' && d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > 4) {
+    if (v.fiesta) { v.fiesta = false; v.objetivo = null; }
     v.estado = 'huir';
     v.parada = -1;
     v.objetivo = null;
@@ -394,6 +407,38 @@ export class Vecinos {
       n++;
     }
     return n;
+  }
+
+  /** El botellón: `cuantos` vecinos que paseaban se plantan en corro alrededor de (x, z) y se quedan
+   *  (los que estaban lejos aparecen andando desde cerca: nadie los ve llegar). */
+  fiesta(x: number, z: number, cuantos: number, radio = 2.6): Vecino[] {
+    const elegidos: Vecino[] = [];
+    const candidatos = this.lista.filter((v) => v.estado === 'pasear' && v.parada < 0 && !v.objetivo && !v.fiesta)
+      .sort((a, b) => (a.x - x) ** 2 + (a.z - z) ** 2 - ((b.x - x) ** 2 + (b.z - z) ** 2));
+    for (const v of candidatos.slice(0, cuantos)) {
+      if ((v.x - x) ** 2 + (v.z - z) ** 2 > 40 * 40) {
+        const a = this.rnd() * Math.PI * 2;
+        v.x = x + Math.sin(a) * 14; v.z = z + Math.cos(a) * 14;
+        v.nodo = this.grafo.masCercano(v.x, v.z, 'peatonal');
+      }
+      const angulo = (elegidos.length / cuantos) * Math.PI * 2 + this.rnd() * 0.4;
+      const r = radio + this.rnd() * 0.9;
+      const ox = x + Math.sin(angulo) * r, oz = z + Math.cos(angulo) * r;
+      v.objetivo = { x: ox, z: oz, rumbo: Math.atan2(x - ox, -(z - oz)) };
+      v.fiesta = true;
+      elegidos.push(v);
+    }
+    return elegidos;
+  }
+
+  /** Se acabó el botellón: los que quedaban se van a pasear. */
+  acabarFiesta(miembros: Vecino[]): void {
+    for (const v of miembros) {
+      if (!v.fiesta) continue;
+      v.fiesta = false;
+      if (v.estado === 'mirando') v.tiempo = 0;
+      else if (v.objetivo && v.estado === 'pasear') v.objetivo = null;
+    }
   }
 
   /** Una frase del corro, al azar. */

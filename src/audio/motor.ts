@@ -345,6 +345,121 @@ export class AudioJuego {
 
   private tiempoZumbido = 0;
 
+  private reggaetonGanancia: GainNode | null = null;
+  private reggaetonCompas = 0;
+
+  /** El reggaetón del altavoz del botellón: dembow sintetizado (bombo, caja de ruido y charles), con volumen según lo cerca que estés. */
+  actualizarReggaeton(cercania: number): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    if (!this.reggaetonGanancia) {
+      this.reggaetonGanancia = ctx.createGain();
+      this.reggaetonGanancia.gain.value = 0;
+      this.reggaetonGanancia.connect(this.maestro);
+      this.reggaetonCompas = ctx.currentTime;
+    }
+    const g = this.reggaetonGanancia;
+    g.gain.setTargetAtTime(cercania > 0 ? 0.11 * cercania : 0, ctx.currentTime, 0.4);
+    if (cercania <= 0) { this.reggaetonCompas = Math.max(this.reggaetonCompas, ctx.currentTime); return; }
+    // Programa un compás por delante: ocho corcheas a 95 por minuto.
+    const corchea = 60 / 95 / 2;
+    while (this.reggaetonCompas < ctx.currentTime + corchea * 8) {
+      const t0 = this.reggaetonCompas;
+      for (let i = 0; i < 8; i++) {
+        const t = t0 + i * corchea;
+        if (i === 0 || i === 4) {
+          const osc = ctx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(150, t);
+          osc.frequency.exponentialRampToValueAtTime(45, t + 0.18);
+          const e = ctx.createGain();
+          e.gain.setValueAtTime(1, t);
+          e.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+          osc.connect(e).connect(g);
+          osc.start(t); osc.stop(t + 0.27);
+        }
+        if (i === 3 || i === 6) {
+          const largo = Math.floor(ctx.sampleRate * 0.12);
+          const buffer = ctx.createBuffer(1, largo, ctx.sampleRate);
+          const datos = buffer.getChannelData(0);
+          for (let k = 0; k < largo; k++) datos[k] = (Math.random() * 2 - 1) * (1 - k / largo);
+          const fuente = ctx.createBufferSource();
+          fuente.buffer = buffer;
+          const filtro = ctx.createBiquadFilter();
+          filtro.type = 'bandpass';
+          filtro.frequency.value = 1800;
+          const e = ctx.createGain();
+          e.gain.value = 0.6;
+          fuente.connect(filtro).connect(e).connect(g);
+          fuente.start(t);
+        }
+        const hh = ctx.createOscillator();
+        hh.type = 'square';
+        hh.frequency.value = 6000;
+        const eh = ctx.createGain();
+        eh.gain.setValueAtTime(i % 2 ? 0.05 : 0.08, t);
+        eh.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+        hh.connect(eh).connect(g);
+        hh.start(t); hh.stop(t + 0.05);
+      }
+      this.reggaetonCompas += corchea * 8;
+    }
+  }
+
+  private aficionGanancia: GainNode | null = null;
+  private tiempoCantico = 2;
+
+  /** La afición a la puerta del estadio: rumor de gente (ruido por paso banda) y, cada pocos segundos, palmas y un cántico grave. */
+  actualizarAficion(cercania: number, dt: number): void {
+    if (!this.ctx || !this.maestro || !this.derrape?.buffer) return;
+    const ctx = this.ctx;
+    if (!this.aficionGanancia) {
+      const fuente = ctx.createBufferSource();
+      fuente.buffer = this.derrape.buffer;
+      fuente.loop = true;
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = 'bandpass';
+      filtro.frequency.value = 400;
+      filtro.Q.value = 0.8;
+      this.aficionGanancia = ctx.createGain();
+      this.aficionGanancia.gain.value = 0;
+      fuente.connect(filtro).connect(this.aficionGanancia).connect(this.maestro);
+      fuente.start();
+    }
+    this.aficionGanancia.gain.setTargetAtTime(cercania > 0 ? 0.14 * cercania : 0, ctx.currentTime, 0.6);
+    if (cercania <= 0) return;
+    this.tiempoCantico -= dt;
+    if (this.tiempoCantico > 0) return;
+    this.tiempoCantico = 4 + Math.random() * 3;
+    const t0 = ctx.currentTime;
+    // Tres palmas y el "¡Se-vi-lla!" grave.
+    for (let i = 0; i < 3; i++) {
+      const largo = Math.floor(ctx.sampleRate * 0.06);
+      const buffer = ctx.createBuffer(1, largo, ctx.sampleRate);
+      const datos = buffer.getChannelData(0);
+      for (let k = 0; k < largo; k++) datos[k] = (Math.random() * 2 - 1) * (1 - k / largo);
+      const f = ctx.createBufferSource();
+      f.buffer = buffer;
+      const g = ctx.createGain();
+      g.gain.value = 0.5 * cercania;
+      f.connect(g).connect(this.aficionGanancia);
+      f.start(t0 + i * 0.22);
+    }
+    let t = t0 + 0.9;
+    for (const [f, d] of [[110, 0.22], [123, 0.22], [98, 0.4]] as const) {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(f, t);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.35 * cercania, t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      osc.connect(g).connect(this.aficionGanancia);
+      osc.start(t); osc.stop(t + d + 0.02);
+      t += d;
+    }
+  }
+
   /** El butanero golpea dos bombonas: dos toques metálicos secos. */
   butano(volumen = 0.12): void {
     if (!this.ctx || !this.maestro) return;

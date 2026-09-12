@@ -38,3 +38,19 @@ describe('sevici', () => {
     expect(c.estado).toBe('pedalear');
   });
 });
+
+describe('quitarle la bici a un ciclista', () => {
+  it('el ciclista más cercano sale de la lista al robarle', async () => {
+    const { Sevici } = await import('../src/mundo/sevici');
+    const { readFileSync } = await import('node:fs');
+    const nivel = JSON.parse(readFileSync(new URL('../public/barrios/pino-montano/nivel.json', import.meta.url), 'utf8')) as import('../src/mundo/tipos').Nivel;
+    const s = new Sevici(nivel, 4);
+    s.actualizar({ x: 9999, z: 9999, rapidez: 0 }, 0.01);
+    const c = s.lista[0]!;
+    expect(s.cercano(c.x, c.z, 2)).toBe(c);
+    expect(s.cercano(c.x + 50, c.z + 50, 2)).toBeNull();
+    s.robar(c);
+    expect(s.lista).not.toContain(c);
+    expect(s.lista).toHaveLength(3);
+  });
+});

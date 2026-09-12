@@ -11,21 +11,26 @@ de dos cosas: que **conducir por conducir dé dinero** (el hito 1 pide que mover
 divertido, y hasta ahora solo pagaban los destrozos) y que **el barrio se defienda y viva**
 con lo que OSM ya trae y aún no uso (piscinas de Nervión, parques infantiles). Todo freestyle.
 
-- [ ] **Bloque 1 (00:30-01:15)** — **Conducir con estilo**: derrapadas largas, caballitos
+- [x] **Bloque 1 (hecho a las 00:33; previsto 00:30-01:15)** — **Conducir con estilo**: derrapadas largas, caballitos
       largos, pasar "por los pelos" junto a coches y vecinos y tirar por una calle en
       contramano dan euros y racha. Lógica pura con tests, estadísticas, logros y pistas.
-- [ ] **Bloque 2 (01:15-01:50)** — **El barrio se venga**: el dueño del bar sale con la escoba
+- [x] **Bloque 2 (hecho a las 00:33, con el 1; previsto 01:15-01:50)** — **El barrio se venga**: el dueño del bar sale con la escoba
       si le rompes la terraza y te persigue por el pasaje (escobazo = al suelo y 20 € menos);
       el motero al que le robas la moto te corre detrás gritando. Tests. Gate y push.
-- [ ] **Bloque 3 (01:50-02:30)** — **Retos del día**: tres retos que cambian cada día
+- [x] **Bloque 3 (hecho a las 00:40; previsto 01:50-02:30)** — **Retos del día**: tres retos que cambian cada día
       (semilla por fecha), 150 € cada uno, en la pestaña de LOGROS. Tests.
-- [ ] **Bloque 4 (02:30-03:05)** — **Piscinas y parques de OSM**: las piscinas de Nervión, la
+- [x] **Bloque 4 (hecho a las 00:40, con el 3; previsto 02:30-03:05)** — **Piscinas y parques de OSM**: las piscinas de Nervión, la
       Alameda y Triana como agua (chapuzón con la moto: salpicón, euros y calor) y los parques
       infantiles con columpios y toboganes derribables. Regenerar niveles. Gate y push.
-- [ ] **Bloque 5 (03:05-03:40)** — **Vendedores ambulantes**: el butanero (camión naranja con
+- [x] **Bloque 5 (hecho a las 00:51; previsto 03:05-03:40)** — **Vendedores ambulantes**: el butanero (camión naranja con
       bombonas que ruedan al golpearlo), el chatarrero con megáfono y el afilador con el chiflo.
-- [ ] **Bloque 6 (03:40-04:10)** — **El fantasma del récord** en las carreras: tu mejor vuelta
+- [x] **Bloque 6 (hecho a la 01:00; previsto 03:40-04:10)** — **El fantasma del récord** en las carreras: tu mejor vuelta
       corre contigo como una moto translúcida. Gate y push.
+- [x] **Bloque 7 (hecho a la 01:00)** — **El botellón**: de diez a cuatro, corro de vecinos con litronas y reggaetón
+      sintetizado en la plaza; pasar por medio lo disuelve (40 €).
+- [x] **Bloque 8 (hecho a la 01:03)** — **Día de partido** (la afición a la puerta del Sánchez-Pizjuán con cánticos) y
+      **escalerazo** (bajar las escaleras de OSM con la moto).
+- [x] **Bloque 9 (hecho a la 01:05)** — **El Sevici se pedalea**: a pie y con E junto a un ciclista.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-12 — resumen para leer en el móvil

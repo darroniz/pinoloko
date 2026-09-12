@@ -4,12 +4,13 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.wasm': 'application/wasm' };
-async function medir(DIST) {
+async function medir(arg) {
+  const [DIST, query = ''] = arg.split('?');
   const srv = createServer(async (req, res) => { let r = new URL(req.url, 'http://x').pathname; if (r.endsWith('/')) r += 'index.html'; try { res.writeHead(200, { 'content-type': MIME[extname(r)] ?? 'application/octet-stream' }); res.end(await readFile(join(DIST, r))); } catch { res.writeHead(404); res.end(); } });
   await new Promise((r) => srv.listen(0, '127.0.0.1', r));
   const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const p = await b.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
-  await p.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil: 'load' });
+  await p.goto(`http://127.0.0.1:${srv.address().port}/?${query}`, { waitUntil: 'load' });
   await p.waitForFunction(() => window.__pv_listo === true, null, { timeout: 120000 });
   await p.click('#boton-jugar');
   await new Promise((r) => setTimeout(r, 3000));

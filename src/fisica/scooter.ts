@@ -25,6 +25,8 @@ export interface ModeloScooter {
   nombre: string;
   color: string;
   ajustes: AjustesScooter;
+  /** Una bici (el Sevici): sin motor, sin caballito, lenta y silenciosa. No entra en el garaje. */
+  bici?: boolean;
 }
 
 export const JOG_RR: AjustesScooter = {
@@ -49,6 +51,12 @@ export const MODELOS: ModeloScooter[] = [
   // La de los pijos: Los Remedios y Nervión van llenos. Suave, cómoda y sin nervio.
   { nombre: 'Vespa Primavera', color: '#f5efe0', ajustes: { ...JOG_RR, aceleracion: 9, velocidadMaxima: 15, giroMaximo: 3.3, agarre: 13, agarreDerrape: 3 } },
 ];
+
+/** El Sevici: se coge a pie de un ciclista (sin tarjeta) y se pedalea. Lento, silencioso y cabe en todas partes. */
+export const SEVICI: ModeloScooter = {
+  nombre: 'Sevici', color: '#3f9f63', bici: true,
+  ajustes: { aceleracion: 4.5, velocidadMaxima: 7.5, velocidadMarchaAtras: 1.5, frenado: 12, rozamiento: 1.1, giroParado: 2.6, giroMaximo: 3.9, agarre: 14, agarreDerrape: 6, inclinacionMaxima: 0.22 },
+};
 
 /** Índice de la Vespa en MODELOS: la moto de los barrios pijos. */
 export const VESPA = MODELOS.length - 1;
@@ -126,19 +134,32 @@ export class Scooter {
     const negro = new THREE.MeshLambertMaterial({ color: '#2b2b2f' });
     const cromo = new THREE.MeshLambertMaterial({ color: '#d0d4dc' });
 
-    const cuerpoMoto = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 1.05), carroceria);
-    cuerpoMoto.position.set(0, 0.42, 0.1);
-    const asiento = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.14, 0.62), negro);
-    asiento.position.set(0, 0.66, 0.22);
-    const plataforma = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.5), negro);
-    plataforma.position.set(0, 0.26, -0.25);
-    const escudo = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.55, 0.16), carroceria);
-    escudo.position.set(0, 0.55, -0.62);
-    const escape = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6).rotateX(Math.PI / 2), cromo);
-    escape.position.set(0.22, 0.28, 0.3);
-    this.chasis.add(cuerpoMoto, asiento, plataforma, escudo, escape);
+    if (modelo.bici) {
+      // El Sevici: cuadro verde fino, cesta gris delante y sillín.
+      const cuadro = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 1.0), carroceria);
+      cuadro.position.set(0, 0.45, 0);
+      const tija = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.4, 0.1), carroceria);
+      tija.position.set(0, 0.6, 0.3);
+      const sillin = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.3), negro);
+      sillin.position.set(0, 0.82, 0.3);
+      const cesta = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.22, 0.34), new THREE.MeshLambertMaterial({ color: '#9aa0a6' }));
+      cesta.position.set(0, 0.72, -0.62);
+      this.chasis.add(cuadro, tija, sillin, cesta);
+    } else {
+      const cuerpoMoto = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 1.05), carroceria);
+      cuerpoMoto.position.set(0, 0.42, 0.1);
+      const asiento = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.14, 0.62), negro);
+      asiento.position.set(0, 0.66, 0.22);
+      const plataforma = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.5), negro);
+      plataforma.position.set(0, 0.26, -0.25);
+      const escudo = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.55, 0.16), carroceria);
+      escudo.position.set(0, 0.55, -0.62);
+      const escape = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6).rotateX(Math.PI / 2), cromo);
+      escape.position.set(0.22, 0.28, 0.3);
+      this.chasis.add(cuerpoMoto, asiento, plataforma, escudo, escape);
+    }
 
-    const geoRueda = new THREE.CylinderGeometry(0.22, 0.22, 0.12, 12).rotateZ(Math.PI / 2);
+    const geoRueda = modelo.bici ? new THREE.CylinderGeometry(0.3, 0.3, 0.07, 12).rotateZ(Math.PI / 2) : new THREE.CylinderGeometry(0.22, 0.22, 0.12, 12).rotateZ(Math.PI / 2);
     this.ruedaTrasera = new THREE.Mesh(geoRueda, negro);
     this.ruedaTrasera.position.set(0, 0.22, 0.58);
     this.ruedaDelantera = new THREE.Mesh(geoRueda, negro);
@@ -276,7 +297,7 @@ export class Scooter {
     // Caballito: acelerando a fondo por debajo de media punta, el morro sube (más con más variador).
     // Con histéresis: una vez arriba, aguanta hasta bastante más velocidad que la que hace falta para subirlo.
     const umbral = a.velocidadMaxima * (this.caballito > 0.12 ? 0.7 : 0.45);
-    const objetivoCaballito = acelerador > 0.8 && !entrada.freno && rapidez > 0.5 && rapidez < umbral ? Math.max(this.caballito > 0.12 ? 0.2 : 0, 0.38 * (1 - rapidez / umbral)) * Math.min(1.3, a.aceleracion / 11) : 0;
+    const objetivoCaballito = !this.modelo.bici && acelerador > 0.8 && !entrada.freno && rapidez > 0.5 && rapidez < umbral ? Math.max(this.caballito > 0.12 ? 0.2 : 0, 0.38 * (1 - rapidez / umbral)) * Math.min(1.3, a.aceleracion / 11) : 0;
     this.caballito += (objetivoCaballito - this.caballito) * Math.min(1, dt * (objetivoCaballito > this.caballito ? 5 : 3));
   }
 

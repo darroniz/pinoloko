@@ -86,6 +86,15 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Pintadas: seis botes de spray por barrio; a pie y con E, Wifly firma en el suelo (se guardan; en el MAPA).
 - [x] Patada a pie (FRENO a pie = patada a trastos y balones) para que Wifly también pueda liarla sin moto.
 - [x] Radares en las avenidas: foto multa a más de 50 (flash, -50 €, calor).
+- [x] Conducir con estilo: derrapadas y caballitos largos, "por los pelos" y contramano dan euros.
+- [x] El barrio se venga: el camarero con la escoba y el motero al que le quitas la moto te persiguen.
+- [x] Retos del día (tres por fecha, 150 € cada uno) en la pestaña LOGROS.
+- [x] Piscinas y fuentes de OSM (chapuzón con la moto) y parques infantiles con columpios y toboganes.
+- [x] Vendedores ambulantes: el butanero (bombonas que ruedan), el chatarrero con megáfono y el chiflo del afilador.
+- [x] El fantasma del récord en las carreras de pancarta.
+- [x] El botellón nocturno en la plaza (litronas y reggaetón) y la afición a la puerta del estadio en Nervión; disolverlos paga.
+- [x] Escalerazo: bajar las escaleras de OSM con la moto.
+- [x] El Sevici se pedalea: a pie y con E junto a un ciclista.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

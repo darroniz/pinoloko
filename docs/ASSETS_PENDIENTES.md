@@ -213,3 +213,57 @@ Formato:
 - Descripción para generarlo: rótulo de taller de barrio (chapa, pintura, neumáticos), poste con
   cartel azul y blanco, y una lata de spray de juguete de 1,3 m. Low-poly.
 - Formato y tamaño deseados: GLB, Y arriba, cartel a 4 m de altura.
+
+## El camión del butano
+- Dónde se usa: tráfico de todos los barrios (`geometriaButano` en `src/fisica/coche.ts`), robable.
+- Placeholder actual: cabina naranja, caja abierta con 16 cilindros naranjas en dos filas.
+- Descripción para generarlo: camión pequeño de reparto de bombonas, naranja butano, low-poly
+  (~800 triángulos), con las bombonas naranjas apiladas de pie en la caja y la lona recogida.
+- Formato y tamaño deseados: GLB, Y arriba, -Z delante, 7,5 m de largo.
+
+## La furgoneta del chatarrero (y la voz del megáfono)
+- Dónde se usa: tráfico, robable; megáfono sintetizado en `AudioJuego.megafono`.
+- Placeholder actual: furgoneta blanca vieja con un colchón a rayas, un somier y una lavadora en la baca.
+- Descripción para generarlo: furgoneta tipo C15 con la baca cargada de trastos atados con cuerda,
+  bocina de megáfono en el techo. Y un audio (WAV mono, 4 s) de la voz del chatarrero por megáfono:
+  "Se compran colchones, somieres, chatarra, cocinas, frigoríficos", con eco de calle.
+- Formato y tamaño deseados: GLB de 3,9 m; audio WAV 22 kHz.
+
+## El chiflo del afilador
+- Dónde se usa: ambiente de los pasajes de día (`AudioJuego.chiflo`).
+- Placeholder actual: escala de triángulo subiendo y bajando.
+- Descripción para generarlo: la escala del chiflo (flauta de pan del afilador) grabada, 2 s, con
+  un poco de reverberación de patio.
+- Formato y tamaño deseados: WAV 22 kHz mono.
+
+## El camarero con la escoba y el motero desplumado
+- Dónde se usa: `src/mundo/perseguidores.ts`.
+- Placeholder actual: cápsula blanca con delantal negro y escoba de palo con cepillo; cani con
+  gorra y chándal azul.
+- Descripción para generarlo: camarero de bar de barrio (camisa blanca, delantal negro largo,
+  escoba en alto), y cani sin moto (chándal, gorra), ambos low-poly y con la misma escala que
+  Wifly. Animación de correr si el formato lo permite.
+- Formato y tamaño deseados: GLB, 1,7 m de alto.
+
+## Columpio, tobogán y bombona
+- Dónde se usa: trastos de los parques infantiles y del butanero (`src/mundo/trastos.ts`).
+- Placeholder actual: columpio de tubo azul con asientos rojos, tobogán con escalera y rampa
+  roja, bombona naranja con aro.
+- Descripción para generarlo: mobiliario de parque infantil municipal (colores primarios,
+  desgastado) y bombona de butano naranja de 12,5 kg.
+- Formato y tamaño deseados: GLB; columpio 2,4 m de ancho, tobogán 2,6 m de largo, bombona 0,75 m.
+
+## Litrona, altavoz del botellón y voces de la afición
+- Dónde se usa: el botellón (`src/mundo/botellon.ts`, trasto `litrona`) y la afición del estadio.
+- Placeholder actual: botella verde con etiqueta blanca; reggaetón y cánticos sintetizados.
+- Descripción para generarlo: botella de litro de cerveza low-poly; un loop de reggaetón de 8 s
+  libre de derechos (95 bpm) con sonido de altavoz bluetooth; y un loop de 10 s de afición a la
+  puerta de un estadio (rumor, palmas, un cántico).
+- Formato y tamaño deseados: GLB de 0,3 m; WAV 22 kHz mono.
+
+## El Sevici de Wifly
+- Dónde se usa: la bici que se le quita a un ciclista (`SEVICI` en `src/fisica/scooter.ts`).
+- Placeholder actual: cuadro verde de cajas, cesta gris y ruedas grandes.
+- Descripción para generarlo: bici de alquiler Sevici (cuadro gris verdoso, cesta delantera con
+  el anillo rojo, guardabarros), low-poly, 1,8 m, con hueco para el piloto.
+- Formato y tamaño deseados: GLB, Y arriba, -Z delante.

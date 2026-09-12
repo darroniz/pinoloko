@@ -52,7 +52,7 @@ const AYUDA = `
 <div class="fila"><span>Plegar el minimapa</span><strong>M · tocarlo</strong></div>
 <div class="fila"><span>Foto para compartir</span><strong>P · 📷</strong></div>
 <p class="peque" style="margin-top:10px"><strong>Robar.</strong> Motos aparcadas y motos en marcha (a pie, E cuando pase un cani), coches, furgonetas,
-el camión de Lipasam y el 13. Las motos que robas se quedan en el garaje; el taller las mejora con lo que ganes.</p>
+el camión de Lipasam, el 13 y el Sevici (a pie, E junto a un ciclista: sin motor, silencioso y cabe por todo; no se guarda en el garaje). Las motos que robas se quedan en el garaje; el taller las mejora con lo que ganes.</p>
 <p class="peque"><strong>Lío.</strong> Conos, macetas, contenedores, terrazas, cajas del mercado y los puestos del mercadillo dan dinero y
 racha. Saltarse un semáforo en rojo, atropellar vecinos, ciclistas del Sevici o moteros calienta a la Policía Local.</p>
 <p class="peque"><strong>Estilo.</strong> Conducir bien también paga: una derrapada larga (frenar girando), un caballito largo (a fondo desde
@@ -63,7 +63,7 @@ helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dire
 <p class="peque"><strong>Radares.</strong> Poste con cámara y raya blanca en las avenidas: pasarla a más de 50 km/h es foto multa, 50 € menos.</p>
 <p class="peque"><strong>A pie.</strong> ESPACIO / FRENO es patada: el cono, la maceta o el balón que tengas delante salen volando (y cuentan
 para la racha). Manteniéndolo, Wifly corre.</p>
-<p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: pique por los pasajes contra el reloj y contra tres canis en moto (el Kevin, el Jonathan y la Vanessa); ganarles vale 60 € más. Si un motero rueda a tu lado dos segundos, te reta: pique callejero de tres anillos. Bolsa naranja en un bar: encargo
+<p class="peque"><strong>Minijuegos.</strong> Pancarta a cuadros: pique por los pasajes contra el reloj y contra tres canis en moto (el Kevin, el Jonathan y la Vanessa); ganarles vale 60 € más; si haces récord, la próxima vez corre contigo tu fantasma (una moto translúcida que repite esa vuelta). Si un motero rueda a tu lado dos segundos, te reta: pique callejero de tres anillos. Bolsa naranja en un bar: encargo
 para llevar a otro local, y cada entrega encadena la siguiente. Rampas para volar. Balón de los niños: gol son 40 €. Los 20
 mecheros de cada barrio se buscan (el MAPA del menú no los chiva). Bote de spray en un cruce de pasajes: a pie y con E, Wifly firma
 la pintada (en territorio pijo vale el doble y la Local se calienta).</p>
@@ -77,6 +77,10 @@ En los saltos, mueve el joystick a los lados para girar en el aire: cada 360 son
 bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones. Si rompes la terraza de un bar, el camarero
 sale con la escoba y te persigue a pie (si te pilla parado, escobazo y 20 €); y el motero al que le quitas la moto te corre detrás: si te
 pilla, se la lleva de vuelta.</p>
+<p class="peque"><strong>El botellón.</strong> De diez de la noche a cuatro, un corro de vecinos con litronas y reggaetón en la plaza del barrio.
+Pasar por medio a toda pastilla lo disuelve: 40 € y un poco de calor.</p>
+<p class="peque"><strong>Día de partido.</strong> En Nervión, de ocho y media a diez y media, la afición se junta a la puerta del Sánchez-Pizjuán
+(se oyen los cánticos desde lejos). Pasar por medio la dispersa: 30 €. Y las escaleras de OSM se bajan con la moto: escalerazo, 20 €.</p>
 <p class="peque"><strong>Ambulantes.</strong> El camión naranja es el del butano: cada golpe le tira bombonas que ruedan (y pagan). La furgoneta con el
 colchón en la baca es la del chatarrero, megáfono incluido. Y de día, por los pasajes, a veces se oye el chiflo del afilador. Los dos vehículos se roban.</p>
 <p class="peque"><strong>Territorio pijo.</strong> En Los Remedios y Nervión, los de azul marino sin jersey son vigilantes de seguridad: si te ven liarla, la Local

@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { CamaraAlta } from './camara';
 import { Controles } from './control/entrada';
 import { PASO_FISICA } from './fisica/mundo';
-import { MODELOS, Scooter, VESPA } from './fisica/scooter';
+import { MODELOS, SEVICI, Scooter, VESPA } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
 import { ANCHO as COCHE_ANCHO, BUS, CAMION, CAMION_ANCHO, CAMION_LARGO, Coche, LARGO as COCHE_LARGO, UTILITARIO, geometriaButano, geometriaCamion, geometriaChatarrero, geometriaFurgoneta, geometriaTaxi } from './fisica/coche';
 import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO, type CocheTrafico } from './mundo/trafico';
@@ -39,6 +39,7 @@ import { Recadero, elegirDestino, premioRecado } from './recados';
 import { Taxista, premioTaxi } from './taxista';
 import { Estilo, RAPIDEZ_PELOS, vaEnContramano } from './estilo';
 import { PREMIO_RETO, RetosDelDia } from './retos';
+import { Fantasmas, Grabador } from './fantasma';
 import { ESCOBAZO, GRITOS, type Perseguidor, type TipoPerseguidor } from './mundo/perseguidores';
 import { PRECIO_CHAPA } from './mundo/chapa';
 import type { Motero } from './mundo/motosCalle';
@@ -59,7 +60,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero') => boolean; perseguidores: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number };
   }
 }
 
@@ -154,6 +155,8 @@ export class Juego {
   private tiempoControl = 4;
   private carrera = new Carrera();
   private records = new Records();
+  private fantasmas = new Fantasmas();
+  private grabador = new Grabador();
   private indiceCarrera = -1;
   private enfriamientoCarrera = 0;
   private tiempoAire = 0;
@@ -180,6 +183,8 @@ export class Juego {
   private minimapa = new Minimapa();
   /** `?minimapa=0` lo apaga del todo (para medir su coste en la sonda). */
   private sinMinimapa = new URLSearchParams(location.search).get('minimapa') === '0';
+  /** `?estilo=0` apaga el estilo de conducción (para medir su coste en la sonda). */
+  private sinEstilo = new URLSearchParams(location.search).get('estilo') === '0';
   private pausado = false;
   /** Copia de `renderer.info.render` justo tras la pasada principal (la del minimapa la pisa). */
   private infoRender = { calls: 0, triangles: 0 };
@@ -220,6 +225,9 @@ export class Juego {
   private tiempoTextoMegafono = 0;
   private tiempoAfilador = 50;
   private viaActual: Via | null = null;
+  private cercaniaBotellon = 0;
+  private cercaniaAficion = 0;
+  private enfriamientoEscalera = 0;
   /** La calle de sentido único sobre la que vas (se mira cada 0,3 s, no por frame). */
   private viaUnica: Via | null = null;
   private enfriamientoPiscina = 0;
@@ -376,6 +384,15 @@ export class Juego {
       estilo: () => ({ ...this.estilo.enCurso, contramano: this.enContramano() }),
       perseguir: (tipo: 'camarero' | 'motero') => { const p = this.aPie ? this.peaton.posicion : this.vehiculo.posicion; if (tipo === 'motero') this.motoDelMotero = this.scooter; return !!this.barrio.perseguidores.aparecer(tipo, p.x + 9, p.z, tipo === 'camarero' ? 'Bar de prueba' : this.scooter.modelo.nombre); },
       ambulantes: () => this.barrio.trafico.lista.filter((c) => c.variante === 'butano' || c.variante === 'chatarrero').map((c) => ({ variante: c.variante, x: Math.round(c.x * 10) / 10, z: Math.round(c.z * 10) / 10, rumbo: c.rumbo, carga: c.carga })),
+      aficion: () => ({ sitio: this.barrio.aficion.sitio, activo: this.barrio.aficion.activo, cuantos: this.barrio.aficion.cuantos, disuelto: this.barrio.aficion.disuelto, estados: this.barrio.aficion.estados }),
+      robarSevici: () => {
+        const c = this.barrio.sevici.lista[0];
+        if (!c) return false;
+        if (!this.aPie) this.bajarse();
+        this.peaton.aparecer(c.x + 1, c.z, 0);
+        return this.subirse() && !this.aPie && !this.coche && this.scooter.modelo === SEVICI;
+      },
+      botellon: () => ({ sitio: this.barrio.botellon.sitio, activo: this.barrio.botellon.activo, cuantos: this.barrio.botellon.cuantos, disuelto: this.barrio.botellon.disuelto, estados: this.barrio.botellon.estados, litronas: this.barrio.trastos.lista.filter((t) => t.tipo === 'litrona').length }),
       probarButano: () => { const c = this.barrio.trafico.lista.find((x) => x.variante === 'butano'); if (!c) return -1; this.scooter.teletransportar(c.x + 4, c.z, 0); this.camara.colocar(c.x, c.z); this.barrio.trastos.gestionarRadio(c.x, c.z); this.soltarBombonas(c, 3); return c.carga; },
       robarAmbulante: (v: 'butano' | 'chatarrero') => {
         const c = this.barrio.trafico.lista.find((x) => x.variante === v);
@@ -575,6 +592,19 @@ export class Juego {
         // El motero se levanta y te corre detrás: si te pilla parado, se lleva su moto de vuelta.
         if (b.perseguidores.aparecer('motero', callejera.x + 0.8, callejera.z + 0.8, moto.modelo.nombre)) { this.motoDelMotero = moto; this.pista('motero', 'El motero al que le quitas la moto te corre detrás: si te pilla parado, se la lleva de vuelta. No te pares'); }
       }
+    }
+    // Un ciclista del Sevici a mano (si no hay moto más cerca): le quitas la bici y a pedalear.
+    const ciclista = b.sevici.cercano(p.x, p.z, 3.2);
+    if (ciclista && !b.scooters.some((m) => (m.estado.x - p.x) ** 2 + (m.estado.z - p.z) ** 2 < (ciclista.x - p.x) ** 2 + (ciclista.z - p.z) ** 2)) {
+      b.sevici.robar(ciclista);
+      const bici = new Scooter(b.fisica, ciclista.x, ciclista.z, ciclista.rumbo, SEVICI);
+      b.scooters.push(bici);
+      b.grupo.add(bici.malla);
+      this.motosRobadas.add(bici);
+      this.contador.sumar('sevicis');
+      this.busqueda.fechoria('trasto', 2);
+      this.hud.avisar(['¡Un Sevici! Sin tarjeta, eso sí', '"¡Mi Sevici, hombre!" A pedalear', '¡El Sevici del moderno! Silencioso y cabe en todas partes'][Math.floor(Math.random() * 3)]!, 2);
+      this.pista('sevici', 'El Sevici no tiene motor: la Local no lo oye, cabe por todo y no hace caballito. Es lento, pero es tuyo (no se guarda en el garaje)');
     }
     for (const m of b.scooters) {
       const d = (m.estado.x - p.x) ** 2 + (m.estado.z - p.z) ** 2;
@@ -1090,7 +1120,7 @@ export class Juego {
         this.pista('caballito', 'A fondo desde parado el morro sube: aguanta el caballito y son euros');
       } else if (ev.tipo === 'pelos') {
         this.contador.sumar('porLosPelos');
-        this.hud.avisar(`${['¡Por los pelos!', '¡Uy, por un pelo!', '¡Ni te ha rozado!', '¡Casi, casi!'][Math.floor(Math.random() * 4)]!} +${ev.euros} €`, 1.1);
+        if (!this.hud.avisoReciente(2.5)) this.hud.avisar(`${['¡Por los pelos!', '¡Uy, por un pelo!', '¡Ni te ha rozado!', '¡Casi, casi!'][Math.floor(Math.random() * 4)]!} +${ev.euros} €`, 1.1);
         this.audio.pitido(1400, 0.05, 0.1);
         this.pista('pelos', 'Pasar rozando coches y vecinos a toda pastilla, sin tocarlos, son euros: por los pelos');
       } else {
@@ -1332,7 +1362,7 @@ export class Juego {
 
   /** Un cani se lleva tu moto aparcada: se esconde y nace un motero encima de ella. */
   private levantarMoto(): boolean {
-    if (this.motoLevantada || this.scooter.rota || this.scooter.conducida) return false;
+    if (this.motoLevantada || this.scooter.rota || this.scooter.conducida || this.scooter.modelo.bici) return false;
     const e = this.scooter.estado;
     const m = this.barrio.motosCalle.levantar(e.x, e.z, MODELOS.indexOf(this.scooter.modelo));
     if (!m) return false;
@@ -1426,6 +1456,8 @@ export class Juego {
   private abandonarCarrera(aviso: string | null): void {
     if (this.carrera.estado !== 'en_curso') return;
     this.carrera.abandonar();
+    this.grabador.abandonar();
+    this.barrio.fantasma.parar();
     this.barrio.rivales.parar();
     this.barrio.circuito.mostrarRuta(null);
     this.hud.ponerCarrera(null);
@@ -1448,13 +1480,19 @@ export class Juego {
         b.circuito.mostrarRuta(c.ruta);
         b.rivales.empezar(c.ruta);
         const mejor = this.records.mejor(b.ficha.id, i);
-        this.hud.avisar(mejor === null ? `¡Pique! ${c.ruta.puntos.length} puntos contra el Kevin, el Jonathan y la Vanessa` : `¡Pique! Récord: ${formatearTiempo(mejor)}`, 2.4);
+        const trazada = this.fantasmas.de(b.ficha.id, i);
+        if (trazada) b.fantasma.empezar(trazada);
+        this.grabador.empezar(pos.x, pos.z, this.vehiculo.estado.rumbo);
+        this.hud.avisar(mejor === null ? `¡Pique! ${c.ruta.puntos.length} puntos contra el Kevin, el Jonathan y la Vanessa` : `¡Pique! Récord: ${formatearTiempo(mejor)}${trazada ? ' · tu fantasma corre contigo' : ''}`, 2.4);
+        if (trazada) this.pista('fantasma', 'La moto translúcida es tu fantasma: repite la vuelta de tu récord. Gánale y el fantasma nuevo serás tú');
         this.audio.pitido(660, 0.25, 0.2);
       });
       return;
     }
     const ruta = this.carrera.ruta!;
     const r = this.carrera.actualizar(pos.x, pos.z, dt, b.grafo);
+    this.grabador.muestrear(pos.x, pos.z, this.vehiculo.estado.rumbo, dt);
+    b.fantasma.actualizar(this.carrera.tiempo);
     for (const rival of b.rivales.actualizar(dt, this.carrera.tiempo)) if (r !== 'meta') this.hud.avisar(`${rival.nombre[0]!.toUpperCase()}${rival.nombre.slice(1)} ya ha llegado`, 1.4);
     if (r === 'punto') {
       this.hud.avisar(`${this.carrera.indice}/${ruta.puntos.length}`, 0.9);
@@ -1463,6 +1501,9 @@ export class Juego {
       const posicion = puesto(b.rivales.lista);
       const dinero = premio(this.carrera.tiempo, ruta.puntos.length) + (posicion === 1 ? BONUS_PIQUE : 0);
       const record = this.indiceCarrera >= 0 ? this.records.registrar(b.ficha.id, this.indiceCarrera, this.carrera.tiempo) : false;
+      const trazada = this.grabador.terminar(pos.x, pos.z, this.vehiculo.estado.rumbo);
+      if (record && this.indiceCarrera >= 0) this.fantasmas.guardar(b.ficha.id, this.indiceCarrera, trazada);
+      b.fantasma.parar();
       this.ganar(dinero);
       this.contador.sumar('carreras');
       if (posicion === 1) this.contador.sumar('piquesGanados');
@@ -1477,6 +1518,8 @@ export class Juego {
       return;
     } else if (r === 'tiempo') {
       this.hud.avisar('Se acabó el tiempo', 1.8);
+      this.grabador.abandonar();
+      b.fantasma.parar();
       b.rivales.parar();
       b.circuito.mostrarRuta(null);
       this.hud.ponerCarrera(null);
@@ -1799,7 +1842,7 @@ export class Juego {
       this.actualizarReto(jugadorPos, rapidez, dt);
       this.actualizarCarrera(jugadorPos, dt);
       this.actualizarSaltos(dt);
-      this.actualizarEstilo(jugadorPos, rapidez, dt);
+      if (!this.sinEstilo) this.actualizarEstilo(jugadorPos, rapidez, dt);
       this.actualizarSemaforos(jugadorPos, rapidez, dt);
       this.actualizarRecados(jugadorPos, dt);
       performance.mark('u4b');
@@ -2028,6 +2071,45 @@ export class Juego {
         this.contador.sumar('chapuzones');
         this.volverAlArranque();
       }
+      // El botellón de la plaza: empieza a las diez, se oye desde lejos y se disuelve si pasas por medio.
+      if (this.jugando && !this.pausado) {
+        const bot = b.botellon.actualizar(this.cielo.hora, { x: pos.x, z: pos.z });
+        this.cercaniaBotellon = bot.cercania;
+        if (bot.empieza && b.botellon.sitio && Math.hypot(b.botellon.sitio.x - pos.x, b.botellon.sitio.z - pos.z) < 140) { this.hud.avisar('Botellón en la plaza: ya suena el reggaetón del altavoz', 2.4); this.pista('botellon', 'De diez a cuatro hay botellón en la plaza del barrio. Pasar por medio a toda pastilla lo disuelve, y eso paga (y calienta)'); }
+        if (bot.disuelto && b.botellon.sitio) {
+          const s = b.botellon.sitio;
+          this.ganar(40, { x: s.x, y: 0, z: s.z });
+          this.contador.sumar('botellones');
+          this.busqueda.fechoria('trasto', 2);
+          this.hud.avisar(['¡Botellón disuelto! "¡Que viene la Local, illo!" +40 €', '¡Has reventado el botellón! Todos con la litrona en la mano +40 €', '¡Aguafiestas! El botellón sale corriendo +40 €'][Math.floor(Math.random() * 3)]!, 2.6);
+          this.audio.fanfarria();
+        }
+        // La afición a la puerta del estadio: cánticos desde lejos; pasar por medio la dispersa.
+        const af = b.aficion.actualizar(this.cielo.hora, { x: pos.x, z: pos.z });
+        this.cercaniaAficion = af.cercania;
+        if (af.empieza && b.aficion.sitio && Math.hypot(b.aficion.sitio.x - pos.x, b.aficion.sitio.z - pos.z) < 200) this.hud.avisar('Día de partido: la afición ya está a la puerta del estadio', 2.4);
+        if (af.disuelto && b.aficion.sitio) {
+          const s = b.aficion.sitio;
+          this.ganar(b.aficion.opciones.premio, { x: s.x, y: 0, z: s.z });
+          this.contador.sumar('aficiones');
+          this.busqueda.fechoria('trasto', 3);
+          this.vigilante(pos.x, pos.z);
+          this.hud.avisar(['¡Has dispersado a la afición! "¡Ese cani es del Betis fijo!"', '¡La afición corriendo! Las bufandas por el suelo', '¡Por medio de la afición! "¡Al Pizjuán se viene andando!"'][Math.floor(Math.random() * 3)]! + ` +${b.aficion.opciones.premio} €`, 2.8);
+          this.audio.fanfarria();
+        }
+        // Escalerazo: bajar (o subir) unas escaleras de OSM con la moto, a velocidad.
+        this.enfriamientoEscalera = Math.max(0, this.enfriamientoEscalera - 0.3);
+        if (!this.aPie && via?.tipo === 'steps' && Math.abs(this.vehiculo.estado.velocidad) > 4 && this.enfriamientoEscalera <= 0) {
+          this.enfriamientoEscalera = 8;
+          this.ganar(20);
+          this.contador.sumar('escaleras');
+          this.camara.sacudir(0.5);
+          this.vibrar(60);
+          for (let k = 0; k < 4; k++) window.setTimeout(() => this.audio.golpe(3), k * 90);
+          this.hud.avisar(['¡Escalerazo! +20 €', '¡Por las escaleras con la moto! +20 €', '¡Traca-traca-traca! Escalerazo +20 €'][Math.floor(Math.random() * 3)]!, 1.8);
+          this.pista('escalera', 'Las escaleras de OSM se bajan con la moto: escalerazo, 20 € y las muelas sueltas');
+        }
+      }
       // Piscinas de urbanización y fuentes: chapuzón (salpicón, euros, calor) y el agua frena.
       const piscina = this.jugando && this.tiempoTrincao <= 0 && b.nivel.zonas.some((z) => z.clase === 'pool' && dentroDePoligono(pos.x, pos.z, z.poligono));
       if (piscina && !this.enPiscina) this.chapuzon(pos);
@@ -2051,7 +2133,9 @@ export class Juego {
     this.enfriamientoPiscina = Math.max(0, this.enfriamientoPiscina - dt);
     const acelerando = !this.aPie && Math.hypot(this.controles.eje.x, this.controles.eje.y) > 0.2 && !this.controles.freno;
     this.audio.actualizar(this.aPie ? 0 : this.vehiculo.estado.velocidad, acelerando, !this.aPie && this.vehiculo.estado.derrapando, dt, !!this.coche);
-    this.audio.silenciarMotor(this.aPie);
+    this.audio.silenciarMotor(this.aPie || (!this.coche && !!this.scooter.modelo.bici));
+    this.audio.actualizarReggaeton(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaBotellon : 0);
+    this.audio.actualizarAficion(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaAficion : 0, dt);
     this.tiempoGuardado += dt;
     if (this.tiempoGuardado > 5) { this.tiempoGuardado = 0; this.guardar(); }
     performance.mark('u8');

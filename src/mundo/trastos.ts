@@ -8,7 +8,7 @@ import type { Nivel, Punto } from './tipos';
 import { azar, dentroDePoligono, distanciaPolilinea, muestrearPolilinea } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan' | 'bombona';
+export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan' | 'bombona' | 'litrona';
 
 export interface Trasto {
   tipo: TipoTrasto;
@@ -220,6 +220,18 @@ const DEFINICIONES: Record<TipoTrasto, Definicion> = {
       return g;
     },
     collider: (d) => d.cylinder(0.4, 0.22).setDensity(0.5).setRestitution(0.35),
+  },
+  litrona: {
+    valor: 6, masa: 1.5, alturaMedia: 0.17,
+    crearMalla: () => {
+      // Litrona de cerveza: botella verde con la etiqueta blanca (no se rompe: se cae y rueda).
+      const g = new THREE.Group();
+      g.add(malla(new THREE.CylinderGeometry(0.09, 0.09, 0.3, 8), materiales.verde, 0, 0, 0));
+      g.add(malla(new THREE.CylinderGeometry(0.035, 0.07, 0.1, 8), materiales.verde, 0, 0.2, 0));
+      g.add(malla(new THREE.CylinderGeometry(0.095, 0.095, 0.1, 8), materiales.blanco, 0, -0.02, 0));
+      return g;
+    },
+    collider: (d) => d.cylinder(0.17, 0.09).setDensity(0.5).setRestitution(0.3),
   },
   valla: {
     valor: 12, masa: 14, alturaMedia: 0.5,
@@ -534,6 +546,7 @@ export const FRASES: Record<TipoTrasto, string[]> = {
   caja: ['¡Fruta del mercado!', '¡Los tomates del puesto!', '¡Cuidado con las cajas!'],
   valla: ['¡Valla de obra al suelo!', 'Las obras llevaban tres años ahí'],
   banco: ['¡El banco de los abuelos!', '¡Ahí se sentaba el Manolo!', '¡Banco por los aires!'],
+  litrona: ['¡La litrona por el suelo!', '¡Que era de litro, illo!', '¡Uy, la Cruzcampo!'],
   bombona: ['¡Bombona rodando!', '¡El butano por los suelos!', '¡Cuidado, que eso explota! (no, no explota)'],
   columpio: ['¡El columpio de los niños!', '¡Ahí me columpiaba yo!', '¡Columpio por los aires!'],
   tobogan: ['¡El tobogán del parque!', '¡Eso lo pagó el Distrito!', '¡Tobogán al suelo!'],

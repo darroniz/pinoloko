@@ -74,8 +74,9 @@ export class Trafico {
       if (destino === origen) continue;
       this.crear(origen, destino, this.rnd() * 0.8, i < buses ? 'bus' : i < buses + camiones ? 'camion' : 'coche', i === buses + camiones);
     }
-    // Los ambulantes: el camión del butano y la furgoneta del chatarrero, uno de cada por barrio.
-    for (const [tipo, variante] of [['camion', 'butano'], ['coche', 'chatarrero']] as const) {
+    // Los ambulantes: el camión del butano y la furgoneta del chatarrero, uno de cada por barrio (`?ambulantes=0` los quita, para medir).
+    const sinAmbulantes = typeof location !== 'undefined' && new URLSearchParams(location.search).get('ambulantes') === '0';
+    for (const [tipo, variante] of sinAmbulantes ? [] : [['camion', 'butano'], ['coche', 'chatarrero']] as const) {
       if (!candidatos.length) break;
       const origen = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
       const destino = grafo.siguienteAlAzar(origen, -1, 'rodada', this.rnd);

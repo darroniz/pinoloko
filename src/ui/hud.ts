@@ -85,7 +85,11 @@ export class Hud {
     return performance.now() - this.momentoAviso < segundos * 1000;
   }
 
+  /** `?avisos=0` apaga los avisos (para medir cuánto cuesta el DOM encima del lienzo sin GPU). */
+  private sinAvisos = new URLSearchParams(location.search).get('avisos') === '0';
+
   avisar(texto: string, segundos = 2): void {
+    if (this.sinAvisos) return;
     this.momentoAviso = performance.now();
     this.aviso.textContent = texto;
     this.aviso.classList.add('visible');

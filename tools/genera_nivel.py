@@ -397,6 +397,20 @@ def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = No
                 continue
             grafo_aristas.append([ia, ib, clase, wid] + ([1] if sentido_unico else []))
 
+    # El grafo se recorta a la caja (más un margen): las calles se pintan enteras, pero el
+    # tráfico, los vecinos y los perros no nacen ni se van fuera, donde nadie los ve.
+    # (En el Mercado, un tercio de los nodos peatonales caía fuera.)
+    ancho_caja, fondo_caja = proy.tamano
+    margen = 30.0
+    nuevo_idx = {}
+    nodos_dentro = []
+    for i, (x, z) in enumerate(grafo_nodos):
+        if abs(x) <= ancho_caja / 2 + margen and abs(z) <= fondo_caja / 2 + margen:
+            nuevo_idx[i] = len(nodos_dentro)
+            nodos_dentro.append([x, z])
+    grafo_aristas = [[nuevo_idx[a[0]], nuevo_idx[a[1]]] + a[2:] for a in grafo_aristas if a[0] in nuevo_idx and a[1] in nuevo_idx]
+    grafo_nodos = nodos_dentro
+
     # ---- Puntos de interés, árboles, zonas verdes --------------------------
     pois = []
     for e in datos["elements"]:

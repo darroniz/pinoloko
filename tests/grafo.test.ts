@@ -78,6 +78,6 @@ describe('camino libre (a contramano)', () => {
       if (g.camino(a, i, 'rodada', true).length) libres++;
     }
     expect(libres).toBeGreaterThan(dirigidos);
-    expect(libres).toBeGreaterThan(100);
+    expect(libres).toBeGreaterThan(60);
   });
 });

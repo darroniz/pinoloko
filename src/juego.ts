@@ -64,6 +64,19 @@ declare global {
   }
 }
 
+/** Lo que gritan los puestos del Mercado por la mañana. */
+const PREGONES = [
+  'El del puesto: "¡Niña, que tengo las fresas de Lepe a dos euros!"',
+  'El pescadero: "¡Boquerones vivos, que están hablando!"',
+  'El frutero: "¡Al rico melón, que se acaba!"',
+  'La del puesto: "¡Tres por dos, tres por dos!"',
+  'El pescadero: "¡Pescaíto fresco de Isla Cristina!"',
+  'El frutero: "¡Naranjas de Palma del Río, mi arma!"',
+  'La panadera: "¡Que se acaba el pan de Alcalá!"',
+  'El charcutero: "¡Jamón de Jabugo, de lo bueno, lo mejor!"',
+  'El del puesto: "¡A euro, a euro, todo a euro!"',
+];
+
 export type Calidad = 'alta' | 'media' | 'baja';
 const CLAVE_CALIDAD = 'pinoloko.calidad';
 
@@ -231,6 +244,7 @@ export class Juego {
   private tiempoAfilador = 50;
   private viaActual: Via | null = null;
   private cercaniaBotellon = 0;
+  private tiempoPregon = 8;
   private cercaniaAficion = 0;
   private enfriamientoEscalera = 0;
   /** La calle de sentido único sobre la que vas (se mira cada 0,3 s, no por frame). */
@@ -2123,6 +2137,15 @@ export class Juego {
           this.vigilante(pos.x, pos.z);
           this.hud.avisar(['¡Has dispersado a la afición! "¡Ese cani es del Betis fijo!"', '¡La afición corriendo! Las bufandas por el suelo', '¡Por medio de la afición! "¡Al Pizjuán se viene andando!"'][Math.floor(Math.random() * 3)]! + ` +${b.aficion.opciones.premio} €`, 2.8);
           this.audio.fanfarria();
+        }
+        // Los pregones del Mercado: de día, pasando junto a un mercado, los puestos gritan.
+        this.tiempoPregon -= 0.3;
+        if (this.tiempoPregon <= 0) {
+          this.tiempoPregon = 14 + Math.random() * 8;
+          const h = this.cielo.hora;
+          if (h >= 9 && h < 14.5 && !this.hud.avisoReciente(2) && b.nivel.pois.some((q) => q.clase === 'marketplace' && (q.x - pos.x) ** 2 + (q.z - pos.z) ** 2 < 30 * 30)) {
+            this.hud.avisar(PREGONES[Math.floor(Math.random() * PREGONES.length)]!, 2.2);
+          }
         }
         // Escalerazo: bajar (o subir) unas escaleras de OSM con la moto, a velocidad.
         this.enfriamientoEscalera = Math.max(0, this.enfriamientoEscalera - 0.3);

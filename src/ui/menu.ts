@@ -77,6 +77,8 @@ En los saltos, mueve el joystick a los lados para girar en el aire: cada 360 son
 bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones. Si rompes la terraza de un bar, el camarero
 sale con la escoba y te persigue a pie (si te pilla parado, escobazo y 20 €); y el motero al que le quitas la moto te corre detrás: si te
 pilla, se la lleva de vuelta.</p>
+<p class="peque"><strong>Ambulantes.</strong> El camión naranja es el del butano: cada golpe le tira bombonas que ruedan (y pagan). La furgoneta con el
+colchón en la baca es la del chatarrero, megáfono incluido. Y de día, por los pasajes, a veces se oye el chiflo del afilador. Los dos vehículos se roban.</p>
 <p class="peque"><strong>Territorio pijo.</strong> En Los Remedios y Nervión, los de azul marino sin jersey son vigilantes de seguridad: si te ven liarla, la Local
 se entera al momento. Y entre las tres y las cinco y media es la siesta: medio barrio en casa.</p>
 <p class="peque"><strong>Barrios.</strong> A pie y en una parada, el 13 te lleva a la Alameda, a Triana, a Los Remedios o a Nervión (territorio pijo) y al Centro (guiris), y de vuelta. Cuidado con el

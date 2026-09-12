@@ -145,6 +145,75 @@ export function geometriaCamion(): THREE.BufferGeometry {
   return g;
 }
 
+function pintarPieza(g: THREE.BufferGeometry, c: string): THREE.BufferGeometry {
+  const col = new THREE.Color(c);
+  const n = g.getAttribute('position').count;
+  const arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { arr[i * 3] = col.r; arr[i * 3 + 1] = col.g; arr[i * 3 + 2] = col.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+  g.deleteAttribute('uv');
+  return g.index ? g.toNonIndexed() : g;
+}
+
+let geoButano: THREE.BufferGeometry | null = null;
+
+/** El camión del butano: cabina naranja y caja abierta con las bombonas naranjas en dos filas. */
+export function geometriaButano(): THREE.BufferGeometry {
+  if (geoButano) return geoButano;
+  const piezas: THREE.BufferGeometry[] = [];
+  piezas.push(pintarPieza(new THREE.BoxGeometry(CAMION_ANCHO, 0.7, CAMION_LARGO).translate(0, 0.55, 0), '#5b5f66'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(CAMION_ANCHO, 1.9, 1.9).translate(0, 1.85, -2.7), '#f28c28'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(CAMION_ANCHO * 0.9, 0.7, 0.3).translate(0, 2.2, -3.6), '#9fd3e8'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(CAMION_ANCHO, 0.5, 5.2).translate(0, 1.1, 1.1), '#f28c28'));
+  for (const x of [-CAMION_ANCHO / 2 + 0.05, CAMION_ANCHO / 2 - 0.05]) piezas.push(pintarPieza(new THREE.BoxGeometry(0.1, 0.5, 5.2).translate(x, 1.5, 1.1), '#d97a1c'));
+  for (let f = 0; f < 4; f++) for (const x of [-0.75, -0.25, 0.25, 0.75]) {
+    piezas.push(pintarPieza(new THREE.CylinderGeometry(0.22, 0.22, 0.75, 8).translate(x, 1.7, -0.9 + f * 1.3), '#ff9a2e'));
+    piezas.push(pintarPieza(new THREE.CylinderGeometry(0.08, 0.08, 0.14, 6).translate(x, 2.12, -0.9 + f * 1.3), '#7a4a1c'));
+  }
+  piezas.push(pintarPieza(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(-0.8, 0.6, -CAMION_LARGO / 2), '#fff4c2'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(0.8, 0.6, -CAMION_LARGO / 2), '#fff4c2'));
+  for (const [x, z] of [[-1.05, -2.4], [1.05, -2.4], [-1.05, 1.6], [1.05, 1.6], [-1.05, 2.8], [1.05, 2.8]]) {
+    piezas.push(pintarPieza(new THREE.CylinderGeometry(0.45, 0.45, 0.3, 10).rotateZ(Math.PI / 2).translate(x!, 0.45, z!), '#2b2b2f'));
+  }
+  const g = mergeGeometries(piezas, false);
+  g.computeVertexNormals();
+  g.computeBoundingSphere();
+  for (const p of piezas) p.dispose();
+  geoButano = g;
+  return g;
+}
+
+let geoChatarrero: THREE.BufferGeometry | null = null;
+
+/** La furgoneta del chatarrero: blanca y vieja, con un colchón, un somier y trastos atados en la baca, y el megáfono en el techo. */
+export function geometriaChatarrero(): THREE.BufferGeometry {
+  if (geoChatarrero) return geoChatarrero;
+  const piezas: THREE.BufferGeometry[] = [];
+  const color = '#e9e6dc';
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO, 0.6, LARGO).translate(0, 0.5, 0), color));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO, 1.1, LARGO * 0.62).translate(0, 1.3, 0.55), color));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO * 0.92, 0.7, LARGO * 0.3).translate(0, 1.1, -0.9), color));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO * 0.9, 0.45, LARGO * 0.26).translate(0, 1.2, -0.9), '#9fd3e8'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(0.5, 0.3, 0.4).translate(0, 1.55, -0.5), '#b03a48'));
+  // La baca: colchón a rayas, somier y una lavadora, todo mal atado.
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO * 0.95, 0.22, 2.0).translate(0, 1.96, 0.7), '#d8d3c4'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO * 0.96, 0.06, 0.25).translate(0, 2.0, 0.2), '#3b6fd9'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO * 0.96, 0.06, 0.25).translate(0, 2.0, 1.1), '#3b6fd9'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(ANCHO * 0.9, 0.08, 1.9).translate(0.1, 2.12, 0.75), '#8a8f96'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(0.6, 0.6, 0.6).translate(-0.4, 2.45, 1.2), '#f4f4f4'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(-0.6, 0.55, -LARGO / 2), '#fff4c2'));
+  piezas.push(pintarPieza(new THREE.BoxGeometry(0.3, 0.15, 0.1).translate(0.6, 0.55, -LARGO / 2), '#fff4c2'));
+  for (const [x, z] of [[-0.8, -1.25], [0.8, -1.25], [-0.8, 1.25], [0.8, 1.25]]) {
+    piezas.push(pintarPieza(new THREE.CylinderGeometry(0.32, 0.32, 0.24, 10).rotateZ(Math.PI / 2).translate(x!, 0.32, z!), '#2b2b2f'));
+  }
+  const g = mergeGeometries(piezas, false);
+  g.computeVertexNormals();
+  g.computeBoundingSphere();
+  for (const p of piezas) p.dispose();
+  geoChatarrero = g;
+  return g;
+}
+
 /** El camión: más pesado y lento que el 13, gira como un tráiler. */
 export const CAMION: AjustesCoche = {
   aceleracion: 4.5,

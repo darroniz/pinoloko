@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import type { MundoFisico } from '../fisica/mundo';
 import { RAPIER as R } from '../fisica/mundo';
-import { ALTO, ANCHO, CAMION_ANCHO, CAMION_LARGO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaCamion, geometriaCoche, geometriaFurgoneta, geometriaTaxi } from '../fisica/coche';
+import { ALTO, ANCHO, CAMION_ANCHO, CAMION_LARGO, COLORES_COCHE, LARGO, MATERIAL_COCHE, geometriaButano, geometriaCamion, geometriaChatarrero, geometriaCoche, geometriaFurgoneta, geometriaTaxi } from '../fisica/coche';
 import type { GrafoBarrio } from './grafo';
 import { azar } from './geometria';
 import { geometriaBus } from '../cinematica';
@@ -16,11 +16,13 @@ export type TipoTrafico = 'coche' | 'bus' | 'camion';
 
 /** Silueta de los coches del tráfico: utilitario, furgoneta de reparto (una de cada cuatro) o
  *  taxi (el primero de cada barrio seguro, y luego uno de cada siete). */
-export type VarianteCoche = 'utilitario' | 'furgoneta' | 'taxi';
+export type VarianteCoche = 'utilitario' | 'furgoneta' | 'taxi' | 'butano' | 'chatarrero';
 
 export interface CocheTrafico {
   tipo: TipoTrafico;
   variante: VarianteCoche;
+  /** Bombonas que le quedan al camión del butano por soltar (0 en los demás). */
+  carga: number;
   cuerpo: RAPIER.RigidBody;
   malla: THREE.Mesh;
   color: string;
@@ -72,24 +74,31 @@ export class Trafico {
       if (destino === origen) continue;
       this.crear(origen, destino, this.rnd() * 0.8, i < buses ? 'bus' : i < buses + camiones ? 'camion' : 'coche', i === buses + camiones);
     }
+    // Los ambulantes: el camión del butano y la furgoneta del chatarrero, uno de cada por barrio.
+    for (const [tipo, variante] of [['camion', 'butano'], ['coche', 'chatarrero']] as const) {
+      if (!candidatos.length) break;
+      const origen = candidatos[Math.floor(this.rnd() * candidatos.length)]!;
+      const destino = grafo.siguienteAlAzar(origen, -1, 'rodada', this.rnd);
+      if (destino !== origen) this.crear(origen, destino, this.rnd() * 0.8, tipo, false, variante);
+    }
   }
 
-  private crear(origen: number, destino: number, t: number, tipo: TipoTrafico, taxiSeguro = false): void {
+  private crear(origen: number, destino: number, t: number, tipo: TipoTrafico, taxiSeguro = false, forzada?: VarianteCoche): void {
     const r = this.rnd();
-    const variante: VarianteCoche = tipo !== 'coche' ? 'utilitario' : taxiSeguro || r < 0.14 ? 'taxi' : r < 0.39 ? 'furgoneta' : 'utilitario';
+    const variante: VarianteCoche = forzada ?? (tipo !== 'coche' ? 'utilitario' : taxiSeguro || r < 0.14 ? 'taxi' : r < 0.39 ? 'furgoneta' : 'utilitario');
     // Las furgonetas van casi siempre de blanco, como las de reparto; los taxis, siempre.
-    const color = tipo === 'bus' || tipo === 'camion' || variante === 'taxi' ? '#f4f4f4' : variante === 'furgoneta' && this.rnd() < 0.7 ? '#f0f0ee' : this.colores[Math.floor(this.rnd() * this.colores.length)]!;
+    const color = variante === 'butano' ? '#f28c28' : variante === 'chatarrero' ? '#e9e6dc' : tipo === 'bus' || tipo === 'camion' || variante === 'taxi' ? '#f4f4f4' : variante === 'furgoneta' && this.rnd() < 0.7 ? '#f0f0ee' : this.colores[Math.floor(this.rnd() * this.colores.length)]!;
     const cuerpo = this.fisica.world.createRigidBody(R.RigidBodyDesc.dynamic().lockRotations().setLinearDamping(2));
     const [ancho, largo] = tipo === 'bus' ? [BUS_ANCHO, BUS_LARGO] : tipo === 'camion' ? [CAMION_ANCHO, CAMION_LARGO] : [ANCHO, LARGO];
     this.fisica.world.createCollider(
       R.ColliderDesc.cuboid(ancho / 2, ALTO / 2, largo / 2).setDensity(tipo === 'coche' ? 6 : 9).setFriction(0).setFrictionCombineRule(R.CoefficientCombineRule.Min).setRestitution(0.2),
       cuerpo,
     );
-    const malla = new THREE.Mesh(tipo === 'bus' ? geometriaBus() : tipo === 'camion' ? geometriaCamion() : variante === 'furgoneta' ? geometriaFurgoneta(color) : variante === 'taxi' ? geometriaTaxi() : geometriaCoche(color), MATERIAL_COCHE);
+    const malla = new THREE.Mesh(tipo === 'bus' ? geometriaBus() : variante === 'butano' ? geometriaButano() : variante === 'chatarrero' ? geometriaChatarrero() : tipo === 'camion' ? geometriaCamion() : variante === 'furgoneta' ? geometriaFurgoneta(color) : variante === 'taxi' ? geometriaTaxi() : geometriaCoche(color), MATERIAL_COCHE);
     malla.scale.setScalar(tipo === 'bus' ? BUS_ESCALA : tipo === 'camion' ? 1 : 1.35);
     malla.castShadow = true;
     this.grupo.add(malla);
-    const c: CocheTrafico = { tipo, variante, cuerpo, malla, color, origen, destino, t, velocidad: tipo === 'bus' ? VELOCIDAD_BUS : tipo === 'camion' ? VELOCIDAD_CAMION : VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, bloqueadoPorJugador: 0, activo: true, enParada: 0, entreParadas: 5 };
+    const c: CocheTrafico = { tipo, variante, carga: variante === 'butano' ? 12 : 0, cuerpo, malla, color, origen, destino, t, velocidad: tipo === 'bus' ? VELOCIDAD_BUS : tipo === 'camion' ? VELOCIDAD_CAMION : VELOCIDAD_CRUCERO, x: 0, z: 0, rumbo: 0, parado: 0, bloqueadoPorJugador: 0, activo: true, enParada: 0, entreParadas: 5 };
     this.lista.push(c);
     this.colocar(c);
   }

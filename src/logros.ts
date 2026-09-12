@@ -67,6 +67,7 @@ export const LOGROS: Logro[] = [
   { id: 'retos', nombre: 'Uno detrás de otro', descripcion: 'Diez retos del día', cumple: (e) => e.retos >= 10 },
   { id: 'piscina', nombre: 'Bomba', descripcion: 'Un chapuzón en una piscina o una fuente con la moto', cumple: (e) => e.piscinas >= 1 },
   { id: 'columpio', nombre: 'Parque infantil', descripcion: 'Derriba un columpio o un tobogán', cumple: (e) => e.parquesInfantiles >= 1 },
+  { id: 'butanero', nombre: '¡El butanero!', descripcion: 'Tira diez bombonas del camión del butano', cumple: (e) => e.bombonas >= 10 },
   { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20 },
 ];
 

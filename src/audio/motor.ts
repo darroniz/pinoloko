@@ -345,6 +345,84 @@ export class AudioJuego {
 
   private tiempoZumbido = 0;
 
+  /** El butanero golpea dos bombonas: dos toques metálicos secos. */
+  butano(volumen = 0.12): void {
+    if (!this.ctx || !this.maestro) return;
+    const t = this.ctx.currentTime;
+    for (const [dt, f] of [[0, 1180], [0.19, 940]] as const) {
+      const osc = this.ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(f, t + dt);
+      osc.frequency.exponentialRampToValueAtTime(f * 0.7, t + dt + 0.12);
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t + dt);
+      g.gain.exponentialRampToValueAtTime(volumen, t + dt + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.14);
+      osc.connect(g).connect(this.maestro);
+      osc.start(t + dt);
+      osc.stop(t + dt + 0.16);
+    }
+  }
+
+  /** El megáfono del chatarrero: sílabas de sierra por un paso banda estrecho, con el eco de la calle. Devuelve lo que dura. */
+  megafono(volumen = 0.09): number {
+    if (!this.ctx || !this.maestro) return 0;
+    const ctx = this.ctx;
+    const t0 = ctx.currentTime;
+    // "Se-com-pran-col-cho-nes, so-mie-res, cha-ta-rra": tono y duración por sílaba.
+    const silabas: [number, number][] = [[196, 0.18], [220, 0.18], [247, 0.26], [196, 0.18], [220, 0.2], [175, 0.3], [0, 0.18], [220, 0.18], [247, 0.2], [196, 0.3], [0, 0.18], [233, 0.18], [220, 0.18], [175, 0.34]];
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = 'bandpass';
+    filtro.frequency.value = 1100;
+    filtro.Q.value = 3;
+    const salida = ctx.createGain();
+    salida.gain.value = 1;
+    filtro.connect(salida).connect(this.maestro);
+    let t = t0;
+    for (const [f, d] of silabas) {
+      if (f > 0) {
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(f, t);
+        osc.frequency.linearRampToValueAtTime(f * 0.94, t + d);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(volumen, t + 0.03);
+        g.gain.setValueAtTime(volumen, t + d * 0.7);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+        osc.connect(g).connect(filtro);
+        osc.start(t);
+        osc.stop(t + d + 0.02);
+      }
+      t += d;
+    }
+    return t - t0;
+  }
+
+  /** El chiflo del afilador: la escala que sube y baja, en triángulo con un pelín de portamento. */
+  chiflo(volumen = 0.05): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    const notas = [0, 2, 4, 5, 7, 9, 11, 12, 11, 9, 7, 5, 4, 2, 0];
+    let t = ctx.currentTime;
+    for (const semi of notas) {
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      const f = 1046 * Math.pow(2, semi / 12);
+      osc.frequency.setValueAtTime(f * 0.97, t);
+      osc.frequency.exponentialRampToValueAtTime(f, t + 0.04);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(volumen, t + 0.02);
+      g.gain.setValueAtTime(volumen, t + 0.1);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+      osc.connect(g).connect(this.maestro);
+      osc.start(t);
+      osc.stop(t + 0.17);
+      t += 0.13;
+    }
+  }
+
   /** Zumbido de una moto que pasa: sierra grave que baja de tono (efecto Doppler de juguete). */
   zumbido(cercania: number): void {
     if (!this.ctx || !this.maestro) return;

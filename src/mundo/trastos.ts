@@ -8,7 +8,7 @@ import type { Nivel, Punto } from './tipos';
 import { azar, dentroDePoligono, distanciaPolilinea, muestrearPolilinea } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan';
+export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan' | 'bombona';
 
 export interface Trasto {
   tipo: TipoTrasto;
@@ -208,6 +208,19 @@ const DEFINICIONES: Record<TipoTrasto, Definicion> = {
     },
     collider: (d) => d.cuboid(0.4, 0.75, 1.3).setDensity(0.3).setRestitution(0.3),
   },
+  bombona: {
+    valor: 10, masa: 14, alturaMedia: 0.4,
+    crearMalla: () => {
+      // Bombona de butano naranja, con el aro de arriba y la válvula.
+      const g = new THREE.Group();
+      g.add(malla(new THREE.CylinderGeometry(0.22, 0.22, 0.75, 10), materiales.naranja, 0, 0, 0));
+      g.add(malla(new THREE.CylinderGeometry(0.2, 0.2, 0.06, 10), materiales.naranja, 0, -0.39, 0));
+      g.add(malla(new THREE.TorusGeometry(0.15, 0.025, 6, 12).rotateX(Math.PI / 2), materiales.naranja, 0, 0.42, 0));
+      g.add(malla(new THREE.CylinderGeometry(0.05, 0.05, 0.12, 6), materiales.gris, 0, 0.42, 0));
+      return g;
+    },
+    collider: (d) => d.cylinder(0.4, 0.22).setDensity(0.5).setRestitution(0.35),
+  },
   valla: {
     valor: 12, masa: 14, alturaMedia: 0.5,
     crearMalla: () => {
@@ -291,6 +304,16 @@ export class Trastos {
     this.grupo.add(m);
     const t: Trasto = { tipo, cuerpo: null, malla: m, valor: def.valor, derribado: false, alturaMedia: def.alturaMedia };
     this.lista.push(t);
+    return t;
+  }
+
+  /** Suelta un trasto nuevo ya despierto y con un empujón (las bombonas que caen del camión). */
+  soltar(tipo: TipoTrasto, x: number, z: number, dx: number, dz: number, fuerza: number): Trasto {
+    const t = this.poner(tipo, x, z, Math.random() * Math.PI);
+    t.malla.position.y += 0.6;
+    this.activar(t);
+    t.cuerpo?.wakeUp();
+    this.patear(t, dx, dz, fuerza);
     return t;
   }
 
@@ -511,6 +534,7 @@ export const FRASES: Record<TipoTrasto, string[]> = {
   caja: ['¡Fruta del mercado!', '¡Los tomates del puesto!', '¡Cuidado con las cajas!'],
   valla: ['¡Valla de obra al suelo!', 'Las obras llevaban tres años ahí'],
   banco: ['¡El banco de los abuelos!', '¡Ahí se sentaba el Manolo!', '¡Banco por los aires!'],
+  bombona: ['¡Bombona rodando!', '¡El butano por los suelos!', '¡Cuidado, que eso explota! (no, no explota)'],
   columpio: ['¡El columpio de los niños!', '¡Ahí me columpiaba yo!', '¡Columpio por los aires!'],
   tobogan: ['¡El tobogán del parque!', '¡Eso lo pagó el Distrito!', '¡Tobogán al suelo!'],
   puesto: ['¡El puesto del mercadillo!', '¡Los calcetines a tres euros por el aire!', '¡Se cae el toldo!', '¡Las bragas del puesto, por el suelo!'],

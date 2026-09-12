@@ -6,7 +6,7 @@ import { Controles } from './control/entrada';
 import { PASO_FISICA } from './fisica/mundo';
 import { MODELOS, Scooter, VESPA } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
-import { ANCHO as COCHE_ANCHO, BUS, CAMION, CAMION_ANCHO, CAMION_LARGO, Coche, LARGO as COCHE_LARGO, UTILITARIO, geometriaCamion, geometriaFurgoneta, geometriaTaxi } from './fisica/coche';
+import { ANCHO as COCHE_ANCHO, BUS, CAMION, CAMION_ANCHO, CAMION_LARGO, Coche, LARGO as COCHE_LARGO, UTILITARIO, geometriaButano, geometriaCamion, geometriaChatarrero, geometriaFurgoneta, geometriaTaxi } from './fisica/coche';
 import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO, type CocheTrafico } from './mundo/trafico';
 import { geometriaBus } from './cinematica';
 import { viaMasCercana } from './mundo/grafo';
@@ -59,7 +59,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero') => boolean; perseguidores: () => unknown };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero') => boolean; perseguidores: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number };
   }
 }
 
@@ -214,6 +214,12 @@ export class Juego {
   private enfriamientoCamarero = 0;
   /** Dentro de una piscina o fuente (agua poco honda: frena, no hunde). */
   private enPiscina = false;
+  /** Ambulantes: el clang del butanero, el megáfono del chatarrero y el chiflo del afilador. */
+  private tiempoButano = 0;
+  private tiempoMegafono = 3;
+  private tiempoTextoMegafono = 0;
+  private tiempoAfilador = 50;
+  private viaActual: Via | null = null;
   /** La calle de sentido único sobre la que vas (se mira cada 0,3 s, no por frame). */
   private viaUnica: Via | null = null;
   private enfriamientoPiscina = 0;
@@ -369,6 +375,15 @@ export class Juego {
       retar: () => this.retar(),
       estilo: () => ({ ...this.estilo.enCurso, contramano: this.enContramano() }),
       perseguir: (tipo: 'camarero' | 'motero') => { const p = this.aPie ? this.peaton.posicion : this.vehiculo.posicion; if (tipo === 'motero') this.motoDelMotero = this.scooter; return !!this.barrio.perseguidores.aparecer(tipo, p.x + 9, p.z, tipo === 'camarero' ? 'Bar de prueba' : this.scooter.modelo.nombre); },
+      ambulantes: () => this.barrio.trafico.lista.filter((c) => c.variante === 'butano' || c.variante === 'chatarrero').map((c) => ({ variante: c.variante, x: Math.round(c.x * 10) / 10, z: Math.round(c.z * 10) / 10, rumbo: c.rumbo, carga: c.carga })),
+      probarButano: () => { const c = this.barrio.trafico.lista.find((x) => x.variante === 'butano'); if (!c) return -1; this.scooter.teletransportar(c.x + 4, c.z, 0); this.camara.colocar(c.x, c.z); this.barrio.trastos.gestionarRadio(c.x, c.z); this.soltarBombonas(c, 3); return c.carga; },
+      robarAmbulante: (v: 'butano' | 'chatarrero') => {
+        const c = this.barrio.trafico.lista.find((x) => x.variante === v);
+        if (!c) return false;
+        if (!this.aPie) this.bajarse();
+        this.peaton.aparecer(c.x + 2.5, c.z, 0);
+        return this.subirse() && !!this.coche?.apariencia?.nombre.includes(v === 'butano' ? 'butano' : 'chatarrero');
+      },
       perseguidores: () => this.barrio.perseguidores.lista.map((p) => ({ tipo: p.tipo, x: Math.round(p.agente.x), z: Math.round(p.agente.z), tiempo: Math.round(p.tiempo), nombre: p.nombre })),
       levantar: () => this.levantarMoto(),
       chapa: () => ({ taller: this.barrio.chapa.taller, levantada: !!this.motoLevantada, motero: this.motoLevantada ? [Math.round(this.motoLevantada.x), Math.round(this.motoLevantada.z)] : null }),
@@ -578,6 +593,10 @@ export class Juego {
       const esBus = delTrafico.tipo === 'bus';
       const c = esBus
         ? new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color, BUS, { geometria: geometriaBus(), escala: BUS_ESCALA, largo: BUS_LARGO, ancho: BUS_ANCHO, nombre: 'el 13' })
+        : delTrafico.variante === 'butano'
+          ? new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color, CAMION, { geometria: geometriaButano(), escala: 1, largo: CAMION_LARGO, ancho: CAMION_ANCHO, nombre: 'el camión del butano' })
+        : delTrafico.variante === 'chatarrero'
+          ? new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color, UTILITARIO, { geometria: geometriaChatarrero(), escala: 1.35, largo: 3.9, ancho: 1.75, nombre: 'la furgoneta del chatarrero' })
         : delTrafico.tipo === 'camion'
           ? new Coche(b.fisica, delTrafico.x, delTrafico.z, delTrafico.rumbo, delTrafico.color, CAMION, { geometria: geometriaCamion(), escala: 1, largo: CAMION_LARGO, ancho: CAMION_ANCHO, nombre: 'el camión de Lipasam' })
           : delTrafico.variante === 'furgoneta'
@@ -590,7 +609,7 @@ export class Juego {
       b.grupo.add(c.malla);
       mejorCoche = c;
       mejorDc = 0;
-      this.hud.avisar(esBus ? '¡El 13 es mío! Todos al fondo' : delTrafico.tipo === 'camion' ? '¡El camión de Lipasam! Esto huele a lío' : delTrafico.variante === 'furgoneta' ? '¡La furgoneta del reparto!' : delTrafico.variante === 'taxi' ? '¡El taxi! Libre, dice el cartel' : ['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
+      this.hud.avisar(esBus ? '¡El 13 es mío! Todos al fondo' : delTrafico.variante === 'butano' ? '¡El camión del butano! Con cuidado, que rueda todo' : delTrafico.variante === 'chatarrero' ? '¡La furgoneta del chatarrero! El megáfono viene de serie' : delTrafico.tipo === 'camion' ? '¡El camión de Lipasam! Esto huele a lío' : delTrafico.variante === 'furgoneta' ? '¡La furgoneta del reparto!' : delTrafico.variante === 'taxi' ? '¡El taxi! Libre, dice el cartel' : ['¡Fuera del coche, hombre!', '¡Baja, que llevo prisa!', '¡Esto es un préstamo!'][Math.floor(Math.random() * 3)]!, 1.8);
       this.busqueda.fechoria('robo_coche');
       this.contador.sumar('cochesRobados');
     }
@@ -1174,6 +1193,56 @@ export class Juego {
     this.pista('piscina', 'Piscinas y fuentes: meterte con la moto es chapuzón, euros y el barrio escandalizado. El agua frena, así que a fondo para salir');
   }
 
+  /** Al camión del butano se le caen bombonas por detrás, rodando hacia los lados. */
+  private soltarBombonas(c: CocheTrafico, cuantas: number): void {
+    const b = this.barrio;
+    const n = Math.min(cuantas, c.carga);
+    c.carga -= n;
+    const fx = Math.sin(c.rumbo), fz = -Math.cos(c.rumbo);
+    const lx = Math.cos(c.rumbo), lz = Math.sin(c.rumbo);
+    for (let k = 0; k < n; k++) {
+      const lado = (k % 2 ? 1 : -1) * (1.6 + Math.random() * 0.4);
+      const atras = 1.5 + k * 1.1;
+      b.trastos.soltar('bombona', c.x + lx * lado - fx * atras, c.z + lz * lado - fz * atras, lx * lado * 0.6 + (Math.random() - 0.5), lz * lado * 0.6 + (Math.random() - 0.5), 3.5);
+    }
+    this.contador.sumar('bombonas', n);
+    this.audio.butano(0.2);
+    this.hud.avisar(c.carga > 0 ? ['¡Las bombonas del butanero, rodando!', '¡El butano por la calle!', 'El butanero: "¡Mis bombonas, hombre!"'][Math.floor(Math.random() * 3)]! : 'El camión del butano va vacío: ya no le queda nada que soltar', 2);
+    this.pista('butano', 'El camión naranja es el del butano: cada golpe le tira bombonas, y cada bombona que rueda son euros');
+  }
+
+  /** Ambulantes: el clang del butanero y el megáfono del chatarrero si andan cerca; el afilador de vez en cuando por los pasajes. */
+  private actualizarAmbulantes(pos: THREE.Vector3, dt: number): void {
+    const b = this.barrio;
+    this.tiempoButano -= dt;
+    this.tiempoMegafono -= dt;
+    this.tiempoTextoMegafono -= dt;
+    this.tiempoAfilador -= dt;
+    for (const c of b.trafico.lista) {
+      if (c.variante !== 'butano' && c.variante !== 'chatarrero') continue;
+      const d2 = (c.x - pos.x) ** 2 + (c.z - pos.z) ** 2;
+      if (c.variante === 'butano') {
+        if (this.tiempoButano <= 0 && d2 < 55 * 55) { this.tiempoButano = 2.8; this.audio.butano(0.12 * (1 - Math.sqrt(d2) / 55)); }
+      } else if (this.tiempoMegafono <= 0 && d2 < 75 * 75) {
+        this.tiempoMegafono = 4 + this.audio.megafono(0.09 * (1 - Math.sqrt(d2) / 75));
+        if (this.tiempoTextoMegafono <= 0 && d2 < 45 * 45 && this.tiempoInsulto <= 0) {
+          this.tiempoTextoMegafono = 30;
+          this.tiempoInsulto = 2.5;
+          this.hud.avisar('Megáfono: "Se compran colchones, somieres, chatarra, cocinas, frigoríficos…"', 2.8);
+          this.pista('chatarrero', 'La furgoneta con el colchón en la baca es la del chatarrero: se roba como cualquier otra, megáfono incluido');
+        }
+      }
+    }
+    // El afilador: de día, si andas por un pasaje, de vez en cuando se oye el chiflo.
+    if (this.tiempoAfilador <= 0) {
+      this.tiempoAfilador = 70 + Math.random() * 60;
+      if (!this.cielo.esDeNoche && this.viaActual?.clase === 'peatonal' && !esSiesta(this.cielo.hora)) {
+        this.audio.chiflo();
+        if (this.tiempoInsulto <= 0) { this.tiempoInsulto = 2.5; this.hud.avisar('Se oye el chiflo del afilador por el pasaje', 2); }
+      }
+    }
+  }
+
   /** El 13 del tráfico también vive: en cada parada baja uno y suben los que esperan. */
   private actualizarBusTrafico(dt: number): void {
     const b = this.barrio;
@@ -1643,6 +1712,11 @@ export class Juego {
         // Golpe contra un coche aparcado: le salta la alarma.
         const aparcado = b.coches.find((c) => c !== this.coche && !c.conducida && !c.rota && c.alarma <= 0 && (c.estado.x - e.x) ** 2 + (c.estado.z - e.z) ** 2 < 4 * 4);
         if (aparcado && e.golpe > 3) this.dispararAlarma(aparcado);
+        // Golpe al camión del butano: se le caen bombonas, que ruedan por la calle.
+        if (e.golpe > 3) {
+          const butano = b.trafico.lista.find((c) => c.variante === 'butano' && c.carga > 0 && (c.x - e.x) ** 2 + (c.z - e.z) ** 2 < 7.5 * 7.5);
+          if (butano) this.soltarBombonas(butano, 3);
+        }
         if (e.golpe > 4) this.vibrar(Math.min(60, Math.round(e.golpe * 4)));
         this.camara.sacudir(e.golpe * 0.06);
         this.audio.golpe(e.golpe);
@@ -1736,6 +1810,7 @@ export class Juego {
       this.actualizarVecina(jugadorPos, this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel(), dt);
       this.actualizarEmergencias(jugadorPos, dt);
       this.actualizarPerseguidores(jugadorPos, dt);
+      this.actualizarAmbulantes(jugadorPos, dt);
       this.actualizarBusTrafico(dt);
       this.actualizarLipasam(jugadorPos, rapidez, dt);
       performance.mark('u4c');
@@ -1939,6 +2014,7 @@ export class Juego {
       b.trastos.gestionarRadio(pos.x, pos.z);
       b.trafico.gestionarRadio(pos.x, pos.z);
       const via = viaMasCercana(b.nivel, pos.x, pos.z);
+      this.viaActual = via;
       this.hud.ponerCalle(via?.nombre || (via ? 'Pasaje' : b.nivel.nombre));
       this.viaUnica = via && via.unico && via.clase === 'rodada' && distanciaPolilinea(pos.x, pos.z, via.puntos) - via.ancho / 2 < 0.6 ? via : null;
       if (this.jugando && !this.pausado) this.actualizarPistas(pos, 0.3);

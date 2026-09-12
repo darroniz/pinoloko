@@ -11,7 +11,7 @@ import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO, type CocheTrafico } from './mundo/tra
 import { geometriaBus } from './cinematica';
 import { viaMasCercana } from './mundo/grafo';
 import { COLORES } from './mundo/nivel';
-import { dentroDePoligono } from './mundo/geometria';
+import { dentroDePoligono, distanciaPolilinea } from './mundo/geometria';
 import { Hud } from './ui/hud';
 import { AudioJuego } from './audio/motor';
 import { cargarPartida, guardarPartida } from './guardado';
@@ -38,9 +38,11 @@ import { MULTA } from './mundo/radares';
 import { Recadero, elegirDestino, premioRecado } from './recados';
 import { Taxista, premioTaxi } from './taxista';
 import { Estilo, RAPIDEZ_PELOS, vaEnContramano } from './estilo';
+import { PREMIO_RETO, RetosDelDia } from './retos';
 import { ESCOBAZO, GRITOS, type Perseguidor, type TipoPerseguidor } from './mundo/perseguidores';
 import { PRECIO_CHAPA } from './mundo/chapa';
 import type { Motero } from './mundo/motosCalle';
+import type { Via } from './mundo/tipos';
 import type { Mejora } from './taller';
 import { Logros } from './logros';
 import { Repeticion } from './efectos/repeticion';
@@ -159,6 +161,7 @@ export class Juego {
   private contador = new Contador();
   private garaje = new Garaje();
   private logros = new Logros();
+  private retos: RetosDelDia;
   private taller = new Taller();
   private tiempoLogros = 0;
   private repeticion = new Repeticion();
@@ -209,11 +212,17 @@ export class Juego {
   /** La moto que le quitaste a un motero callejero (si te pilla, se la lleva de vuelta). */
   private motoDelMotero: Scooter | null = null;
   private enfriamientoCamarero = 0;
+  /** Dentro de una piscina o fuente (agua poco honda: frena, no hunde). */
+  private enPiscina = false;
+  /** La calle de sentido único sobre la que vas (se mira cada 0,3 s, no por frame). */
+  private viaUnica: Via | null = null;
+  private enfriamientoPiscina = 0;
   readonly calidad: Calidad;
 
   constructor() {
     this.lienzo = document.getElementById('lienzo') as HTMLCanvasElement;
     this.calidad = detectarCalidad();
+    this.retos = new RetosDelDia(this.contador.datos);
     this.renderer = new THREE.WebGLRenderer({ canvas: this.lienzo, antialias: this.calidad === 'alta', powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(this.calidad === 'baja' ? 0.5 : this.calidad === 'media' ? 1 : Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = this.calidad !== 'baja';
@@ -259,6 +268,7 @@ export class Juego {
         };
       },
       alComprar: (mejora) => this.comprarMejora(mejora),
+      retos: () => this.retos.resumen(this.contador.datos),
     });
     document.getElementById('boton-menu')!.addEventListener('click', () => this.abrirMenu());
     this.foto = new Foto(this.lienzo, () => `${this.hud.calleActual} · ${this.cielo.textoHora} · ${this.barrio.ficha.nombre.split(' ·')[0]}`, (t) => this.hud.avisar(t, 1.2));
@@ -718,6 +728,9 @@ export class Juego {
     this.audio.arrancar();
     window.__pv_jugando = true;
     this.hud.avisar('Dale caña, Wifly', 2.5);
+    // Los retos de hoy, a los tres segundos, si no queda ninguno hecho.
+    const pendientes = this.retos.resumen(this.contador.datos).filter((r) => !r.hecho);
+    if (pendientes.length) window.setTimeout(() => { if (this.jugando && !this.pausado && !this.hud.avisoReciente(1)) this.hud.avisar(`Retos de hoy: ${pendientes.map((r) => r.reto.texto.toLowerCase()).join(' · ')} (${PREMIO_RETO} € cada uno, en LOGROS)`, 4.5); }, 3200);
     document.body.classList.add('jugando');
     this.botonAccion.textContent = this.aPie ? 'SUBIR' : 'BAJAR';
   }
@@ -1025,7 +1038,7 @@ export class Juego {
     const v = this.scooter.cuerpo.linvel();
     const l = Math.hypot(v.x, v.z);
     if (l < 1) return false;
-    return vaEnContramano(viaMasCercana(this.barrio.nivel, e.x, e.z, 0.6), e.x, e.z, v.x / l, v.z / l);
+    return vaEnContramano(this.viaUnica, e.x, e.z, v.x / l, v.z / l);
   }
 
   /** Conducir con estilo: lo que la moto hace bien (o mal) paga aunque no rompas nada. */
@@ -1137,6 +1150,28 @@ export class Juego {
     }
     empujar(5);
     this.hud.avisar(`El motero te empuja: "${['¡La próxima te la quito!', '¡Chorizo!', '¡Que te vea yo otra vez!'][Math.floor(Math.random() * 3)]}"`, 2);
+  }
+
+  /** Entrar en una piscina o una fuente: salpicón, el barrio se asusta y, en moto, unos euros. */
+  private chapuzon(pos: THREE.Vector3): void {
+    const b = this.barrio;
+    this.particulas.emitir(pos.x, 0.3, pos.z, 45, this.colorAgua, 6);
+    this.audio.golpe(7);
+    this.camara.sacudir(0.4);
+    this.vibrar(50);
+    b.vecinos.asustar(pos.x, pos.z, 12);
+    if (this.aPie) { this.hud.avisar(['¡Al agua, Wifly! Que no sabe nadar', '¡Chapuzón a pie! Chándal empapado'][Math.floor(Math.random() * 2)]!, 2); return; }
+    if (this.enfriamientoPiscina > 0) return;
+    this.enfriamientoPiscina = 20;
+    const pijos = b.ficha.tribu === 'pijos';
+    const euros = pijos ? 40 : 30;
+    this.ganar(euros, { x: pos.x, y: 0, z: pos.z });
+    this.contador.sumar('piscinas');
+    this.busqueda.fechoria('trasto', 3);
+    this.vigilante(pos.x, pos.z);
+    this.corro(pos.x, pos.z, 4);
+    this.hud.avisar(`${pijos ? ['¡Chapuzón en la piscina de la urbanización!', '¡La moto en la piscina de los pijos! "¡El cloro, por Dios!"', '¡Bomba en la piscina comunitaria!'][Math.floor(Math.random() * 3)] : ['¡Chapuzón!', '¡Al agua con la moto!', '¡Salpicón a los que pasaban!'][Math.floor(Math.random() * 3)]} +${euros} €`, 2.4);
+    this.pista('piscina', 'Piscinas y fuentes: meterte con la moto es chapuzón, euros y el barrio escandalizado. El agua frena, así que a fondo para salir');
   }
 
   /** El 13 del tráfico también vive: en cada parada baja uno y suben los que esperan. */
@@ -1820,6 +1855,7 @@ export class Juego {
           const p = t.malla.position;
           this.particulas.emitir(p.x, p.y + 0.3, p.z, 8, this.colorPolvo, 3);
           if (t.tipo === 'mesa' || t.tipo === 'silla') this.sacarCamarero(p.x, p.z);
+          if (t.tipo === 'columpio' || t.tipo === 'tobogan') this.contador.sumar('parquesInfantiles');
           // Lo que se rompe de verdad: macetas, cajas del mercado, sillas y mesas de terraza.
           const colores = ROMPIBLES[t.tipo];
           if (colores && (t.tipo === 'maceta' || t.tipo === 'caja' || rapidez > 7)) {
@@ -1856,8 +1892,14 @@ export class Juego {
       this.tiempoLogros -= dt;
       if (this.tiempoLogros <= 0) {
         this.tiempoLogros = 2;
+        for (const r of this.retos.comprobar(this.contador.datos)) {
+          this.ganar(PREMIO_RETO);
+          this.contador.sumar('retos');
+          this.hud.avisar(`¡Reto del día! ${r.texto}: +${PREMIO_RETO} €`, 3.2);
+          this.audio.fanfarria();
+        }
         const nuevos = this.logros.comprobar(this.contador.datos);
-        if (nuevos.length) { this.hud.avisar(`Logro: ${nuevos.map((l) => l.nombre).join(' · ')}`, 3); this.audio.fanfarria(); }
+        if (nuevos.length && !this.hud.avisoReciente(1)) { this.hud.avisar(`Logro: ${nuevos.map((l) => l.nombre).join(' · ')}`, 3); this.audio.fanfarria(); }
       }
     }
 
@@ -1898,6 +1940,7 @@ export class Juego {
       b.trafico.gestionarRadio(pos.x, pos.z);
       const via = viaMasCercana(b.nivel, pos.x, pos.z);
       this.hud.ponerCalle(via?.nombre || (via ? 'Pasaje' : b.nivel.nombre));
+      this.viaUnica = via && via.unico && via.clase === 'rodada' && distanciaPolilinea(pos.x, pos.z, via.puntos) - via.ancho / 2 < 0.6 ? via : null;
       if (this.jugando && !this.pausado) this.actualizarPistas(pos, 0.3);
       // Al río: en Triana el Guadalquivir es zona de agua; caer dentro te devuelve a la parada.
       if (this.jugando && this.tiempoTrincao <= 0 && b.nivel.zonas.some((z) => z.clase === 'water' && dentroDePoligono(pos.x, pos.z, z.poligono))) {
@@ -1909,6 +1952,10 @@ export class Juego {
         this.contador.sumar('chapuzones');
         this.volverAlArranque();
       }
+      // Piscinas de urbanización y fuentes: chapuzón (salpicón, euros, calor) y el agua frena.
+      const piscina = this.jugando && this.tiempoTrincao <= 0 && b.nivel.zonas.some((z) => z.clase === 'pool' && dentroDePoligono(pos.x, pos.z, z.poligono));
+      if (piscina && !this.enPiscina) this.chapuzon(pos);
+      this.enPiscina = piscina;
       // A pie y junto a una parada, el botón de acción pasa a ser "EL 13".
       const parada = this.aPie ? b.paradas.cercana(pos.x, pos.z, RADIO_PARADA) : null;
       const enParada = !!parada;
@@ -1918,6 +1965,14 @@ export class Juego {
         if (enParada && parada) this.hud.avisar(`${parada.nombre.split(' (')[0]} · E: el 13 a ${BARRIOS[parada.destino]?.nombre.split(' ·')[0] ?? '?'}`, 2.4);
       }
     }
+    if (this.enPiscina && this.jugando && !this.pausado) {
+      const cuerpo = this.aPie ? this.peaton.cuerpo : this.vehiculo.cuerpo;
+      const lv = cuerpo.linvel();
+      const f = Math.max(0, 1 - 2.2 * dt);
+      cuerpo.setLinvel({ x: lv.x * f, y: lv.y, z: lv.z * f }, true);
+      if (Math.random() < 0.4) this.particulas.emitir(pos.x + (Math.random() - 0.5), 0.2, pos.z + (Math.random() - 0.5), 2, this.colorAgua, 2);
+    }
+    this.enfriamientoPiscina = Math.max(0, this.enfriamientoPiscina - dt);
     const acelerando = !this.aPie && Math.hypot(this.controles.eje.x, this.controles.eje.y) > 0.2 && !this.controles.freno;
     this.audio.actualizar(this.aPie ? 0 : this.vehiculo.estado.velocidad, acelerando, !this.aPie && this.vehiculo.estado.derrapando, dt, !!this.coche);
     this.audio.silenciarMotor(this.aPie);

@@ -5,6 +5,7 @@ import { Contador, Garaje, resumen } from '../estadisticas';
 import type { Calidad } from '../juego';
 import { MEJORAS, NIVEL_MAXIMO, type Mejora, type Taller } from '../taller';
 import { LOGROS, type Logros } from '../logros';
+import { PREMIO_RETO, type Reto } from '../retos';
 
 export type Pestana = 'mapa' | 'garaje' | 'logros' | 'estadisticas' | 'ayuda' | 'creditos';
 
@@ -37,6 +38,8 @@ export interface OpcionesMenu {
   mapa: () => DatosMapa;
   /** Compra una mejora para la moto elegida; devuelve si ha podido. */
   alComprar: (mejora: Mejora) => boolean;
+  /** Los tres retos de hoy con su progreso. */
+  retos: () => { reto: Reto; progreso: number; hecho: boolean }[];
 }
 
 const AYUDA = `
@@ -238,7 +241,8 @@ export class Menu {
   private htmlLogros(): string {
     const tiene = this.op.logros.desbloqueados;
     const filas = LOGROS.map((l) => `<div class="logro ${tiene.has(l.id) ? 'hecho' : ''}"><span class="sello">${tiene.has(l.id) ? '★' : '☆'}</span><span><strong>${l.nombre}</strong><br><span class="peque">${l.descripcion}</span></span></div>`);
-    return `<p class="peque">${tiene.size} de ${LOGROS.length}. Se consiguen haciendo el cafre por el barrio.</p>${filas.join('')}`;
+    const retos = this.op.retos().map((r) => `<div class="logro ${r.hecho ? 'hecho' : ''}"><span class="sello">${r.hecho ? '★' : '☆'}</span><span><strong>${r.reto.texto}</strong><br><span class="peque">${r.hecho ? `Hecho · +${PREMIO_RETO} €` : `${r.progreso} / ${r.reto.objetivo} · ${PREMIO_RETO} €`}</span></span></div>`);
+    return `<h3>Retos de hoy</h3><p class="peque">Cambian cada día. Cuentan desde que has arrancado hoy.</p>${retos.join('')}<h3>Logros</h3><p class="peque">${tiene.size} de ${LOGROS.length}. Se consiguen haciendo el cafre por el barrio.</p>${filas.join('')}`;
   }
 
   private htmlEstadisticas(): string {

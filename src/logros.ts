@@ -63,6 +63,10 @@ export const LOGROS: Logro[] = [
   { id: 'contramano', nombre: 'Contramano', descripcion: 'Cinco tramos en dirección prohibida', cumple: (e) => e.contramanos >= 5 },
   { id: 'escobazo', nombre: 'Escobazo', descripcion: 'Que el camarero te dé con la escoba', cumple: (e) => e.escobazos >= 1 },
   { id: 'devuelta', nombre: 'Era de su primo', descripcion: 'Que un motero recupere su moto', cumple: (e) => e.motosDevueltas >= 1 },
+  { id: 'reto', nombre: 'Reto del día', descripcion: 'Cumple un reto del día', cumple: (e) => e.retos >= 1 },
+  { id: 'retos', nombre: 'Uno detrás de otro', descripcion: 'Diez retos del día', cumple: (e) => e.retos >= 10 },
+  { id: 'piscina', nombre: 'Bomba', descripcion: 'Un chapuzón en una piscina o una fuente con la moto', cumple: (e) => e.piscinas >= 1 },
+  { id: 'columpio', nombre: 'Parque infantil', descripcion: 'Derriba un columpio o un tobogán', cumple: (e) => e.parquesInfantiles >= 1 },
   { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20 },
 ];
 

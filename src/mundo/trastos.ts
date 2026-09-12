@@ -8,7 +8,7 @@ import type { Nivel, Punto } from './tipos';
 import { azar, dentroDePoligono, distanciaPolilinea, muestrearPolilinea } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco';
+export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan';
 
 export interface Trasto {
   tipo: TipoTrasto;
@@ -169,6 +169,44 @@ const DEFINICIONES: Record<TipoTrasto, Definicion> = {
       return g;
     },
     collider: (d) => d.cuboid(0.85, 0.45, 0.3).setDensity(0.9).setRestitution(0.2),
+  },
+  columpio: {
+    valor: 25, masa: 50, alturaMedia: 1.0,
+    crearMalla: () => {
+      // Columpio del parque infantil: dos pares de patas en A, barra arriba y dos asientos colgando.
+      const g = new THREE.Group();
+      for (const x of [-1.1, 1.1]) for (const z of [-0.45, 0.45]) {
+        const pata = malla(new THREE.CylinderGeometry(0.04, 0.04, 2.1, 5), materiales.azul, x, 0, z * 0.5);
+        pata.rotation.x = z > 0 ? -0.42 : 0.42;
+        g.add(pata);
+      }
+      g.add(malla(new THREE.CylinderGeometry(0.045, 0.045, 2.4, 6).rotateZ(Math.PI / 2), materiales.amarillo, 0, 0.98, 0));
+      for (const x of [-0.45, 0.45]) {
+        for (const dx of [-0.18, 0.18]) g.add(malla(new THREE.CylinderGeometry(0.012, 0.012, 1.3, 4), materiales.metal, x + dx, 0.3, 0));
+        g.add(malla(new THREE.BoxGeometry(0.42, 0.05, 0.2), materiales.rojo, x, -0.35, 0));
+      }
+      return g;
+    },
+    collider: (d) => d.cuboid(1.2, 1.0, 0.5).setDensity(0.3).setRestitution(0.3),
+  },
+  tobogan: {
+    valor: 30, masa: 45, alturaMedia: 0.75,
+    crearMalla: () => {
+      // Tobogán: escalera a un lado, plataforma arriba y la rampa roja bajando al otro.
+      const g = new THREE.Group();
+      g.add(malla(new THREE.BoxGeometry(0.7, 0.08, 0.7), materiales.azul, 0, 0.7, 0));
+      for (const x of [-0.3, 0.3]) g.add(malla(new THREE.BoxGeometry(0.05, 1.5, 0.05), materiales.metal, x, 0, 0.3));
+      for (let i = 0; i < 4; i++) {
+        const p = malla(new THREE.BoxGeometry(0.6, 0.04, 0.15), materiales.metal, 0, -0.55 + i * 0.32, 0.9 - i * 0.2);
+        g.add(p);
+      }
+      const rampa = malla(new THREE.BoxGeometry(0.6, 0.06, 2.3), materiales.rojo, 0, 0.05, -1.25);
+      rampa.rotation.x = -0.55;
+      g.add(rampa);
+      for (const x of [-0.32, 0.32]) { const b = malla(new THREE.BoxGeometry(0.04, 0.18, 2.3), materiales.amarillo, x, 0.14, -1.25); b.rotation.x = -0.55; g.add(b); }
+      return g;
+    },
+    collider: (d) => d.cuboid(0.4, 0.75, 1.3).setDensity(0.3).setRestitution(0.3),
   },
   valla: {
     valor: 12, masa: 14, alturaMedia: 0.5,
@@ -349,6 +387,18 @@ export class Trastos {
       }
     }
 
+    // Parques infantiles (leisure=playground): un columpio y un tobogán en cada uno.
+    for (const zona of nivel.zonas) {
+      if (zona.clase !== 'playground' || zona.poligono.length < 3) continue;
+      let cx = 0, cz = 0;
+      for (const [x, z] of zona.poligono) { cx += x; cz += z; }
+      cx /= zona.poligono.length; cz /= zona.poligono.length;
+      const giro = rnd() * Math.PI;
+      const dx = Math.cos(giro) * 3, dz = Math.sin(giro) * 3;
+      if (dentroDePoligono(cx + dx, cz + dz, zona.poligono)) colocar('columpio', cx + dx, cz + dz, giro + Math.PI / 2, 1.8);
+      if (dentroDePoligono(cx - dx, cz - dz, zona.poligono)) colocar('tobogan', cx - dx, cz - dz, giro, 1.8);
+    }
+
     // Los bancos que OSM sí trae (amenity=bench), mirando a la vía más cercana, con vecino sentado.
     for (const [bx, bz] of nivel.bancos ?? []) {
       let mejor = { d: Infinity, giro: 0 };
@@ -461,5 +511,7 @@ export const FRASES: Record<TipoTrasto, string[]> = {
   caja: ['¡Fruta del mercado!', '¡Los tomates del puesto!', '¡Cuidado con las cajas!'],
   valla: ['¡Valla de obra al suelo!', 'Las obras llevaban tres años ahí'],
   banco: ['¡El banco de los abuelos!', '¡Ahí se sentaba el Manolo!', '¡Banco por los aires!'],
+  columpio: ['¡El columpio de los niños!', '¡Ahí me columpiaba yo!', '¡Columpio por los aires!'],
+  tobogan: ['¡El tobogán del parque!', '¡Eso lo pagó el Distrito!', '¡Tobogán al suelo!'],
   puesto: ['¡El puesto del mercadillo!', '¡Los calcetines a tres euros por el aire!', '¡Se cae el toldo!', '¡Las bragas del puesto, por el suelo!'],
 };

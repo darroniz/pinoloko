@@ -19,6 +19,7 @@ export const COLORES = {
   pitch: '#88bd74',
   parking: '#9c9ca2',
   agua: '#6fb0d8',
+  piscina: '#7fd0ea',
   lineaVia: '#f2ead6',
 };
 
@@ -175,7 +176,7 @@ export function construirBarrio(nivel: Nivel, opciones: { bordes?: boolean; lige
     const color = new THREE.Color(
       z.clase === 'park' ? COLORES.parque : z.clase === 'garden' ? COLORES.jardin
         : z.clase === 'playground' ? COLORES.playground : z.clase === 'pitch' ? COLORES.pitch
-        : z.clase === 'parking' ? COLORES.parking : z.clase === 'water' ? COLORES.agua : COLORES.jardin,
+        : z.clase === 'parking' ? COLORES.parking : z.clase === 'water' ? COLORES.agua : z.clase === 'pool' ? COLORES.piscina : COLORES.jardin,
     );
     const [px, pz] = z.poligono[0]!;
     zonas.push({ geometria: geometriaPlana(z.poligono, 0.01, color), x: px, z: pz });

@@ -440,6 +440,9 @@ def generar(bbox: str, nombre_cache: str, salida: Path, perfil: dict | None = No
             clase = "parking"
         elif t.get("natural") == "water" or t.get("waterway") == "riverbank":
             clase = "water"
+        elif t.get("leisure") == "swimming_pool" or t.get("amenity") == "fountain":
+            # Piscinas de urbanización y fuentes: agua poco honda (chapuzón, no naufragio).
+            clase = "pool"
         if clase:
             r = anillo(w)
             if clase == "water":

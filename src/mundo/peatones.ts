@@ -475,7 +475,7 @@ export class Vecinos {
   /** Un bocinazo: los que estén a menos de `radio` salen corriendo. */
   asustar(x: number, z: number, radio: number): void {
     for (const v of this.lista) {
-      if (v.estado !== 'pasear' && v.estado !== 'sentado') continue;
+      if ((v.estado !== 'pasear' && v.estado !== 'sentado') || v.sequito) continue; // la comitiva no se asusta del claxon de su propia moto
       if ((v.x - x) ** 2 + (v.z - z) ** 2 < radio * radio) { v.estado = 'huir'; v.tiempo = 1.5 + this.rnd() * 1.5; }
     }
   }

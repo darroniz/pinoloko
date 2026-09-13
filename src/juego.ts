@@ -212,6 +212,8 @@ export class Juego {
   /** El tiempo: `?lluvia=1` fuerza la lluvia, `?lluvia=0` la quita (para medir). */
   private tiempo = new Tiempo(new URLSearchParams(location.search).get('lluvia') === '1' ? 'si' : new URLSearchParams(location.search).get('lluvia') === '0' ? 'no' : null, Math.random, new URLSearchParams(location.search).get('calor') === '1' ? 'si' : new URLSearchParams(location.search).get('calor') === '0' ? 'no' : null);
   private silencioMarcha = 0;
+  private tiempoFrasePaquete = 8;
+  private tiempoFraseLluvia = 5;
   private avisadoCalor = false;
   private lluvia = new Lluvia();
   private pausado = false;
@@ -1173,6 +1175,19 @@ export class Juego {
       this.hud.avisar('"Bájame aquí, que llego antes andando"', 2.2);
     }
     if (t.estado === 'ocupado' && t.destino && this.carrera.estado !== 'en_curso' && this.recadero.estado !== 'en_curso') this.hud.ponerCarrera(`De paquete · ${t.destino.nombre} · ${Math.ceil(t.restante)} s${t.cadena ? ` · ×${t.cadena}` : ''}`);
+    if (t.estado === 'ocupado') {
+      // El colega opina, y con un golpe fuerte sale volando.
+      this.tiempoFrasePaquete -= dt;
+      if (this.tiempoFrasePaquete <= 0) {
+        this.tiempoFrasePaquete = 8 + Math.random() * 4;
+        if (!this.hud.avisoReciente(2)) this.hud.avisar(`El colega: "${['¡Más rápido, illo!', '¡Por el pasaje, que se llega antes!', '¡Que me caigo, Wifly!', '¿Esta moto es tuya?', '¡Cuidado con el charco!', '¡Agárrate tú, que yo voy detrás!'][Math.floor(Math.random() * 6)]}"`, 2);
+      }
+      if (this.scooter.estado.golpe > 7.5) {
+        this.corro(pos.x, pos.z, 3);
+        this.audio.golpe(5);
+        this.abandonarPaquete('¡El colega sale volando! "¡Illo, que me matas!" Se va andando');
+      }
+    } else this.tiempoFrasePaquete = 8;
   }
 
   /** Conductor del 13: si llevas el bus y paras en una marquesina, los que esperan suben y pagan el billete. */
@@ -2255,6 +2270,7 @@ export class Juego {
         else if (musical > 0) this.tiempoClaxon = Math.max(0.6, this.audio.melodia(musical - 1));
         else { this.tiempoClaxon = 0.6; this.audio.claxon(this.coche?.apariencia && this.coche.apariencia.largo > 6 ? 0.55 : 1); }
         b.vecinos.asustar(jugadorPos.x, jugadorPos.z, musical > 0 ? 20 : 14);
+        if (this.altavoz.cuantos >= 2 && !this.hud.avisoReciente(1)) this.hud.avisar(`La comitiva: "${['¡Wifly, Wifly, Wifly!', '¡Ese es mi primo!', '¡Olé tu moto!'][Math.floor(Math.random() * 3)]}"`, 1.6);
         this.provocarVecina(jugadorPos, musical > 0 ? 0.6 : 0.3);
       }
       // Faros de noche, pegados al vehículo que lleves; y las ventanas del barrio encendidas.
@@ -2425,6 +2441,12 @@ export class Juego {
           }
         }
         if (bot.empieza && b.botellon.sitio && Math.hypot(b.botellon.sitio.x - pos.x, b.botellon.sitio.z - pos.z) < 140) { this.hud.avisar('Botellón en la plaza: ya suena el reggaetón del altavoz', 2.4); this.pista('botellon', 'De diez a cuatro hay botellón en la plaza del barrio. Pasar por medio a toda pastilla lo disuelve, y eso paga (y calienta)'); }
+        // Con lluvia, los vecinos que pasan cerca comentan el agua (cada bastante).
+        this.tiempoFraseLluvia -= 0.3;
+        if (this.tiempo.intensidad > 0.6 && this.tiempoFraseLluvia <= 0 && !this.hud.avisoReciente(3) && b.vecinos.lista.some((v) => v.estado === 'pasear' && (v.x - pos.x) ** 2 + (v.z - pos.z) ** 2 < 8 * 8)) {
+          this.tiempoFraseLluvia = 14;
+          this.hud.avisar(`Un vecino: "${['¡Ozú, qué agua!', '¡Esto es el diluvio, mi arma!', '¡Se me cala el chándal!', '¡En Sevilla no llueve, cae el cielo!', '¡Por el toldo, por el toldo!'][Math.floor(Math.random() * 5)]}"`, 2);
+        }
         // Pasando despacio junto al botellón, te dicen cosas.
         this.tiempoFraseBotellon -= 0.3;
         if (b.botellon.activo && !b.botellon.disuelto && b.botellon.sitio && this.tiempoFraseBotellon <= 0 && !this.hud.avisoReciente(2) && (b.botellon.sitio.x - pos.x) ** 2 + (b.botellon.sitio.z - pos.z) ** 2 < 14 * 14) {

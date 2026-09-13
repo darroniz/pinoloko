@@ -32,6 +32,9 @@ también) y la procesión de la parroquia. Todo freestyle, nada de misiones.
       nazarenos a pie y el tráfico que se para ante la procesión.
 - [x] **Bloque 8 (hecho a la 01:11)** — **Stoppie** (frenazo recto: el trasero en el aire, paga y frena peor) y **bolsas de basura** junto a los contenedores.
 - [x] **Bloque 9 (hecho a la 01:15)** — El paso en el minimapa, los perros espantan palomas, "Nuevo" en AYUDA, test del pilla-pilla.
+- [x] **Bloque 10 (hecho a la 01:30)** — **La calor**: días calurosos con calima, abanicos y el chapuzón al doble; la comitiva como público (trucos ×1,5).
+- [x] **Bloque 11 (hecho a la 01:36)** — **El de la ONCE**: cupones a 5 € y sorteo a las nueve y cuarto.
+- [x] **Bloque 12 (hecho a la 01:45)** — El colega de paquete opina y sale volando con un golpe fuerte; la comitiva no se asusta de tu claxon (y te jalea); comentarios de la lluvia.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-14 — resumen para leer en el móvil
@@ -55,13 +58,18 @@ y taller. **Pilla-pilla**: pita junto a un cani en moto y sale disparado: 35 s p
 él (o tirarlo), 50 €. **De paquete**: en scooter, de vez en cuando un colega levanta la mano en
 la acera; para, se sube detrás y te dice un bar. **Stoppie**: frenazo recto a velocidad, el
 trasero en el aire (paga, pero frenas peor). **Bolsas de basura** junto a cada contenedor,
-que revientan. Trece logros nuevos y AYUDA con un párrafo de "Nuevo".
+que revientan. **La calor**: un día de cada dos (el primero sí), de dos a seis y media, calima,
+medio barrio con abanico y el chapuzón al doble; con la comitiva detrás, los trucos valen ×1,5.
+**El de la ONCE**: a la vuelta de la parada, chaleco verde; a pie y con E, cupón a 5 € (tres por
+sorteo) y a las nueve y cuarto el sorteo (una cifra final 10 €, dos 40, tres 200, las cinco 3.000).
+Dieciséis logros nuevos y AYUDA con un párrafo de "Nuevo".
 
 **Qué probar primero en el móvil:** 1) nada más empezar (17:30), pulsa 🔊 y ve despacio por
 el pasaje: en un minuto llevas comitiva; 2) espera a las 19:00 de juego (minuto y medio) y busca
 el punto morado en el minimapa: la procesión; párate al lado del paso; 3) pita junto a un cani en
 moto y persíguelo; 4) a fondo en la avenida y frenazo recto; 5) abre el juego con
-`https://pinoloko.com/?lluvia=1` y derrapa; 6) pasa por medio de las palomas de la puerta del Mercado.
+`https://pinoloko.com/?lluvia=1` y derrapa; 6) pasa por medio de las palomas de la puerta del Mercado;
+7) bájate junto al de la ONCE (chaleco verde, a 25 m de la parada), E tres veces, y espera a las 21:15.
 
 **El gate de la Pi esta noche:** la Pi ha estado a 66-77 °C toda la noche y ni la build publicada
 anoche llega a 120 frames: el A/B (publicado [37,87]/[41,88] frente a nuevo [62,93]/[40,80]) da

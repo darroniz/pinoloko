@@ -104,6 +104,11 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] La lluvia: días de lluvia con menos agarre, charcos que salpican, paraguas y cielo gris (`?lluvia=1`).
 - [x] La procesión de la parroquia las tardes de salida (nazarenos, paso y banda por los pasajes; colarse calienta, pararse paga).
 - [x] La minimoto (pocket bike) aparcada y en los pasajes, robable, en el garaje y el taller.
+- [x] Pilla-pilla con el claxon junto a un cani en moto (35 s, 50 €); caramelos de los nazarenos; el tráfico se para ante la procesión.
+- [x] De paquete: un colega levanta la mano, se sube detrás de la scooter y te dice un bar (80 % del taxi).
+- [x] Stoppie como tercer truco de estilo; bolsas de basura junto a los contenedores.
+- [x] La calor (días calurosos: calima, abanicos, chapuzón al doble); con comitiva los trucos valen ×1,5.
+- [x] El de la ONCE: cupones a 5 € y sorteo a las nueve y cuarto con número por fecha.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

@@ -101,7 +101,7 @@ nueve y cuarto se sortea: una cifra final, 10 €; dos, 40; tres, 200; las cinco
 <p class="peque"><strong>La calor.</strong> Un día de cada dos (el primero, sí), de dos a seis y media de la tarde, ola de calor: calima, medio
 barrio con abanico, y el chapuzón en piscinas y fuentes vale el doble. Con la comitiva detrás (tres o más), los trucos de estilo valen la mitad más.</p>
 <p class="peque"><strong>Las palomas.</strong> Picotean en las plazas y delante del Mercado; al pasar cerca despegan todas (3 € la bandada), dan
-una vuelta y se vuelven a posar.</p>
+una vuelta y se vuelven a posar. Y los gatos duermen en los techos de los coches aparcados y en los bancos: al acercarte saltan, huyen y vuelven.</p>
 <p class="peque"><strong>El altavoz.</strong> Q (o el 🔊) enciende el reggaetón de la moto. En Pino Montano, los canis que pasan se te ponen detrás
 bailando (5 € cada uno, hasta cinco): ve despacio o los pierdes. En los demás barrios protestan, y de noche pegado a los bloques despierta a la
 vecina y la Local se va calentando.</p>

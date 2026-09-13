@@ -412,6 +412,29 @@ export class AudioJuego {
     fuente.start();
   }
 
+  /** Maullido: dos tonos que suben y bajan, con vibrato, por un paso banda. */
+  maullido(volumen = 0.09): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(520, t);
+    osc.frequency.exponentialRampToValueAtTime(900, t + 0.18);
+    osc.frequency.exponentialRampToValueAtTime(600, t + 0.45);
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = 'bandpass';
+    filtro.frequency.value = 1400;
+    filtro.Q.value = 1.2;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(volumen, t + 0.05);
+    g.gain.setValueAtTime(volumen, t + 0.3);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+    osc.connect(filtro).connect(g).connect(this.maestro);
+    osc.start(t); osc.stop(t + 0.52);
+  }
+
   /** Aleteo de una bandada: ráfagas cortas de ruido con paso banda, cada vez más flojas. */
   aleteo(volumen = 0.09): void {
     if (!this.ctx || !this.maestro) return;

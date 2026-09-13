@@ -1161,3 +1161,11 @@ todo el mundo ese día): una cifra final 10 €, dos 40, tres 200, las cinco 3.0
 esperanza es ~4 €/cupón por 5 €: gasta un poco de dinero a cambio de la ilusión, que es lo que
 es. Los cupones no se guardan: si cierras, al suelo. Es un juego sin dinero real, así que no hay
 problema de tono: es el "¡Para hoy!" de cualquier esquina de Sevilla.
+
+## 2026-09-14 — Los gatos
+
+Hasta catorce por barrio: en el techo de uno de cada tres coches aparcados (su sitio se mueve con
+el coche, y si el coche arranca saltan) y en uno de cada dos bancos. Sin física: a menos de 4,5 m
+con algo de velocidad (o pegado a ellos) saltan, corren 1,4-2,6 s huyendo y, cuando no estás
+encima, vuelven andando a su sitio y se suben de un brinco. Maullido sintetizado, estadística y
+logro; no pagan (son gatos). Tres colores en una malla instanciada por color.

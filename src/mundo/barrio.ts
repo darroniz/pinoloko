@@ -31,6 +31,7 @@ import { Palomas, elegirBandadas } from './palomas';
 import { Charcos } from './charcos';
 import { Procesion, ProcesionVista, elegirParroquia } from './procesion';
 import { Once, VendedorVista, elegirVendedor } from './once';
+import { Gatos } from './gatos';
 import { MotosCalle } from './motosCalle';
 import { Rivales } from './rivales';
 import { Pintadas } from './pintadas';
@@ -72,6 +73,7 @@ export class Barrio {
   readonly procesion: Procesion;
   readonly procesionVista: ProcesionVista;
   readonly once: Once;
+  readonly gatos: Gatos;
   readonly vendedorOnce: VendedorVista;
   readonly motosCalle: MotosCalle;
   readonly rivales: Rivales;
@@ -206,6 +208,8 @@ export class Barrio {
     this.grupo.add(this.vecina.grupo);
     this.chapa = new Chapa(elegirTaller(nivel, this.grafo, this.arranque));
     this.grupo.add(this.chapa.grupo);
+    this.gatos = new Gatos(this.coches, this.trastos.lista.filter((t) => t.tipo === 'banco').map((t) => ({ x: t.malla.position.x, z: t.malla.position.z })));
+    this.grupo.add(this.gatos.grupo);
     this.once = new Once(elegirVendedor(nivel, this.grafo, this.arranque));
     this.vendedorOnce = new VendedorVista(this.once.vendedor);
     this.grupo.add(this.vendedorOnce.grupo);

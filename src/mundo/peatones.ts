@@ -27,6 +27,8 @@ export interface Vecino {
   objetivo: { x: number; z: number; rumbo: number } | null;
   /** De botellón: al llegar a su sitio se queda ahí toda la noche. */
   fiesta?: boolean;
+  /** De la comitiva del altavoz: va detrás de la moto bailando y no se asusta de ella. */
+  sequito?: boolean;
 }
 
 export const INSULTOS = [
@@ -135,9 +137,10 @@ export function pasoVecino(
     return null;
   }
   if (v.estado === 'sentado' || v.estado === 'esperando' || v.estado === 'mirando') {
-    if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > (v.estado === 'sentado' ? 4 : 6)) {
-      // El del botellón que sale corriendo ya no vuelve al corro.
+    if (d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > (v.sequito ? 9 : v.estado === 'sentado' ? 4 : 6)) {
+      // El del botellón que sale corriendo ya no vuelve al corro (ni el de la comitiva).
       if (v.fiesta) { v.fiesta = false; v.objetivo = null; }
+      v.sequito = false;
       v.estado = 'huir';
       v.parada = -1;
       v.tiempo = 2 + rnd() * 2;
@@ -146,9 +149,10 @@ export function pasoVecino(
     return null;
   }
   // Camino de la marquesina: anda en línea recta al punto y al llegar se queda esperando.
-  if (v.estado === 'pasear' && v.objetivo && d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > 4) {
+  if (v.estado === 'pasear' && v.objetivo && d2 < RADIO_HUIDA * RADIO_HUIDA && jugador.rapidez > (v.sequito ? 9 : 4)) {
     // Iba a la marquesina o al corro y le pasas rozando: sale corriendo (y si era del botellón, no vuelve).
     if (v.fiesta) v.fiesta = false;
+    v.sequito = false;
     v.objetivo = null;
     v.estado = 'huir';
     v.tiempo = 2 + rnd() * 2;
@@ -488,7 +492,7 @@ export class Vecinos {
       } else if (v.estado === 'sentado') {
         this.p.y = -0.38; // las piernas "dentro" de la silla
       }
-      const bote = v.estado === 'pasear' || v.estado === 'huir' ? Math.abs(Math.sin(v.fase)) * 0.06 : 0;
+      const bote = v.estado === 'pasear' || v.estado === 'huir' ? Math.abs(Math.sin(v.fase)) * 0.06 : v.sequito && v.estado === 'mirando' ? Math.abs(Math.sin(v.fase)) * 0.14 : 0;
       this.p.y += bote;
       this.s.setScalar(1.15);
       this.m.compose(this.p, this.q, this.s);

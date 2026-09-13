@@ -289,6 +289,30 @@ export class AudioJuego {
   }
 
   /** Ladrido: dos golpes cortos de onda cuadrada que bajan de tono. */
+  /** Aleteo de una bandada: ráfagas cortas de ruido con paso banda, cada vez más flojas. */
+  aleteo(volumen = 0.09): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    const largo = Math.floor(ctx.sampleRate * 0.05);
+    const buffer = ctx.createBuffer(1, largo, ctx.sampleRate);
+    const datos = buffer.getChannelData(0);
+    for (let k = 0; k < largo; k++) datos[k] = (Math.random() * 2 - 1) * Math.sin((k / largo) * Math.PI);
+    for (let i = 0; i < 9; i++) {
+      const t = ctx.currentTime + i * 0.075 + Math.random() * 0.02;
+      const fuente = ctx.createBufferSource();
+      fuente.buffer = buffer;
+      fuente.playbackRate.value = 0.8 + Math.random() * 0.5;
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = 'bandpass';
+      filtro.frequency.value = 900 + Math.random() * 500;
+      filtro.Q.value = 0.8;
+      const g = ctx.createGain();
+      g.gain.value = volumen * (1 - i / 11);
+      fuente.connect(filtro).connect(g).connect(this.maestro);
+      fuente.start(t);
+    }
+  }
+
   ladrido(): void {
     if (!this.ctx || !this.maestro) return;
     const ctx = this.ctx;

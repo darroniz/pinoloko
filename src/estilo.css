@@ -52,6 +52,10 @@ body.en-bus #joystick, body.en-bus #boton-freno, body.en-bus #boton-accion, body
 #boton-foto { position: fixed; right: 14px; top: max(132px, calc(env(safe-area-inset-top) + 122px)); width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,250,240,0.85); color: var(--tinta); font-size: 18px; display: none; align-items: center; justify-content: center; padding: 0; box-shadow: 0 2px 0 rgba(0,0,0,0.12); display: none; touch-action: none; user-select: none; cursor: pointer; }
 body.jugando #boton-foto { display: flex; }
 body.en-bus #boton-foto { display: none; }
+#boton-altavoz { position: fixed; right: 14px; top: max(254px, calc(env(safe-area-inset-top) + 244px)); width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,250,240,0.85); color: var(--tinta); font-size: 18px; display: none; align-items: center; justify-content: center; padding: 0; box-shadow: 0 2px 0 rgba(0,0,0,0.12); touch-action: none; user-select: none; cursor: pointer; }
+body.jugando #boton-altavoz { display: flex; }
+body.en-bus #boton-altavoz { display: none; }
+#boton-altavoz.encendido { background: #f2c14e; box-shadow: 0 2px 0 #a8842a; }
 #boton-menu { position: fixed; right: 14px; top: max(84px, calc(env(safe-area-inset-top) + 74px)); width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,250,240,0.85); color: var(--tinta); font-size: 20px; font-weight: 800; box-shadow: 0 2px 0 rgba(0,0,0,0.12); display: none; touch-action: none; user-select: none; cursor: pointer; }
 body.jugando #boton-menu { display: block; }
 body.en-bus #boton-menu { display: none; }

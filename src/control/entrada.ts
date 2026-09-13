@@ -8,6 +8,8 @@ export interface Entrada {
   accion: boolean;
   reaparecer?: boolean;
   claxon?: boolean;
+  /** Flanco de Q / 🔊: el altavoz de la moto. */
+  altavoz?: boolean;
 }
 
 export class Controles implements Entrada {
@@ -31,6 +33,9 @@ export class Controles implements Entrada {
   private ejeMando = { x: 0, y: 0 };
   private accionPulsada = false;
   private claxonMando = false;
+  altavoz = false;
+  private altavozPulsado = false;
+  private altavozMandoPrevio = false;
 
   constructor(zonaJoystick: HTMLElement, bola: HTMLElement, botonFreno: HTMLElement, botonAccion: HTMLElement, botonClaxon: HTMLElement) {
     this.tactil = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
@@ -42,6 +47,7 @@ export class Controles implements Entrada {
       if (e.code === 'KeyE' || e.code === 'Enter') this.accionPulsada = true;
       if (e.code === 'Space' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') this.frenoPulsado = true;
       if (e.code === 'KeyR') this.reaparecerPulsado = true;
+      if (e.code === 'KeyQ') this.altavozPulsado = true;
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     });
     window.addEventListener('keyup', (e) => this.teclas.delete(e.code));
@@ -86,6 +92,9 @@ export class Controles implements Entrada {
     botonClaxon.addEventListener('pointerup', () => { this.claxonTactil = false; });
     botonClaxon.addEventListener('pointercancel', () => { this.claxonTactil = false; });
     botonClaxon.addEventListener('contextmenu', (e) => e.preventDefault());
+    const botonAltavoz = document.getElementById('boton-altavoz');
+    botonAltavoz?.addEventListener('pointerdown', (e) => { e.preventDefault(); this.altavozPulsado = true; });
+    botonAltavoz?.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
   private leerMando(): void {
@@ -104,11 +113,15 @@ export class Controles implements Entrada {
     }
     if (this.frenoMando && !this.frenoMandoPrevio) this.frenoPulsado = true;
     this.frenoMandoPrevio = this.frenoMando;
+    let altavozMando = false;
     for (const m of mandos) {
       if (!m) continue;
       if (m.buttons[2]?.pressed) this.accionPulsada = true;
       if (m.buttons[3]?.pressed) this.claxonMando = true;
+      if (m.buttons[4]?.pressed) altavozMando = true;
     }
+    if (altavozMando && !this.altavozMandoPrevio) this.altavozPulsado = true;
+    this.altavozMandoPrevio = altavozMando;
   }
 
   /** Recalcula el estado combinado; llamar una vez por frame. */
@@ -130,5 +143,7 @@ export class Controles implements Entrada {
     this.claxon = t.has('KeyH') || this.claxonTactil || this.claxonMando;
     this.reaparecer = this.reaparecerPulsado;
     this.reaparecerPulsado = false;
+    this.altavoz = this.altavozPulsado;
+    this.altavozPulsado = false;
   }
 }

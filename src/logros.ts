@@ -76,6 +76,9 @@ export const LOGROS: Logro[] = [
   { id: 'aficion', nombre: 'Día de partido', descripcion: 'Dispersa a la afición a la puerta del estadio', cumple: (e) => e.aficiones >= 1, medida: (e) => e.aficiones, objetivo: 1 },
   { id: 'sevici_sin_tarjeta', nombre: 'Sin tarjeta', descripcion: 'Quítale el Sevici a un ciclista y pedalea', cumple: (e) => e.sevicis >= 1, medida: (e) => e.sevicis, objetivo: 1 },
   { id: 'sacado', nombre: 'Que lo estoy pagando', descripcion: 'Que el dueño te saque de su coche', cumple: (e) => e.sacados >= 1, medida: (e) => e.sacados, objetivo: 1 },
+  { id: 'palomas', nombre: 'Espantapalomas', descripcion: 'Espanta 25 bandadas de palomas', cumple: (e) => e.palomas >= 25, medida: (e) => e.palomas, objetivo: 25 },
+  { id: 'comitiva', nombre: 'Perreo en el pasaje', descripcion: 'Una comitiva de cinco canis detrás del altavoz', cumple: (e) => e.comitivaMaximo >= 5, medida: (e) => e.comitivaMaximo, objetivo: 5 },
+  { id: 'dj', nombre: 'El DJ del barrio', descripcion: 'Veinte canis que se apuntan a tu comitiva', cumple: (e) => e.comitiva >= 20, medida: (e) => e.comitiva, objetivo: 20 },
   { id: 'salida', nombre: 'Salida de semáforo', descripcion: 'Gánale la salida a cinco coches al ponerse verde', cumple: (e) => e.salidas >= 5, medida: (e) => e.salidas, objetivo: 5 },
   { id: 'acrobata', nombre: 'Acróbata del pasaje', descripcion: 'Veinte trucos en el aire', cumple: (e) => e.trucos >= 20, medida: (e) => e.trucos, objetivo: 20 },
 ];

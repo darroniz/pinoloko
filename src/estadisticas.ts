@@ -63,11 +63,14 @@ export interface Estadisticas {
   sevicis: number;
   sacados: number;
   salidas: number;
+  comitiva: number;
+  comitivaMaximo: number;
+  palomas: number;
 }
 
 export const ESTADISTICAS_VACIAS: Estadisticas = {
   segundos: 0, metros: 0, trastos: 0, atropellos: 0, dineroTotal: 0, trincados: 0,
-  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0, carreras: 0, piquesGanados: 0, pintadas: 0, pintadasPijas: 0, pijosAtropellados: 0, alarmas: 0, vespas: 0, patadas: 0, multas: 0, propinas: 0, saltos: 0, vueloMaximo: 0, chapuzones: 0, semaforos: 0, recados: 0, cadenaRecados: 0, mecheros: 0, barriosCompletos: 0, goles: 0, ciclistas: 0, mejoras: 0, carrerasTaxi: 0, pasajeros: 0, macetazos: 0, motosLevantadas: 0, motosRecuperadas: 0, chapas: 0, trucos: 0, bomberos: 0, ambulancias: 0, contenedores: 0, piquesCallejeros: 0, derrapadas: 0, derrapeMaximo: 0, caballitos: 0, caballitoMaximo: 0, porLosPelos: 0, contramanos: 0, escobazos: 0, motosDevueltas: 0, retos: 0, piscinas: 0, parquesInfantiles: 0, bombonas: 0, botellones: 0, escaleras: 0, aficiones: 0, sevicis: 0, sacados: 0, salidas: 0,
+  viajes13: 0, motosRobadas: 0, cochesRobados: 0, reventones: 0, rachaMaxima: 0, carreras: 0, piquesGanados: 0, pintadas: 0, pintadasPijas: 0, pijosAtropellados: 0, alarmas: 0, vespas: 0, patadas: 0, multas: 0, propinas: 0, saltos: 0, vueloMaximo: 0, chapuzones: 0, semaforos: 0, recados: 0, cadenaRecados: 0, mecheros: 0, barriosCompletos: 0, goles: 0, ciclistas: 0, mejoras: 0, carrerasTaxi: 0, pasajeros: 0, macetazos: 0, motosLevantadas: 0, motosRecuperadas: 0, chapas: 0, trucos: 0, bomberos: 0, ambulancias: 0, contenedores: 0, piquesCallejeros: 0, derrapadas: 0, derrapeMaximo: 0, caballitos: 0, caballitoMaximo: 0, porLosPelos: 0, contramanos: 0, escobazos: 0, motosDevueltas: 0, retos: 0, piscinas: 0, parquesInfantiles: 0, bombonas: 0, botellones: 0, escaleras: 0, aficiones: 0, sevicis: 0, sacados: 0, salidas: 0, comitiva: 0, comitivaMaximo: 0, palomas: 0,
 };
 
 const CLAVE_STATS = 'pinoloko.estadisticas.v1';
@@ -170,6 +173,8 @@ export function resumen(e: Estadisticas): [string, string][] {
     ['Retos del día cumplidos', String(e.retos)],
     ['Escobazos del camarero', String(e.escobazos)],
     ['Veces que el dueño te sacó del coche', String(e.sacados)],
+    ['Bandadas de palomas espantadas', String(e.palomas)],
+    ['Canis en tu comitiva', `${e.comitiva} (la más larga, ${e.comitivaMaximo})`],
     ['Motos que su dueño recuperó', String(e.motosDevueltas)],
     ['Salidas de los bomberos', String(e.bomberos)],
     ['Salidas del 061', String(e.ambulancias)],

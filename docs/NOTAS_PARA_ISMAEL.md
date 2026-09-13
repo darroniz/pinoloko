@@ -4,6 +4,51 @@ Un párrafo por sesión nocturna, el más reciente arriba. Corto, para leer en e
 
 ---
 
+## Plan de la noche del 2026-09-14 (séptima sesión, 00:15 → 04:45)
+
+Sin feedback nuevo en `FEEDBACK.md` y el roadmap vacío salvo lo que depende de ti. La noche va
+de **cosas que pasan en el barrio sin que las busques** y de que **Wifly tenga su propia
+banda sonora**: el altavoz de la moto, las palomas de las plazas, la lluvia (sí, en Sevilla
+también) y la procesión de la parroquia. Todo freestyle, nada de misiones.
+
+- [ ] **Bloque 1 (00:25-01:00)** — **El altavoz**: Q (o el botón 🔊) enciende el reggaetón de
+      la moto. Los canis que pasan se te ponen detrás bailando (la comitiva, hasta cinco, 5 €
+      cada uno); de noche pegado a los bloques la vecina sale antes y la Local se calienta; pijos
+      y guiris protestan. Tests, estadística, logro, ayuda.
+- [ ] **Bloque 2 (01:00-01:40)** — **Las palomas**: bandadas en las plazas y delante del
+      Mercado; al pasar cerca despegan (aleteo), dan una vuelta y aterrizan. Estadística y logro.
+      Gate (bloques 1 y 2 juntos) y push.
+- [ ] **Bloque 3 (01:40-02:30)** — **La lluvia**: un día de cada cuatro llueve un rato: cielo
+      gris, cortina de agua, charcos que salpican, menos agarre (derrapes más largos), vecinos
+      con paraguas y el ruido del agua. `?lluvia=1` la fuerza para probar. Tests, logro. Gate y push.
+- [ ] **Bloque 4 (02:30-03:20)** — **La procesión**: las tardes de salida (una de cada tres),
+      de la parroquia sale la cofradía: nazarenos con capirote, el paso con sus cirios y la banda
+      de cornetas y tambores, despacio por los pasajes. Pasar por medio calienta a la Local y
+      escandaliza al barrio; parar a verla pasar paga (hasta Wifly respeta al paso). Gate y push.
+- [ ] **Bloque 5 (03:20-03:55)** — **La minimoto**: la pocket bike de cani, minúscula y
+      nerviosa, aparcada por el barrio y robable; entra en el garaje y el taller. Gate y push.
+- [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
+
+## Noche del 2026-09-13 — resumen para leer en el móvil (escrito la noche siguiente)
+
+La sesión se cortó a las 02:00 sin cerrar las notas; esto es lo que quedó publicado en
+https://pinoloko.com/ (siete commits, todos en `main`): **conducir con estilo** paga (derrapadas
+y caballitos largos, pasar por los pelos junto a coches y vecinos, tirar en contramano); **el
+barrio se venga** (el camarero con la escoba si le rompes la terraza, el motero al que le quitas
+la moto y el **dueño del coche**, que te saca si te pilla parado); **retos del día** (tres por
+fecha, 150 € cada uno, en LOGROS); **piscinas y fuentes** de OSM como agua (chapuzón con la moto)
+y parques infantiles con columpios; **vendedores ambulantes** (el butanero con bombonas que
+ruedan, el chatarrero con megáfono, el afilador); **el fantasma del récord** en las carreras;
+**el botellón** de la plaza de diez a cuatro (y la afición a la puerta del Pizjuán los días de
+partido); **escalerazo** por las escaleras de OSM; **el Sevici se pedalea** (a pie, E junto a un
+ciclista); **pique de semáforo** (parado en rojo con un coche al lado, al verde a fondo: 15 €);
+y un arreglo gordo: **el grafo se recorta a la caja** (un tercio del barrio vivía fuera de plano).
+
+**Qué probar primero en el móvil:** 1) frena fuerte con giro y aguanta el derrape: sale el
+texto de estilo; 2) rompe una terraza y espera al camarero; 3) a las 22:00 ve a la plaza (el
+parque grande) y pasa por medio del botellón a fondo; 4) párate en rojo junto a un coche del
+tráfico y sal a fondo cuando se ponga verde.
+
 ## Plan de la noche del 2026-09-13 (sexta sesión, 00:15 → 04:45)
 
 Sin feedback nuevo en `FEEDBACK.md` y el roadmap vacío salvo lo que depende de ti. La noche va

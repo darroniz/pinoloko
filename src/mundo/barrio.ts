@@ -27,6 +27,7 @@ import { Encargos } from './encargos';
 import { Pachangas } from './pachangas';
 import { Sevici } from './sevici';
 import { Perros } from './perros';
+import { Palomas, elegirBandadas } from './palomas';
 import { MotosCalle } from './motosCalle';
 import { Rivales } from './rivales';
 import { Pintadas } from './pintadas';
@@ -63,6 +64,7 @@ export class Barrio {
   readonly pachangas: Pachangas;
   readonly sevici: Sevici;
   readonly perros: Perros;
+  readonly palomas: Palomas;
   readonly motosCalle: MotosCalle;
   readonly rivales: Rivales;
   readonly pintadas: Pintadas;
@@ -169,6 +171,8 @@ export class Barrio {
     this.grupo.add(this.sevici.grupo);
     this.perros = new Perros(this.grafo, ficha.poblacion.perros);
     this.grupo.add(this.perros.grupo);
+    this.palomas = new Palomas(elegirBandadas(nivel, this.grafo));
+    this.grupo.add(this.palomas.grupo);
     this.motosCalle = new MotosCalle(this.grafo, ficha.poblacion.motosCalle, ficha.tribu === 'pijos' ? VESPA : undefined);
     this.grupo.add(this.motosCalle.grupo);
     this.rivales = new Rivales(this.grafo);

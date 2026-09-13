@@ -107,6 +107,8 @@ bailando (5 € cada uno, hasta cinco): ve despacio o los pierdes. En los demás
 vecina y la Local se va calentando.</p>
 <p class="peque"><strong>El botellón.</strong> De diez de la noche a cuatro, un corro de vecinos con litronas y reggaetón en la plaza del barrio.
 Pasar por medio a toda pastilla lo disuelve: 40 € y un poco de calor.</p>
+<p class="peque"><strong>La churrería.</strong> Al final del mercadillo, el remolque blanco con el toldo rojo (se rompe, y salen churros). De siete y
+media a once de la mañana tiene cola: pasar por medio la deshace (20 €).</p>
 <p class="peque"><strong>Día de partido.</strong> En Nervión, de ocho y media a diez y media, la afición se junta a la puerta del Sánchez-Pizjuán
 (se oyen los cánticos desde lejos). Pasar por medio la dispersa: 30 €. Y las escaleras de OSM se bajan con la moto: escalerazo, 20 €.</p>
 <p class="peque"><strong>Ambulantes.</strong> El camión naranja es el del butano: cada golpe le tira bombonas que ruedan (y pagan). La furgoneta con el

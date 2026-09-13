@@ -26,6 +26,8 @@ export interface OpcionesCorro {
 }
 
 export const OPCIONES_BOTELLON: OpcionesCorro = { desde: HORA_BOTELLON.desde, hasta: HORA_BOTELLON.hasta, cuantos: MIEMBROS, radio: 2.6, litronas: true, premio: 40 };
+/** La cola de la churrería, de siete y media a once de la mañana. */
+export const OPCIONES_COLA: OpcionesCorro = { desde: 7.5, hasta: 11, cuantos: 5, radio: 1.5, litronas: false, premio: 20 };
 /** La afición a la puerta del estadio, de ocho y media a diez y media. */
 export const OPCIONES_AFICION: OpcionesCorro = { desde: 20.5, hasta: 22.5, cuantos: 12, radio: 5, litronas: false, premio: 30 };
 

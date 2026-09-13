@@ -42,6 +42,9 @@ async function corro(barrio, hora, gancho, captura) {
   for (let i = 0; i < 6; i++) { await dormir(800); c = await p.evaluate((g) => window.__pv_prueba[g](), gancho); if (c.disuelto) break; }
   console.log(gancho, 'tras pasar por medio:', JSON.stringify(c), '· aviso:', await p.evaluate(() => document.querySelector('#aviso').textContent), '· dinero:', await p.evaluate(() => document.querySelector('#hud-dinero').textContent));
 }
-await corro('pino-montano', 23, 'botellon', 'logs/captura-botellon.png');
-if (!process.argv[2]) await corro('nervion', 21, 'aficion', 'logs/captura-aficion.png');
+if (process.argv[2] === 'churros') await corro('pino-montano', 9, 'churros', 'logs/captura-churros.png');
+else {
+  await corro('pino-montano', 23, 'botellon', 'logs/captura-botellon.png');
+  if (!process.argv[2]) await corro('nervion', 21, 'aficion', 'logs/captura-aficion.png');
+}
 await b.close(); srv.close();

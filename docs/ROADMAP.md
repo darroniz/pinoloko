@@ -109,6 +109,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] Stoppie como tercer truco de estilo; bolsas de basura junto a los contenedores.
 - [x] La calor (días calurosos: calima, abanicos, chapuzón al doble); con comitiva los trucos valen ×1,5.
 - [x] El de la ONCE: cupones a 5 € y sorteo a las nueve y cuarto con número por fecha.
+- [x] Los gatos en coches aparcados y bancos; la churrería del mercadillo con su cola de mañana.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

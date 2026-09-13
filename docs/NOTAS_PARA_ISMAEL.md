@@ -35,6 +35,8 @@ también) y la procesión de la parroquia. Todo freestyle, nada de misiones.
 - [x] **Bloque 10 (hecho a la 01:30)** — **La calor**: días calurosos con calima, abanicos y el chapuzón al doble; la comitiva como público (trucos ×1,5).
 - [x] **Bloque 11 (hecho a la 01:36)** — **El de la ONCE**: cupones a 5 € y sorteo a las nueve y cuarto.
 - [x] **Bloque 12 (hecho a la 01:45)** — El colega de paquete opina y sale volando con un golpe fuerte; la comitiva no se asusta de tu claxon (y te jalea); comentarios de la lluvia.
+- [x] **Bloque 13 (hecho a la 01:50)** — **Los gatos** en los techos de los coches aparcados y en los bancos (saltan, huyen y vuelven); la traca del gordo.
+- [x] **Bloque 14 (hecho a las 02:00)** — **La churrería** al final del mercadillo (se rompe en churros) con su cola de mañana (deshacerla, 20 €).
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 
 ## Noche del 2026-09-14 — resumen para leer en el móvil
@@ -62,7 +64,10 @@ que revientan. **La calor**: un día de cada dos (el primero sí), de dos a seis
 medio barrio con abanico y el chapuzón al doble; con la comitiva detrás, los trucos valen ×1,5.
 **El de la ONCE**: a la vuelta de la parada, chaleco verde; a pie y con E, cupón a 5 € (tres por
 sorteo) y a las nueve y cuarto el sorteo (una cifra final 10 €, dos 40, tres 200, las cinco 3.000).
-Dieciséis logros nuevos y AYUDA con un párrafo de "Nuevo".
+**Los gatos** duermen en los techos de los coches aparcados y en los bancos: al acercarte saltan y
+huyen (y vuelven). **La churrería** al final del mercadillo, con cola de siete y media a once de la
+mañana (deshacerla, 20 €; el remolque se rompe en churros). Dieciocho logros nuevos y AYUDA con un
+párrafo de "Nuevo".
 
 **Qué probar primero en el móvil:** 1) nada más empezar (17:30), pulsa 🔊 y ve despacio por
 el pasaje: en un minuto llevas comitiva; 2) espera a las 19:00 de juego (minuto y medio) y busca

@@ -8,7 +8,7 @@ import type { Nivel, Punto } from './tipos';
 import { azar, dentroDePoligono, distanciaPolilinea, muestrearPolilinea } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan' | 'bombona' | 'litrona' | 'bolsa';
+export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan' | 'bombona' | 'litrona' | 'bolsa' | 'churreria';
 
 export interface Trasto {
   tipo: TipoTrasto;
@@ -151,6 +151,20 @@ const DEFINICIONES: Record<TipoTrasto, Definicion> = {
       return g;
     },
     collider: (d) => d.cuboid(0.3, 0.2, 0.2).setDensity(0.5).setRestitution(0.5),
+  },
+  churreria: {
+    // La churrería: remolque blanco con toldo rojo, la bandeja de churros y dos ruedas.
+    valor: 25, masa: 40, alturaMedia: 1.0,
+    crearMalla: () => {
+      const g = new THREE.Group();
+      g.add(malla(new THREE.BoxGeometry(2.6, 1.5, 1.5), materiales.blanco, 0, 0.35, 0));
+      g.add(malla(new THREE.BoxGeometry(2.8, 0.06, 1.0), materiales.rojo, 0, 1.2, -0.95));
+      g.add(malla(new THREE.BoxGeometry(2.2, 0.12, 0.5), materiales.amarillo, 0, 0.7, -0.85));
+      g.add(malla(new THREE.BoxGeometry(2.6, 0.3, 0.06), materiales.rojo, 0, 0.95, -0.78));
+      for (const x of [-0.9, 0.9]) g.add(malla(new THREE.CylinderGeometry(0.28, 0.28, 0.2, 10).rotateZ(Math.PI / 2), materiales.gris, x, -0.4, 0.2));
+      return g;
+    },
+    collider: (d) => d.cuboid(1.3, 0.85, 0.75).setDensity(0.4).setRestitution(0.3),
   },
   puesto: {
     valor: 30, masa: 25, alturaMedia: 0.9,
@@ -295,6 +309,7 @@ export const ROMPIBLES: Partial<Record<TipoTrasto, string[]>> = {
   mesa: ['#f7f3ea', '#f7f3ea', '#f7f3ea', '#b9bcc4', '#b9bcc4'],
   puesto: ['#c99a5b', '#c99a5b', '#f7f3ea', '#d93b3b', '#f2c94c', '#e84a7a', '#3b6fd9', '#b9bcc4'],
   bolsa: ['#2b2b2f', '#2b2b2f', '#f7f3ea', '#c99a5b', '#d93b3b', '#4f9b4a', '#f2c94c'],
+  churreria: ['#f7f3ea', '#f7f3ea', '#d93b3b', '#f2c94c', '#e3a34a', '#e3a34a', '#e3a34a', '#5a341b'],
 };
 
 export class Trastos {
@@ -302,6 +317,8 @@ export class Trastos {
   readonly lista: Trasto[] = [];
   /** Sillas de terraza donde puede sentarse un vecino (posición y hacia dónde mira). */
   readonly asientos: { x: number; z: number; rumbo: number }[] = [];
+  /** La ventanilla de la churrería (donde se pone la cola), si el barrio tiene mercado. */
+  churreria: { x: number; z: number } | null = null;
   private tmpQ = new THREE.Quaternion();
   private geometrias = new Map<string, THREE.BufferGeometry[]>();
 
@@ -486,8 +503,13 @@ export class Trastos {
         if (pasaje) {
           let puestos = 0;
           for (const m of muestrearPolilinea(pasaje.puntos, 3.6, 1.5)) {
-            if (puestos >= 10 || Math.hypot(m.x - poi.x, m.z - poi.z) > 80) continue;
+            if (Math.hypot(m.x - poi.x, m.z - poi.z) > 80) continue;
             const lado = pasaje.ancho / 2 - 0.9;
+            if (puestos >= 10) {
+              // Pasados los puestos, la churrería en el otro lado del pasaje, con la ventanilla hacia el paso.
+              if (!this.churreria && colocar('churreria', m.x - m.nx * lado, m.z - m.nz * lado, -Math.atan2(m.tz, m.tx), 2.6)) this.churreria = { x: m.x - m.nx * lado * 0.35, z: m.z - m.nz * lado * 0.35 };
+              continue;
+            }
             if (colocar('puesto', m.x + m.nx * lado, m.z + m.nz * lado, -Math.atan2(m.tz, m.tx) + Math.PI, 2.2)) puestos++;
           }
         }
@@ -564,6 +586,7 @@ export const FRASES: Record<TipoTrasto, string[]> = {
   valla: ['¡Valla de obra al suelo!', 'Las obras llevaban tres años ahí'],
   banco: ['¡El banco de los abuelos!', '¡Ahí se sentaba el Manolo!', '¡Banco por los aires!'],
   litrona: ['¡La litrona por el suelo!', '¡Que era de litro, illo!', '¡Uy, la Cruzcampo!'],
+  churreria: ['¡La churrería por los aires!', '¡Churros por toda la calle!', '¡El chocolate por el suelo!', '¡Se acabó el desayuno del barrio!'],
   bolsa: ['¡Bolsa de basura por los aires!', '¡La basura por toda la calle!', '¡Lipasam te va a buscar!'],
   bombona: ['¡Bombona rodando!', '¡El butano por los suelos!', '¡Cuidado, que eso explota! (no, no explota)'],
   columpio: ['¡El columpio de los niños!', '¡Ahí me columpiaba yo!', '¡Columpio por los aires!'],

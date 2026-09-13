@@ -89,6 +89,7 @@ export const LOGROS: Logro[] = [
   { id: 'sinrespeto', nombre: 'Ni un respeto', descripcion: 'Cuélate tres veces por medio de la cofradía', cumple: (e) => e.cruzadas >= 3, medida: (e) => e.cruzadas, objetivo: 3 },
   { id: 'lluvia', nombre: 'En Sevilla también llueve', descripcion: 'Recorre 1.000 m bajo la lluvia', cumple: (e) => e.metrosLluvia >= 1000, medida: (e) => Math.round(e.metrosLluvia), objetivo: 1000 },
   { id: 'charcos', nombre: 'Chof', descripcion: 'Salpica a diez vecinos pisando charcos', cumple: (e) => e.salpicados >= 10, medida: (e) => e.salpicados, objetivo: 10 },
+  { id: 'churros', nombre: 'Churros con chocolate', descripcion: 'Deshaz tres veces la cola de la churrería', cumple: (e) => e.colas >= 3, medida: (e) => e.colas, objetivo: 3 },
   { id: 'gatos', nombre: 'Espantagatos', descripcion: 'Espanta 15 gatos de los coches y los bancos', cumple: (e) => e.gatos >= 15, medida: (e) => e.gatos, objetivo: 15 },
   { id: 'palomas', nombre: 'Espantapalomas', descripcion: 'Espanta 25 bandadas de palomas', cumple: (e) => e.palomas >= 25, medida: (e) => e.palomas, objetivo: 25 },
   { id: 'comitiva', nombre: 'Perreo en el pasaje', descripcion: 'Una comitiva de cinco canis detrás del altavoz', cumple: (e) => e.comitivaMaximo >= 5, medida: (e) => e.comitivaMaximo, objetivo: 5 },

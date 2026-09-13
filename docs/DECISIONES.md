@@ -1169,3 +1169,12 @@ el coche, y si el coche arranca saltan) y en uno de cada dos bancos. Sin física
 con algo de velocidad (o pegado a ellos) saltan, corren 1,4-2,6 s huyendo y, cuando no estás
 encima, vuelven andando a su sitio y se suben de un brinco. Maullido sintetizado, estadística y
 logro; no pagan (son gatos). Tres colores en una malla instanciada por color.
+
+## 2026-09-14 — La churrería
+
+Trasto `churreria` (remolque blanco con toldo rojo, 25 €, rompible en churros dorados) que
+`poblar` pone pasados los diez puestos del mercadillo, en el otro lado del pasaje, solo donde
+hay mercado (el Mercado de Pino Montano). La cola es otro `Botellon` con `OPCIONES_COLA`
+(cinco vecinos de siete y media a once de la mañana, 20 € por deshacerla): la misma lógica
+que el botellón y la afición, con la ventanilla como sitio. Sin comprar churros: la cadena de
+E a pie ya hace demasiadas cosas.

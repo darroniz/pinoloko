@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { GrafoBarrio } from '../src/mundo/grafo';
-import { elegirEstadio, elegirSitio, entreHoras, esHoraDeBotellon } from '../src/mundo/botellon';
+import { OPCIONES_COLA, elegirEstadio, elegirSitio, entreHoras, esHoraDeBotellon } from '../src/mundo/botellon';
 import type { Nivel } from '../src/mundo/tipos';
 
 const nivel = JSON.parse(readFileSync(new URL('../public/barrios/pino-montano/nivel.json', import.meta.url), 'utf8')) as Nivel;
 const grafo = new GrafoBarrio(nivel.grafo);
 
 describe('el botellón', () => {
+  it('la cola de la churrería es de mañana y no lleva litronas', () => {
+    expect(entreHoras(9, OPCIONES_COLA.desde, OPCIONES_COLA.hasta)).toBe(true);
+    expect(entreHoras(12, OPCIONES_COLA.desde, OPCIONES_COLA.hasta)).toBe(false);
+    expect(OPCIONES_COLA.litronas).toBe(false);
+  });
+
   it('es de diez de la noche a cuatro', () => {
     expect(esHoraDeBotellon(21.9)).toBe(false);
     expect(esHoraDeBotellon(22)).toBe(true);

@@ -39,7 +39,7 @@ import { Radares } from './radares';
 import { Agentes } from '../policia/agentes';
 import { Perseguidores } from './perseguidores';
 import { FantasmaCarrera } from './fantasma';
-import { Botellon, OPCIONES_AFICION, elegirEstadio, elegirSitio } from './botellon';
+import { Botellon, OPCIONES_AFICION, OPCIONES_COLA, elegirEstadio, elegirSitio } from './botellon';
 import { construirFarolas } from './farolas';
 import { localesConNombre, type Local } from '../recados';
 import type { Nivel } from './tipos';
@@ -88,6 +88,8 @@ export class Barrio {
   readonly botellon: Botellon;
   /** La afición a la puerta del estadio (si el barrio tiene), de ocho y media a diez y media. */
   readonly aficion: Botellon;
+  /** La cola de la churrería por la mañana (donde hay mercado). */
+  readonly churros: Botellon;
   /** Clientes del taxi con la mano levantada (solo mientras llevas un taxi). */
   readonly clientes: Clientes;
   /** La vecina del quinto, que sale a la azotea a tirarte macetas. */
@@ -203,6 +205,7 @@ export class Barrio {
     this.grupo.add(this.fantasma.grupo);
     this.botellon = new Botellon(elegirSitio(nivel, this.grafo), this.vecinos, this.trastos);
     this.aficion = new Botellon(elegirEstadio(nivel, this.grafo), this.vecinos, this.trastos, OPCIONES_AFICION);
+    this.churros = new Botellon(this.trastos.churreria, this.vecinos, this.trastos, OPCIONES_COLA);
     this.clientes = new Clientes(nivel, TRIBUS[ficha.tribu].ropa);
     this.grupo.add(this.clientes.grupo);
     this.grupo.add(this.vecina.grupo);

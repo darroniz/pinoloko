@@ -5,7 +5,7 @@
 // los eventos con sus euros.
 import type { Via } from './mundo/tipos';
 
-export type TipoEstilo = 'derrapada' | 'caballito' | 'pelos' | 'contramano';
+export type TipoEstilo = 'derrapada' | 'caballito' | 'stoppie' | 'pelos' | 'contramano';
 
 export interface EventoEstilo {
   tipo: TipoEstilo;
@@ -21,6 +21,8 @@ export interface EntradaEstilo {
   derrapando: boolean;
   /** Ángulo del caballito en radianes (0 = ruedas en el suelo). */
   caballito: number;
+  /** Ángulo del stoppie (el trasero en el aire al frenar). */
+  stoppie: number;
   /** Cosas (coches del tráfico, vecinos) a distancia de rozar este frame. Claves estables. */
   cerca: Iterable<unknown>;
   /** Ha habido un golpe este frame: los que estaban cerca ya no cuentan como "por los pelos". */
@@ -31,6 +33,9 @@ export interface EntradaEstilo {
 /** Umbrales: por debajo no hay premio (una curva normal no es una derrapada). */
 export const MINIMO_DERRAPADA = 0.8;
 export const MINIMO_CABALLITO = 0.8;
+/** El stoppie es corto por naturaleza (se acaba la velocidad): con un tercio de segundo ya vale. */
+export const MINIMO_STOPPIE = 0.35;
+export const ANGULO_STOPPIE = 0.1;
 export const RAPIDEZ_DERRAPADA = 4;
 export const RAPIDEZ_PELOS = 7;
 export const RAPIDEZ_CONTRAMANO = 4;
@@ -42,12 +47,14 @@ export const ANGULO_CABALLITO = 0.15;
 
 export function eurosDerrapada(segundos: number): number { return 5 + Math.round(segundos * 15); }
 export function eurosCaballito(segundos: number): number { return 10 + Math.round(segundos * 15); }
+export function eurosStoppie(segundos: number): number { return 8 + Math.round(segundos * 20); }
 export function eurosContramano(tramos: number): number { return 15 * Math.min(4, tramos); }
 
 export class Estilo {
   private derrape = 0;
   private sinDerrape = 0;
   private caballito = 0;
+  private stoppie = 0;
   private contramano = 0;
   private tramosContramano = 0;
   private enfriamientoPelos = 0;
@@ -55,8 +62,8 @@ export class Estilo {
   private rozando = new Map<unknown, { rapidez: number; tocado: boolean }>();
 
   /** Segundos de derrapada, caballito y contramano en curso (para el HUD). */
-  get enCurso(): { derrape: number; caballito: number; contramano: number } {
-    return { derrape: this.derrape, caballito: this.caballito, contramano: this.contramano };
+  get enCurso(): { derrape: number; caballito: number; stoppie: number; contramano: number } {
+    return { derrape: this.derrape, caballito: this.caballito, stoppie: this.stoppie, contramano: this.contramano };
   }
 
   /** Cierra lo que hubiera en curso sin premiar (al bajarte, al trincarte). */
@@ -64,6 +71,7 @@ export class Estilo {
     this.derrape = 0;
     this.sinDerrape = 0;
     this.caballito = 0;
+    this.stoppie = 0;
     this.contramano = 0;
     this.tramosContramano = 0;
     this.rozando.clear();
@@ -75,6 +83,7 @@ export class Estilo {
       // Sin moto, lo que hubiera en curso se paga si ya llegaba al mínimo (te has bajado justo después).
       if (this.derrape >= MINIMO_DERRAPADA) eventos.push({ tipo: 'derrapada', segundos: this.derrape, euros: eurosDerrapada(this.derrape) });
       if (this.caballito >= MINIMO_CABALLITO) eventos.push({ tipo: 'caballito', segundos: this.caballito, euros: eurosCaballito(this.caballito) });
+      if (this.stoppie >= MINIMO_STOPPIE) eventos.push({ tipo: 'stoppie', segundos: this.stoppie, euros: eurosStoppie(this.stoppie) });
       this.cortar();
       return eventos;
     }
@@ -96,6 +105,13 @@ export class Estilo {
     else if (this.caballito > 0) {
       if (this.caballito >= MINIMO_CABALLITO) eventos.push({ tipo: 'caballito', segundos: this.caballito, euros: eurosCaballito(this.caballito) });
       this.caballito = 0;
+    }
+
+    // Stoppie: mientras el trasero esté en el aire.
+    if (e.stoppie > ANGULO_STOPPIE) this.stoppie += dt;
+    else if (this.stoppie > 0) {
+      if (this.stoppie >= MINIMO_STOPPIE) eventos.push({ tipo: 'stoppie', segundos: this.stoppie, euros: eurosStoppie(this.stoppie) });
+      this.stoppie = 0;
     }
 
     // Por los pelos: algo entra en el radio a velocidad y sale sin que hayas tocado nada.

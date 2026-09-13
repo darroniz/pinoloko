@@ -1129,3 +1129,13 @@ Wifly sentada detrás (`Scooter.llevarPaquete`), paga el 80 % del taxi (mínimo 
 igual. Los clientes de los dos oficios se dibujan con las mismas dos figuras de `Clientes`: como
 no se puede ir en taxi y en scooter a la vez, no chocan. Los nombres del colega son los de los
 rivales (el Kevin, el Jonathan, la Vanessa), que ya son los colegas del barrio.
+
+## 2026-09-14 — Stoppie y bolsas de basura
+
+El stoppie es el tercer truco de estilo: frenando recto (giro < 0,3) a más de 4,5 m/s el trasero
+se levanta (hasta 0,3 rad, según la velocidad) y mientras dura la frenada baja un 40 %: el
+riesgo es que te comes lo que tengas delante. Como el frenazo se acaba solo en medio segundo, el
+mínimo para cobrar es 0,35 s (8 € + 20 €/s). Es excluyente con la derrapada (que pide girar) y
+con el caballito. Las bolsas de basura: trasto `bolsa` (2 €, ligera, rompible en trozos) que
+`poblar` pone de una en una o de dos en dos junto a cada contenedor. Siempre están: en Sevilla
+el contenedor nunca está solo.

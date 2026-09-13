@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EUROS_PELOS, Estilo, MINIMO_CABALLITO, MINIMO_DERRAPADA, TRAMO_CONTRAMANO, eurosCaballito, eurosContramano, eurosDerrapada, sentidoVia, vaEnContramano, type EntradaEstilo } from '../src/estilo';
+import { EUROS_PELOS, Estilo, MINIMO_CABALLITO, MINIMO_DERRAPADA, MINIMO_STOPPIE, TRAMO_CONTRAMANO, eurosCaballito, eurosContramano, eurosDerrapada, eurosStoppie, sentidoVia, vaEnContramano, type EntradaEstilo } from '../src/estilo';
 
-const base: EntradaEstilo = { enMoto: true, rapidez: 9, derrapando: false, caballito: 0, cerca: [], golpe: false, contramano: false };
+const base: EntradaEstilo = { enMoto: true, rapidez: 9, derrapando: false, caballito: 0, stoppie: 0, cerca: [], golpe: false, contramano: false };
 
 function correr(e: Estilo, entrada: Partial<EntradaEstilo>, segundos: number, dt = 1 / 30) {
   const eventos = [];
@@ -30,12 +30,22 @@ describe('conducir con estilo', () => {
     expect(eurosCaballito(2)).toBeGreaterThan(eurosCaballito(0.8));
   });
 
+  it('un stoppie paga en cuanto baja el trasero, con un mínimo corto', () => {
+    const e = new Estilo();
+    expect(correr(e, { stoppie: 0.25 }, 0.2)).toEqual([]);
+    expect(correr(e, { stoppie: 0 }, 0.1)).toEqual([]);
+    expect(correr(e, { stoppie: 0.25 }, MINIMO_STOPPIE + 0.15)).toEqual([]);
+    const [ev] = correr(e, { stoppie: 0 }, 0.1);
+    expect(ev?.tipo).toBe('stoppie');
+    expect(ev?.euros).toBe(eurosStoppie(ev!.segundos));
+  });
+
   it('bajarse de la moto paga lo que ya llegaba al mínimo y corta lo demás', () => {
     const e = new Estilo();
     correr(e, { derrapando: true, caballito: 0.3 }, MINIMO_DERRAPADA + 0.2);
     const ev = e.actualizar({ ...base, enMoto: false }, 0.03);
     expect(ev.map((x) => x.tipo).sort()).toEqual(['caballito', 'derrapada']);
-    expect(e.enCurso).toEqual({ derrape: 0, caballito: 0, contramano: 0 });
+    expect(e.enCurso).toEqual({ derrape: 0, caballito: 0, stoppie: 0, contramano: 0 });
   });
 
   it('por los pelos: un coche que entra y sale del radio a velocidad sin golpe', () => {

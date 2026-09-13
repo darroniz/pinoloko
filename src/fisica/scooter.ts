@@ -99,6 +99,8 @@ export class Scooter {
   private inclinacion = 0;
   /** Caballito: al acelerar a fondo desde parado el morro se levanta un momento. */
   private caballito = 0;
+  /** Stoppie: frenando fuerte y recto a velocidad, el trasero se levanta (y se frena peor). */
+  private stoppie = 0;
   private velocidadPrevia = new THREE.Vector3();
   private readonly chasis: THREE.Group;
   private readonly ruedaDelantera: THREE.Mesh;
@@ -118,6 +120,11 @@ export class Scooter {
   truco = 0;
   get rota(): boolean {
     return this.salud <= 0;
+  }
+
+  /** Ángulo del stoppie (radianes; 0 = ruedas en el suelo). */
+  get anguloStoppie(): number {
+    return this.stoppie;
   }
 
   /** Ángulo del caballito ahora mismo (radianes; 0 = ruedas en el suelo). */
@@ -282,7 +289,7 @@ export class Scooter {
 
     // Freno y marcha atrás.
     if (entrada.freno) {
-      if (rapidez > 0.6) vf -= Math.sign(vf) * Math.min(rapidez, a.frenado * (1 - 0.3 * this.mojado) * dt);
+      if (rapidez > 0.6) vf -= Math.sign(vf) * Math.min(rapidez, a.frenado * (1 - 0.3 * this.mojado) * (1 - 0.4 * Math.min(1, this.stoppie / 0.2)) * dt);
       else if (quiereIr) vf = Math.max(-a.velocidadMarchaAtras, vf - a.aceleracion * 0.5 * dt);
       else vf = 0;
       acelerador = 0;
@@ -322,6 +329,9 @@ export class Scooter {
     const umbral = a.velocidadMaxima * (this.caballito > 0.12 ? 0.7 : 0.45);
     const objetivoCaballito = !this.modelo.bici && acelerador > 0.8 && !entrada.freno && rapidez > 0.5 && rapidez < umbral ? Math.max(this.caballito > 0.12 ? 0.2 : 0, 0.38 * (1 - rapidez / umbral)) * Math.min(1.3, a.aceleracion / 11) : 0;
     this.caballito += (objetivoCaballito - this.caballito) * Math.min(1, dt * (objetivoCaballito > this.caballito ? 5 : 3));
+    // Stoppie: frenazo recto a velocidad, la rueda trasera se levanta (y con ella se pierde frenada: aguantarlo tiene su riesgo).
+    const objetivoStoppie = !this.modelo.bici && entrada.freno && vf > 4.5 && Math.abs(this.giroActual) < 0.3 && this.caballito < 0.05 && !this.rota ? 0.3 * Math.min(1, (vf - 4.5) / 7) : 0;
+    this.stoppie += (objetivoStoppie - this.stoppie) * Math.min(1, dt * (objetivoStoppie > this.stoppie ? 7 : 4));
   }
 
   /** Se llama después del paso de física: detecta golpes y sincroniza la malla. */
@@ -344,8 +354,8 @@ export class Scooter {
     this.malla.rotation.set(0, -this.rumbo + this.truco, 0, 'YXZ');
     this.chasis.rotation.z = this.inclinacion;
     // Caballito: pivota sobre la rueda trasera (el chasis sube lo que baje el trasero al girar).
-    this.chasis.rotation.x = this.caballito;
-    this.chasis.position.y = Math.sin(this.caballito) * 0.6;
+    this.chasis.rotation.x = this.caballito - this.stoppie;
+    this.chasis.position.y = Math.sin(this.caballito) * 0.6 + Math.sin(this.stoppie) * 0.55;
     // Derrape: el chasis gira un poco más que el rumbo para que se vea cruzarse.
     this.chasis.rotation.y = -this.estado.velocidadLateral * 0.06;
     this.manillar.rotation.y = -this.giroActual * 0.5;

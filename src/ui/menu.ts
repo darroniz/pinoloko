@@ -58,7 +58,7 @@ el camión de Lipasam, el 13 y el Sevici (a pie, E junto a un ciclista: sin moto
 <p class="peque"><strong>Lío.</strong> Conos, macetas, contenedores, terrazas, cajas del mercado y los puestos del mercadillo dan dinero y
 racha. Saltarse un semáforo en rojo, atropellar vecinos, ciclistas del Sevici o moteros calienta a la Policía Local.</p>
 <p class="peque"><strong>Estilo.</strong> Conducir bien también paga: una derrapada larga (frenar girando), un caballito largo (a fondo desde
-parado), pasar rozando coches y vecinos sin tocarlos ("por los pelos") y tirar en contramano por una calle de sentido único (cada tres
+parado), un stoppie (frenazo recto a velocidad: el trasero se levanta, y mientras dura frenas peor), pasar rozando coches y vecinos sin tocarlos ("por los pelos") y tirar en contramano por una calle de sentido único (cada tres
 segundos más, y calienta un poco a la Local).</p>
 <p class="peque"><strong>La Local.</strong> Sus coches no entran en los pasajes; a tres estrellas salen motos que sí, y a cinco el
 helicóptero: su foco te sigue con retraso, así que a fondo y cambiando de dirección lo pierdes.</p>

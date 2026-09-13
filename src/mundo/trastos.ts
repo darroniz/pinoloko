@@ -8,7 +8,7 @@ import type { Nivel, Punto } from './tipos';
 import { azar, dentroDePoligono, distanciaPolilinea, muestrearPolilinea } from './geometria';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan' | 'bombona' | 'litrona';
+export type TipoTrasto = 'cono' | 'maceta' | 'contenedor' | 'papelera' | 'mesa' | 'silla' | 'caja' | 'valla' | 'puesto' | 'banco' | 'columpio' | 'tobogan' | 'bombona' | 'litrona' | 'bolsa';
 
 export interface Trasto {
   tipo: TipoTrasto;
@@ -47,6 +47,7 @@ const materiales = {
   rojo: new THREE.MeshLambertMaterial({ color: '#d93b3b' }),
   amarillo: new THREE.MeshLambertMaterial({ color: '#f2c94c' }),
   azul: new THREE.MeshLambertMaterial({ color: '#3b6fd9' }),
+  negro: new THREE.MeshLambertMaterial({ color: '#2b2b2f' }),
 };
 
 function malla(geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0): THREE.Mesh {
@@ -57,6 +58,17 @@ function malla(geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z =
 }
 
 const DEFINICIONES: Record<TipoTrasto, Definicion> = {
+  bolsa: {
+    // La bolsa de basura junto al contenedor: ligera, sale volando y revienta en trozos.
+    valor: 2, masa: 0.6, alturaMedia: 0.3,
+    crearMalla: () => {
+      const g = new THREE.Group();
+      g.add(malla(new THREE.SphereGeometry(0.34, 7, 5).scale(1, 0.8, 1), materiales.negro, 0, 0, 0));
+      g.add(malla(new THREE.SphereGeometry(0.12, 5, 4), materiales.negro, 0.05, 0.3, 0));
+      return g;
+    },
+    collider: (d) => d.ball(0.3).setDensity(0.3).setRestitution(0.3),
+  },
   cono: {
     valor: 5, masa: 2, alturaMedia: 0.38,
     crearMalla: () => {
@@ -282,6 +294,7 @@ export const ROMPIBLES: Partial<Record<TipoTrasto, string[]>> = {
   silla: ['#d93b3b', '#d93b3b', '#b9bcc4', '#b9bcc4', '#b9bcc4'],
   mesa: ['#f7f3ea', '#f7f3ea', '#f7f3ea', '#b9bcc4', '#b9bcc4'],
   puesto: ['#c99a5b', '#c99a5b', '#f7f3ea', '#d93b3b', '#f2c94c', '#e84a7a', '#3b6fd9', '#b9bcc4'],
+  bolsa: ['#2b2b2f', '#2b2b2f', '#f7f3ea', '#c99a5b', '#d93b3b', '#4f9b4a', '#f2c94c'],
 };
 
 export class Trastos {
@@ -414,7 +427,11 @@ export class Trastos {
         for (const m of muestrearPolilinea(via.puntos, 40, rnd() * 40)) {
           const lado = (via.ancho / 2 - 0.9) * (rnd() < 0.5 ? 1 : -1);
           const r = rnd();
-          if (r < 0.45) colocar('contenedor', m.x + m.nx * lado, m.z + m.nz * lado, -Math.atan2(m.tz, m.tx), 1.8);
+          if (r < 0.45) {
+            colocar('contenedor', m.x + m.nx * lado, m.z + m.nz * lado, -Math.atan2(m.tz, m.tx), 1.8);
+            // Y una o dos bolsas de basura al lado, que en Sevilla el contenedor nunca está solo.
+            for (let k = 0; k < 1 + Math.floor(rnd() * 2); k++) colocar('bolsa', m.x + m.nx * lado * 0.95 + m.tx * (1.6 + k * 0.7), m.z + m.nz * lado * 0.95 + m.tz * (1.6 + k * 0.7), rnd() * Math.PI, 0.5);
+          }
           else if (r < 0.75) {
             for (let k = 0; k < 3; k++) colocar('cono', m.x + m.tx * k * 1.4 + m.nx * lado * 0.6, m.z + m.tz * k * 1.4 + m.nz * lado * 0.6, 0, 0.8);
           }
@@ -547,6 +564,7 @@ export const FRASES: Record<TipoTrasto, string[]> = {
   valla: ['¡Valla de obra al suelo!', 'Las obras llevaban tres años ahí'],
   banco: ['¡El banco de los abuelos!', '¡Ahí se sentaba el Manolo!', '¡Banco por los aires!'],
   litrona: ['¡La litrona por el suelo!', '¡Que era de litro, illo!', '¡Uy, la Cruzcampo!'],
+  bolsa: ['¡Bolsa de basura por los aires!', '¡La basura por toda la calle!', '¡Lipasam te va a buscar!'],
   bombona: ['¡Bombona rodando!', '¡El butano por los suelos!', '¡Cuidado, que eso explota! (no, no explota)'],
   columpio: ['¡El columpio de los niños!', '¡Ahí me columpiaba yo!', '¡Columpio por los aires!'],
   tobogan: ['¡El tobogán del parque!', '¡Eso lo pagó el Distrito!', '¡Tobogán al suelo!'],

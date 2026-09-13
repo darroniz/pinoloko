@@ -428,7 +428,7 @@ export class Juego {
       emergencias: () => this.barrio.emergencias.lista.map((s) => ({ tipo: s.tipo, estado: s.estado, x: Math.round(s.x), z: Math.round(s.z), camino: s.camino.length, indice: s.indice })),
       llamar: (tipo: 'bomberos' | 'ambulancia') => { const p = this.vehiculo.estado; return this.barrio.emergencias.llamar(tipo, p.x, p.z, Math.random); },
       retar: () => this.retar(),
-      estilo: () => ({ ...this.estilo.enCurso, contramano: this.enContramano() }),
+      estilo: () => ({ ...this.estilo.enCurso, contramano: this.enContramano(), angulo: Math.round(this.scooter.anguloStoppie * 100) / 100, velocidad: Math.round(this.vehiculo.estado.velocidad * 10) / 10, freno: this.controles.freno }),
       perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => { const p = this.aPie ? this.peaton.posicion : this.vehiculo.posicion; if (tipo === 'motero') this.motoDelMotero = this.scooter; if (tipo === 'dueno') this.cocheDelDueno = this.coche; return !!this.barrio.perseguidores.aparecer(tipo, p.x + 9, p.z, tipo === 'camarero' ? 'Bar de prueba' : this.scooter.modelo.nombre); },
       ambulantes: () => this.barrio.trafico.lista.filter((c) => c.variante === 'butano' || c.variante === 'chatarrero').map((c) => ({ variante: c.variante, x: Math.round(c.x * 10) / 10, z: Math.round(c.z * 10) / 10, rumbo: c.rumbo, carga: c.carga })),
       aficion: () => ({ sitio: this.barrio.aficion.sitio, activo: this.barrio.aficion.activo, cuantos: this.barrio.aficion.cuantos, disuelto: this.barrio.aficion.disuelto, estados: this.barrio.aficion.estados }),
@@ -1267,7 +1267,7 @@ export class Juego {
       for (const v of b.vecinos.lista) if (v.estado !== 'caido' && v.estado !== 'levantarse' && (v.x - pos.x) ** 2 + (v.z - pos.z) ** 2 < 1.8 * 1.8) cerca.push(v);
       contramano = this.enContramano();
     } else if (enMoto && rapidez > 3) contramano = this.enContramano();
-    const eventos = this.estilo.actualizar({ enMoto, rapidez, derrapando: enMoto && this.scooter.estado.derrapando, caballito: enMoto ? this.scooter.anguloCaballito : 0, cerca, golpe: enMoto && this.scooter.estado.golpe > 0, contramano }, dt);
+    const eventos = this.estilo.actualizar({ enMoto, rapidez, derrapando: enMoto && this.scooter.estado.derrapando, caballito: enMoto ? this.scooter.anguloCaballito : 0, stoppie: enMoto ? this.scooter.anguloStoppie : 0, cerca, golpe: enMoto && this.scooter.estado.golpe > 0, contramano }, dt);
     for (const ev of eventos) {
       this.ganar(ev.euros);
       if (ev.tipo === 'derrapada') {
@@ -1282,6 +1282,12 @@ export class Juego {
         this.hud.avisar(`¡Caballito de ${ev.segundos.toFixed(1)} s! +${ev.euros} €`, 1.6);
         this.audio.pitido(900, 0.12, 0.12);
         this.pista('caballito', 'A fondo desde parado el morro sube: aguanta el caballito y son euros');
+      } else if (ev.tipo === 'stoppie') {
+        this.contador.sumar('stoppies');
+        this.contador.maximo('stoppieMaximo', ev.segundos);
+        this.hud.avisar(`¡Stoppie de ${ev.segundos.toFixed(1)} s! +${ev.euros} €`, 1.6);
+        this.audio.pitido(1100, 0.12, 0.12);
+        this.pista('stoppie', 'Frenazo recto a velocidad: el trasero se levanta (stoppie) y paga, pero mientras dura frenas peor');
       } else if (ev.tipo === 'pelos') {
         this.contador.sumar('porLosPelos');
         if (!this.hud.avisoReciente(2.5)) this.hud.avisar(`${['¡Por los pelos!', '¡Uy, por un pelo!', '¡Ni te ha rozado!', '¡Casi, casi!'][Math.floor(Math.random() * 4)]!} +${ev.euros} €`, 1.1);
@@ -2245,6 +2251,8 @@ export class Juego {
         this.vigilante(jugadorPos.x, jugadorPos.z);
         this.busqueda.fechoria('trasto', derribados.length);
         this.contador.sumar('trastos', derribados.length);
+        const bolsas = derribados.filter((t) => t.tipo === 'bolsa').length;
+        if (bolsas) this.contador.sumar('bolsas', bolsas);
       }
       if (this.tiempoRacha > 0) {
         this.tiempoRacha -= dt;

@@ -1150,3 +1150,14 @@ suelo mojado se seca al doble y el chapuzón vale el doble (30/40 → 60/80 €)
 y `?calor=0` la quita. Con tres o más canis de comitiva, los trucos de estilo (derrapada,
 caballito, stoppie, contramano) valen ×1,5: el altavoz tiene una razón de juego y no solo de
 ambiente. Y al colarte por medio de la cofradía la banda se calla dos segundos y medio.
+
+## 2026-09-14 — El de la ONCE
+
+Un vendedor por barrio en un pasaje a 14-45 m de la parada (mirando a ella), con chaleco verde y
+el tablero colgado. A pie y con E a menos de 2,6 m (antes de subirse a la moto en la cadena de
+E): 5 € por un cupón de cinco cifras, tres por sorteo. El sorteo es a las nueve y cuarto de la
+noche de juego, con el número sacado de la fecha real y del número de sorteo (el mismo para
+todo el mundo ese día): una cifra final 10 €, dos 40, tres 200, las cinco 3.000 (el gordo). La
+esperanza es ~4 €/cupón por 5 €: gasta un poco de dinero a cambio de la ilusión, que es lo que
+es. Los cupones no se guardan: si cierras, al suelo. Es un juego sin dinero real, así que no hay
+problema de tono: es el "¡Para hoy!" de cualquier esquina de Sevilla.

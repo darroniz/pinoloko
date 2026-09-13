@@ -96,6 +96,8 @@ por medio con la moto calienta a la Local y escandaliza al barrio; párate junto
 junto a un nazareno, te da un caramelo. El tráfico se para a su paso.</p>
 <p class="peque"><strong>La lluvia.</strong> De vez en cuando se nubla y llueve unas horas: menos agarre (los derrapes se alargan y se frena
 peor), charcos en las calles que salpican al pisarlos a velocidad (si mojas a un vecino, 4 €) y el barrio con paraguas.</p>
+<p class="peque"><strong>El de la ONCE.</strong> A la vuelta de la parada, con el chaleco verde: a pie y con E, un cupón son 5 € (tres por sorteo). A las
+nueve y cuarto se sortea: una cifra final, 10 €; dos, 40; tres, 200; las cinco, el gordo (3.000 €). Si cierras el juego, los cupones se pierden.</p>
 <p class="peque"><strong>La calor.</strong> Un día de cada dos (el primero, sí), de dos a seis y media de la tarde, ola de calor: calima, medio
 barrio con abanico, y el chapuzón en piscinas y fuentes vale el doble. Con la comitiva detrás (tres o más), los trucos de estilo valen la mitad más.</p>
 <p class="peque"><strong>Las palomas.</strong> Picotean en las plazas y delante del Mercado; al pasar cerca despegan todas (3 € la bandada), dan

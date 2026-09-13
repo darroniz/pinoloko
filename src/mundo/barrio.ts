@@ -30,6 +30,7 @@ import { Perros } from './perros';
 import { Palomas, elegirBandadas } from './palomas';
 import { Charcos } from './charcos';
 import { Procesion, ProcesionVista, elegirParroquia } from './procesion';
+import { Once, VendedorVista, elegirVendedor } from './once';
 import { MotosCalle } from './motosCalle';
 import { Rivales } from './rivales';
 import { Pintadas } from './pintadas';
@@ -70,6 +71,8 @@ export class Barrio {
   readonly charcos: Charcos;
   readonly procesion: Procesion;
   readonly procesionVista: ProcesionVista;
+  readonly once: Once;
+  readonly vendedorOnce: VendedorVista;
   readonly motosCalle: MotosCalle;
   readonly rivales: Rivales;
   readonly pintadas: Pintadas;
@@ -203,6 +206,9 @@ export class Barrio {
     this.grupo.add(this.vecina.grupo);
     this.chapa = new Chapa(elegirTaller(nivel, this.grafo, this.arranque));
     this.grupo.add(this.chapa.grupo);
+    this.once = new Once(elegirVendedor(nivel, this.grafo, this.arranque));
+    this.vendedorOnce = new VendedorVista(this.once.vendedor);
+    this.grupo.add(this.vendedorOnce.grupo);
     this.emergencias = new Emergencias(this.grafo);
     this.grupo.add(this.emergencias.grupo);
     this.rampas = new Rampas(fisica, nivel, 6, [...this.carreras.map((c) => this.grafo.nodos[c.salida] ?? [0, 0] as [number, number]), [this.arranque.x, this.arranque.z]]);

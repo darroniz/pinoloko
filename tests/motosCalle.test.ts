@@ -18,6 +18,9 @@ describe('motos callejeras', () => {
     const lejos = { x: 9999, z: 9999, rapidez: 0, enVehiculo: false };
     const normal = motero(), huyendo = motero();
     huyendo.huye = 3;
+    // Un paso de calentamiento: el primero solo los coloca en su nodo.
+    pasoMotero(normal, grafo, lejos, 1e-6, azar(1));
+    pasoMotero(huyendo, grafo, lejos, 1e-6, azar(1));
     let dn = 0, dh = 0;
     for (let i = 0; i < 30; i++) {
       const nx = normal.x, nz = normal.z, hx = huyendo.x, hz = huyendo.z;

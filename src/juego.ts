@@ -20,6 +20,8 @@ import { esSiesta } from './mundo/peatones';
 import { Altavoz, PREMIO_POR_CANI } from './mundo/altavoz';
 import { PREMIO_BANDADA } from './mundo/palomas';
 import { PREMIO_RESPETO } from './mundo/procesion';
+import { PRECIO_CUPON, formatear } from './mundo/once';
+import { claveDia } from './retos';
 import { PILLA_PREMIO, PILLA_SEGUNDOS } from './mundo/motosCalle';
 import { NOMBRES_RIVALES } from './piques';
 import { Trozos } from './efectos/trozos';
@@ -67,7 +69,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number; altavoz: () => unknown; encenderAltavoz: () => boolean; palomas: () => unknown; lluvia: () => unknown; llover: () => void; stats: () => Record<string, number>; procesion: () => unknown; sacarProcesion: () => boolean; pilla: () => unknown; retarPilla: () => boolean; paquete: () => unknown; colegaYa: () => void; charcos: () => [number, number][]; vecinos: () => { x: number; z: number; estado: string }[] };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number; altavoz: () => unknown; encenderAltavoz: () => boolean; palomas: () => unknown; lluvia: () => unknown; llover: () => void; stats: () => Record<string, number>; procesion: () => unknown; sacarProcesion: () => boolean; pilla: () => unknown; retarPilla: () => boolean; paquete: () => unknown; colegaYa: () => void; once: () => unknown; comprarCupon: () => number | null; sortear: () => unknown; charcos: () => [number, number][]; vecinos: () => { x: number; z: number; estado: string }[] };
   }
 }
 
@@ -448,6 +450,9 @@ export class Juego {
       procesion: () => { const pr = this.barrio.procesion; return { hay: !!pr.parroquia, activa: pr.activa, paso: pr.activa ? { x: Math.round(pr.paso.x), z: Math.round(pr.paso.z) } : null, miembros: pr.miembros.length }; },
       paquete: () => ({ estado: this.paquete.estado, clientes: this.paquete.clientes.map((c) => ({ x: Math.round(c.x), z: Math.round(c.z) })), destino: this.paquete.destino ? { nombre: this.paquete.destino.nombre, x: Math.round(this.paquete.destino.x), z: Math.round(this.paquete.destino.z) } : null, restante: Math.round(this.paquete.restante) }),
       colegaYa: () => this.paquete.ahora(),
+      once: () => ({ vendedor: this.barrio.once.vendedor, cupones: [...this.barrio.once.cupones], sorteos: this.barrio.once.sorteos }),
+      comprarCupon: () => this.comprarCupon(true),
+      sortear: () => { const s = this.barrio.once.sortear(claveDia()); this.resolverSorteo(s); return s; },
       pilla: () => this.pilla ? { nombre: this.pilla.nombre, tiempo: Math.round(this.pilla.tiempo), x: Math.round(this.pilla.motero.x), z: Math.round(this.pilla.motero.z), d: Math.round(Math.hypot(this.pilla.motero.x - this.vehiculo.estado.x, this.pilla.motero.z - this.vehiculo.estado.z)) } : null,
       retarPilla: () => { const m = this.barrio.motosCalle.lista.find((x) => x.estado === 'rodar'); if (!m) return false; this.scooter.teletransportar(m.x - 3, m.z, m.rumbo); this.camara.colocar(m.x, m.z); return this.empezarPilla(m); },
       sacarProcesion: () => { this.barrio.procesion.salir(); return this.barrio.procesion.activa; },
@@ -1228,6 +1233,35 @@ export class Juego {
     return true;
   }
 
+  /** A pie junto al vendedor de la ONCE: 5 € por un cupón de cinco cifras (tres por sorteo). */
+  private comprarCupon(forzar = false): number | null {
+    const o = this.barrio.once;
+    const p = this.peaton.posicion;
+    if (!forzar && (!this.aPie || !o.cerca(p.x, p.z))) return null;
+    if (this.dinero < PRECIO_CUPON) { this.hud.avisar(`El de la ONCE: "Son ${PRECIO_CUPON} €, niño, que esto no es gratis"`, 2); return null; }
+    const n = o.comprar();
+    if (n === null) { this.hud.avisar('El de la ONCE: "Tres por sorteo, que luego no hay para nadie"', 2); return null; }
+    this.dinero -= PRECIO_CUPON;
+    this.hud.ponerDinero(this.dinero);
+    this.contador.sumar('cupones');
+    this.audio.pitido(520, 0.1, 0.12);
+    this.hud.avisar(`Cupón ${formatear(n)}. El de la ONCE: "A las nueve y cuarto, el sorteo"`, 2.6);
+    this.pista('once', 'El de la ONCE vende cupones a 5 € (a pie, E). A las nueve y cuarto se sortea: cifras finales, premio; las cinco, el gordo');
+    return n;
+  }
+
+  private resolverSorteo(s: { premiado: number; premios: { cupon: number; euros: number }[] }): void {
+    const total = s.premios.reduce((a, p) => a + p.euros, 0);
+    const mejor = s.premios.reduce((a, p) => Math.max(a, p.euros), 0);
+    if (!s.premios.length) return;
+    if (total > 0) {
+      this.ganar(total);
+      this.contador.sumar('premiosOnce', total);
+      this.audio.fanfarria();
+      this.hud.avisar(mejor >= 3000 ? `¡EL GORDO! Salió el ${formatear(s.premiado)}. "¡Le tocó al Wifly!" +${total} €` : `Sorteo: salió el ${formatear(s.premiado)}. ¡Te toca! +${total} €`, 4);
+    } else this.hud.avisar(`Sorteo: salió el ${formatear(s.premiado)}. Nada, tus cupones (${s.premios.map((p) => formatear(p.cupon)).join(', ')}) al suelo`, 3.2);
+  }
+
   private retar(): boolean {
     const b = this.barrio;
     if (this.carrera.estado !== 'fuera') return false;
@@ -1886,6 +1920,7 @@ export class Juego {
       if (this.aPie) {
         if (this.enParada) this.cogerEl13();
         else if (this.empezarPintada()) { /* firmando */ }
+        else if (this.comprarCupon() !== null) { /* cupón comprado */ }
         else if (!this.subirse()) this.hud.avisar('No hay moto a mano', 1.2);
       } else if (Math.abs(this.vehiculo.estado.velocidad) < 2.5) this.bajarse();
       else this.hud.avisar('Frena antes de bajarte', 1.2);
@@ -2104,6 +2139,11 @@ export class Juego {
         this.ganar(PREMIO_BANDADA * palomas.despegues, { x: jugadorPos.x, y: 0, z: jugadorPos.z });
         this.pista('palomas', 'Las palomas de las plazas salen volando al pasar; cada bandada espantada son 3 €');
       }
+      // El de la ONCE: pregona si te ve, y a las nueve y cuarto sortea.
+      b.vendedorOnce.actualizar(dt);
+      const once = b.once.actualizar(this.cielo.hora, dt, claveDia(), { x: jugadorPos.x, z: jugadorPos.z });
+      if (once.pregon && !this.hud.avisoReciente(1.5)) this.hud.avisar(`El de la ONCE: "${once.pregon}"`, 1.8);
+      if (once.sorteo) this.resolverSorteo(once.sorteo);
       // Pilla-pilla: el cani huye; pegarte a él un segundo (o tirarlo) es pillarlo.
       if (this.pilla) {
         const pl = this.pilla;

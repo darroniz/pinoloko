@@ -28,6 +28,8 @@ import { Pachangas } from './pachangas';
 import { Sevici } from './sevici';
 import { Perros } from './perros';
 import { Palomas, elegirBandadas } from './palomas';
+import { Charcos } from './charcos';
+import { Procesion, ProcesionVista, elegirParroquia } from './procesion';
 import { MotosCalle } from './motosCalle';
 import { Rivales } from './rivales';
 import { Pintadas } from './pintadas';
@@ -65,6 +67,9 @@ export class Barrio {
   readonly sevici: Sevici;
   readonly perros: Perros;
   readonly palomas: Palomas;
+  readonly charcos: Charcos;
+  readonly procesion: Procesion;
+  readonly procesionVista: ProcesionVista;
   readonly motosCalle: MotosCalle;
   readonly rivales: Rivales;
   readonly pintadas: Pintadas;
@@ -173,6 +178,11 @@ export class Barrio {
     this.grupo.add(this.perros.grupo);
     this.palomas = new Palomas(elegirBandadas(nivel, this.grafo));
     this.grupo.add(this.palomas.grupo);
+    this.charcos = new Charcos(this.grafo);
+    this.grupo.add(this.charcos.malla);
+    this.procesion = new Procesion(elegirParroquia(nivel, this.grafo), this.grafo);
+    this.procesionVista = new ProcesionVista(this.procesion);
+    this.grupo.add(this.procesionVista.grupo);
     this.motosCalle = new MotosCalle(this.grafo, ficha.poblacion.motosCalle, ficha.tribu === 'pijos' ? VESPA : undefined);
     this.grupo.add(this.motosCalle.grupo);
     this.rivales = new Rivales(this.grafo);
@@ -218,7 +228,8 @@ export class Barrio {
       if (Math.hypot(x - this.arranque.x, z - this.arranque.z) < 6) continue;
       if (this.scooters.some((m) => Math.hypot(m.estado.x - x, m.estado.z - z) < 3)) continue;
       // En territorio pijo, dos de cada tres aparcadas son Vespas.
-      const modelo = this.ficha.tribu === 'pijos' && i % 3 !== 2 ? MODELOS[VESPA]! : MODELOS[(i + 1) % (MODELOS.length - 1)]!;
+      const deBarrio = MODELOS.filter((_, k) => k !== VESPA);
+      const modelo = this.ficha.tribu === 'pijos' && i % 3 !== 2 ? MODELOS[VESPA]! : deBarrio[(i + 1) % deBarrio.length]!;
       const moto = new Scooter(this.fisica, x, z, rnd(i + 100) * Math.PI * 2, modelo);
       this.scooters.push(moto);
       this.grupo.add(moto.malla);

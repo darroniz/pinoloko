@@ -256,6 +256,9 @@ export class Vecinos {
   private readonly paradas: { x: number; z: number; nodo: number }[];
   private tiempoReponer = 0;
   private siesta = false;
+  /** Con lluvia, los que andan sacan el paraguas. */
+  lluvia = false;
+  private paraguas: THREE.InstancedMesh;
 
   constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = [], tribu: Tribu = 'canis', paradas: { x: number; z: number }[] = []) {
     this.paradas = paradas.map((p) => ({ x: p.x, z: p.z, nodo: grafo.masCercano(p.x, p.z, 'peatonal') }));
@@ -287,6 +290,15 @@ export class Vecinos {
       new THREE.CylinderGeometry(0.02, 0.02, 0.9, 5).translate(0, 0.45, -0.32).rotateX(0.25),
       new THREE.CylinderGeometry(0.07, 0.07, 0.3, 6).rotateZ(Math.PI / 2).translate(0, 0.07, -0.5),
     ]);
+    // Paraguas: cono ancho sobre la cabeza y el bastón.
+    const geoParaguas = mergeGeometries([
+      new THREE.ConeGeometry(0.62, 0.22, 8).translate(0, 1.95, 0),
+      new THREE.CylinderGeometry(0.02, 0.02, 0.7, 4).translate(0, 1.5, 0),
+    ]);
+    this.paraguas = new THREE.InstancedMesh(geoParaguas, new THREE.MeshLambertMaterial({ color: '#3b4a6b' }), cuantos);
+    this.paraguas.count = 0;
+    this.paraguas.frustumCulled = false;
+    this.grupo.add(this.paraguas);
     this.carritos = new THREE.InstancedMesh(geoCarrito, new THREE.MeshLambertMaterial({ color: '#b03a48' }), cuantos);
     this.carritos.count = 0;
     this.carritos.frustumCulled = false;
@@ -476,7 +488,7 @@ export class Vecinos {
 
   private dibujar(cx: number, cz: number): void {
     const cuentas = this.cuerpos.map(() => 0);
-    let nCabezas = 0, nGorros = 0, nCarritos = 0;
+    let nCabezas = 0, nGorros = 0, nCarritos = 0, nParaguas = 0;
     for (const v of this.lista) {
       if (this.siesta && enCasa(v)) continue;
       if ((v.x - cx) ** 2 + (v.z - cz) ** 2 > 130 * 130) continue;
@@ -502,10 +514,13 @@ export class Vecinos {
       // Dos de cada tres llevan gorro (según el color de la ropa, que es fijo por vecino).
       if (this.gorros && v.color % 3 !== 2) this.gorros.setMatrixAt(nGorros++, this.m);
       if (v.color % 5 === 1 && (v.estado === 'pasear' || v.estado === 'huir')) this.carritos.setMatrixAt(nCarritos++, this.m);
+      if (this.lluvia && v.estado !== 'caido' && v.estado !== 'sentado' && v.color % 3 !== 1) this.paraguas.setMatrixAt(nParaguas++, this.m);
     }
     if (this.gorros) { this.gorros.count = nGorros; this.gorros.instanceMatrix.needsUpdate = true; }
     this.carritos.count = nCarritos;
     this.carritos.instanceMatrix.needsUpdate = true;
+    this.paraguas.count = nParaguas;
+    this.paraguas.instanceMatrix.needsUpdate = true;
     this.cuerpos.forEach((im, i) => { im.count = cuentas[i]!; im.instanceMatrix.needsUpdate = true; });
     this.cabezas.count = nCabezas;
     this.cabezas.instanceMatrix.needsUpdate = true;

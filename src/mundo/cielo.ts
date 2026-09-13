@@ -37,7 +37,8 @@ export class Cielo {
     return this.hora < 6.5 || this.hora > 20.5;
   }
 
-  actualizar(dt: number): void {
+  /** `nublado` de 0 a 1: con lluvia el cielo se pone gris y el sol se apaga a medias. */
+  actualizar(dt: number, nublado = 0): void {
     this.hora = (this.hora + (dt * 24) / DURACION_DIA) % 24;
     let i = 0;
     while (i + 1 < TRAMOS.length && TRAMOS[i + 1]!.hora <= this.hora) i++;
@@ -46,10 +47,15 @@ export class Cielo {
     this.cCielo.copy(this.tmpA.set(a.cielo)).lerp(this.tmpB.set(b.cielo), t);
     this.cSol.copy(this.tmpA.set(a.sol)).lerp(this.tmpB.set(b.sol), t);
     this.cSuelo.copy(this.tmpA.set(a.suelo)).lerp(this.tmpB.set(b.suelo), t);
+    if (nublado > 0) {
+      this.cCielo.lerp(this.tmpA.set('#7d8794'), nublado * 0.8);
+      this.cSol.lerp(this.tmpA.set('#c9d2dc'), nublado * 0.7);
+      this.cSuelo.lerp(this.tmpA.set('#6e7480'), nublado * 0.6);
+    }
     (this.escena.background as THREE.Color).copy(this.cCielo);
     this.sol.color.copy(this.cSol);
-    this.sol.intensity = THREE.MathUtils.lerp(a.solIntensidad, b.solIntensidad, t);
-    this.ambiente.intensity = THREE.MathUtils.lerp(a.ambiente, b.ambiente, t);
+    this.sol.intensity = THREE.MathUtils.lerp(a.solIntensidad, b.solIntensidad, t) * (1 - 0.55 * nublado);
+    this.ambiente.intensity = THREE.MathUtils.lerp(a.ambiente, b.ambiente, t) * (1 - 0.2 * nublado);
     this.ambiente.groundColor.copy(this.cSuelo);
     this.ambiente.color.copy(this.cCielo).lerp(this.tmpA.set('#ffffff'), 0.6);
   }

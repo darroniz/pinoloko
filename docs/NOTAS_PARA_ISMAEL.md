@@ -11,21 +11,21 @@ de **cosas que pasan en el barrio sin que las busques** y de que **Wifly tenga s
 banda sonora**: el altavoz de la moto, las palomas de las plazas, la lluvia (sí, en Sevilla
 también) y la procesión de la parroquia. Todo freestyle, nada de misiones.
 
-- [ ] **Bloque 1 (00:25-01:00)** — **El altavoz**: Q (o el botón 🔊) enciende el reggaetón de
+- [x] **Bloque 1 (hecho a las 00:35; previsto 00:25-01:00)** — **El altavoz**: Q (o el botón 🔊) enciende el reggaetón de
       la moto. Los canis que pasan se te ponen detrás bailando (la comitiva, hasta cinco, 5 €
       cada uno); de noche pegado a los bloques la vecina sale antes y la Local se calienta; pijos
       y guiris protestan. Tests, estadística, logro, ayuda.
-- [ ] **Bloque 2 (01:00-01:40)** — **Las palomas**: bandadas en las plazas y delante del
+- [x] **Bloque 2 (hecho a las 00:35, con el 1; previsto 01:00-01:40)** — **Las palomas**: bandadas en las plazas y delante del
       Mercado; al pasar cerca despegan (aleteo), dan una vuelta y aterrizan. Estadística y logro.
       Gate (bloques 1 y 2 juntos) y push.
-- [ ] **Bloque 3 (01:40-02:30)** — **La lluvia**: un día de cada cuatro llueve un rato: cielo
+- [x] **Bloque 3 (hecho a las 00:48; previsto 01:40-02:30)** — **La lluvia**: un día de cada cuatro llueve un rato: cielo
       gris, cortina de agua, charcos que salpican, menos agarre (derrapes más largos), vecinos
       con paraguas y el ruido del agua. `?lluvia=1` la fuerza para probar. Tests, logro. Gate y push.
-- [ ] **Bloque 4 (02:30-03:20)** — **La procesión**: las tardes de salida (una de cada tres),
+- [x] **Bloque 4 (hecho a las 00:48, con el 3; previsto 02:30-03:20)** — **La procesión**: las tardes de salida (una de cada tres),
       de la parroquia sale la cofradía: nazarenos con capirote, el paso con sus cirios y la banda
       de cornetas y tambores, despacio por los pasajes. Pasar por medio calienta a la Local y
       escandaliza al barrio; parar a verla pasar paga (hasta Wifly respeta al paso). Gate y push.
-- [ ] **Bloque 5 (03:20-03:55)** — **La minimoto**: la pocket bike de cani, minúscula y
+- [x] **Bloque 5 (hecho a las 00:50; previsto 03:20-03:55)** — **La minimoto**: la pocket bike de cani, minúscula y
       nerviosa, aparcada por el barrio y robable; entra en el garaje y el taller. Gate y push.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
 

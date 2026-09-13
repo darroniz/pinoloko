@@ -1043,3 +1043,79 @@ tráfico parado a menos de 6,5 m durante más de un segundo, queda armado; al po
 pasas de 7 m/s en 2,5 s, has ganado la salida (15 €). Reutiliza `luzDelante` y el tráfico que ya
 para en rojo; solo existe donde OSM tiene semáforos (dos en el Mercado, más en Triana, Nervión,
 Los Remedios y el Centro). Es otra razón para parar en rojo en vez de saltárselo.
+
+## 2026-09-14 — El altavoz de la moto y la comitiva
+
+Q (o el botón 🔊, debajo del minimapa; en el mando, el bumper izquierdo) enciende el reggaetón de
+la moto: es el mismo sintetizador del botellón (`actualizarReggaeton`) con la cercanía a 0,85, así
+que no cuesta nada nuevo. Solo funciona subido a un vehículo (a pie, "el altavoz va en la moto") y
+se apaga al bajarse. La comitiva son vecinos con `sequito`: siguen un `objetivo` detrás de la moto
+en dos filas, trotan a 2,4 m/s (los vecinos pasean a 1,1-1,7) y al llegar se quedan `mirando`
+con `tiempo` infinito y un bote más alto (el baile). No se asustan de la moto hasta 9 m/s (los
+demás, a 4-6); si se alejan más de 24 m durante 2,5 s, la comitiva se pierde. Solo se apuntan
+en barrios de canis (uno cada 1,2 s, con la moto a menos de 6 m/s); en los otros barrios,
+quejas por tribu cada 7 s. Cada 6 s con el altavoz puesto: de noche, `trasto` ×1,5 de calor y la
+vecina con probabilidad 0,7; de día en territorio pijo, `trasto` ×1. Al cambiar de barrio la
+comitiva se disuelve pero el altavoz sigue encendido.
+
+## 2026-09-14 — Las palomas
+
+Hasta seis bandadas por barrio: la puerta del Mercado (nodo peatonal más cercano al edificio
+`mercado`, primero siempre) y los centroides de las zonas verdes y plazas de más de 150 m²,
+separadas 40 m entre sí. Nueve palomas por bandada, cuatro colores, una malla instanciada por
+color (cuatro draw calls en total) a escala 1,6: a tamaño real desde la cámara alta no se ven.
+Despegan cuando el jugador está a menos de 6,5 m de la casa a más de 1,5 m/s: salen en abanico
+huyendo del jugador, giran 3,5-5,5 s subiendo hasta 9 m y vuelven cada una a su sitio bajando;
+la bandada se posa cuando todas han llegado (o a los 12 s). Pagan 3 € por despegue, con la
+propia vuelta como enfriamiento. Parado al lado no las asustas: se puede aparcar entre ellas.
+
+## 2026-09-14 — La lluvia
+
+`Tiempo` es lógica pura: cada hora en punto del juego se tira el dado (0,4 / 24 por hora: un
+día de lluvia cada dos o tres) y llueve 3-6 horas de juego (75-150 s reales), con rampa de 14 s
+para subir y bajar. `?lluvia=1` la fuerza, `?lluvia=0` la quita (para medir). Efectos: el cielo
+gris y el sol a medias (`Cielo.actualizar(dt, nublado)`), la cortina de 320 rayitas en un
+`LineSegments` que se mueve con el jugador (los vértices son relativos), el ruido del agua, los
+paraguas de los vecinos (instancia extra, dos de cada tres), y el agarre: `mojado` en `Scooter`
+y `Coche` baja el agarre un 45 % y la frenada un 30 %. `mojado` sube con la intensidad y se seca
+en 90 s: los 36 charcos por barrio (elipses en las calles rodadas, entre nodos y no en el cruce)
+se ven mientras el suelo está mojado y salpican a más de 3 m/s con 1,2 s de enfriamiento;
+si hay un vecino a menos de 3,4 m, sale corriendo y son 4 €. La partida no guarda el tiempo:
+al recargar empieza seco.
+
+## 2026-09-14 — La procesión
+
+Sale de la parroquia (edificio `iglesia`; el Mercado tiene una) una tarde de cada tres (el
+día 0 sí, para que se vea la primera vez), de siete a once y media. La fila es una cola de
+puntos: la cabeza anda por el grafo peatonal a 0,9 m/s sin volver atrás y cada miembro va a
+su distancia `d` por detrás siguiendo el rastro (cruz de guía, 16 nazarenos en dos filas a
+1,9 m, el paso a 21,5 m y doce de banda). El rastro arranca "dentro" de la parroquia para que
+salga ya formada por la puerta. No tiene cuerpo físico: colarse por medio en vehículo a más de
+3 m/s es una `cruzada` (`atropello` ×1,5 de calor, 3 s de enfriamiento, sin dinero: no se
+premia); pararse a menos de 13 m del paso 3,5 s es un `respeto` (25 €, una vez por salida y
+campanas). Los nazarenos no se caen ni huyen: el tono es que el barrio respeta al paso, y el
+que se cuela es Wifly. La banda es una marcha sintetizada (bombo, caja con redoble y una frase
+de cornetas en menor cada dos compases, a 96) que se oye a 90 m. Cada 7 s tres vecinos de a
+40 m se acercan a ver pasar el paso (`congregar`). Las cofradías no llevan nombre real: es
+"la cofradía del barrio".
+
+## 2026-09-14 — La minimoto
+
+Va la última en `MODELOS`, detrás de la Vespa, para no mover los índices que guardan el garaje
+y el taller (`VESPA` ya no es `length - 1`: se busca por nombre). `escala: 0.62` escala solo las
+piezas de la moto, no a Wifly: que el piloto le sobre por todos lados es la gracia de la
+minimoto. `tono: 1.6` multiplica el tono del motor (el tubarro del taller se multiplica encima).
+Aparcada en todos los barrios (ahora las aparcadas de barrio rotan por todos los modelos menos
+la Vespa) y algún cani la lleva por los pasajes (los moteros rotan por todos los modelos). Sin
+collider propio: la bola de física es la misma que la de las scooters.
+
+## 2026-09-14 — Pilla-pilla y los caramelos de los nazarenos
+
+El pilla-pilla se reta con el claxon (flanco de H / PIII) a menos de 9 m de un motero rodando, en
+scooter (no en coche ni a pie): el motero lleva `huye` (35 s) y corre un 40 % más por el mismo
+grafo aleatorio; pillarlo es estar a menos de 2,8 m durante 0,8 s o tirarlo (que además calienta
+como siempre). 50 €, y el motero sale como objetivo en el minimapa mientras dura. Reutiliza los
+nombres de los rivales (el Kevin, el Jonathan, la Vanessa) sin que sean los mismos rivales de las
+carreras. Los caramelos: a pie a menos de 1,7 m de un nazareno, uno cada 2,5 s, sin dinero (son
+caramelos) pero con estadística y logro. Y el tráfico se para ante la procesión: `Trafico` tiene
+ahora una lista de `obstaculos` (los miembros de la cofradía) que se tratan como un coche delante.

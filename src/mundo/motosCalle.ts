@@ -21,7 +21,14 @@ export interface Motero {
   modelo: number;
   /** Segundos desde el último golpe (para no contar dos veces el mismo). */
   golpeado: number;
+  /** Pilla-pilla: segundos que le quedan huyendo de Wifly (va más rápido). */
+  huye?: number;
 }
+
+export const PILLA_SEGUNDOS = 35;
+export const PILLA_PREMIO = 50;
+/** Cuánto corre de más el que huye. */
+export const PILLA_VELOCIDAD = 1.4;
 
 const RADIO_GOLPE = 1.7;
 const VELOCIDAD_CALLE = 7;
@@ -56,7 +63,8 @@ export function pasoMotero(m: Motero, grafo: GrafoBarrio, jugador: { x: number; 
   const [bx, bz] = grafo.nodos[m.destino] ?? [0, 0];
   const largo = Math.hypot(bx - ax, bz - az) || 1;
   const clase = grafo.vecinos(m.origen).find((v) => v.nodo === m.destino)?.clase ?? 'peatonal';
-  m.t += ((clase === 'rodada' ? VELOCIDAD_CALLE : VELOCIDAD_PASAJE) * dt) / largo;
+  if (m.huye) m.huye = Math.max(0, m.huye - dt);
+  m.t += ((clase === 'rodada' ? VELOCIDAD_CALLE : VELOCIDAD_PASAJE) * (m.huye ? PILLA_VELOCIDAD : 1) * dt) / largo;
   if (m.t >= 1) {
     const s = siguiente(grafo, m.destino, m.origen, rnd);
     m.origen = m.destino;
@@ -82,12 +90,13 @@ function pintar(g: THREE.BufferGeometry, c: string): THREE.BufferGeometry {
 }
 
 /** Scooter de juguete con un cani encima, con los colores en los vértices (una sola malla). */
-export function geometriaMotero(colorMoto: string, colorRopa = '#1d3fa8'): THREE.BufferGeometry {
+export function geometriaMotero(colorMoto: string, colorRopa = '#1d3fa8', escala = 1): THREE.BufferGeometry {
+  const e = escala;
   return mergeGeometries([
-    pintar(new THREE.BoxGeometry(0.45, 0.35, 1.3).translate(0, 0.5, 0), colorMoto),
-    pintar(new THREE.BoxGeometry(0.4, 0.5, 0.3).translate(0, 0.75, -0.55), colorMoto),
-    pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, -0.6), '#2b2b2f'),
-    pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, 0.6), '#2b2b2f'),
+    pintar(new THREE.BoxGeometry(0.45, 0.35, 1.3).translate(0, 0.5, 0).scale(e, e, e), colorMoto),
+    pintar(new THREE.BoxGeometry(0.4, 0.5, 0.3).translate(0, 0.75, -0.55).scale(e, e, e), colorMoto),
+    pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, -0.6).scale(e, e, e), '#2b2b2f'),
+    pintar(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 10).rotateZ(Math.PI / 2).translate(0, 0.22, 0.6).scale(e, e, e), '#2b2b2f'),
     pintar(new THREE.CapsuleGeometry(0.2, 0.4, 3, 8).translate(0, 1.05, 0.1), colorRopa),
     pintar(new THREE.SphereGeometry(0.19, 8, 6).translate(0, 1.5, 0.1), '#e0ac8b'),
     pintar(new THREE.CylinderGeometry(0.2, 0.21, 0.08, 8).translate(0, 1.66, 0.1), '#111111'),
@@ -120,7 +129,7 @@ export class MotosCalle {
     }
     // Una malla instanciada por modelo (el color de la moto es el del modelo), con un cani encima.
     for (const modelo of MODELOS) {
-      const im = new THREE.InstancedMesh(geometriaMotero(modelo.color), new THREE.MeshLambertMaterial({ vertexColors: true }), cuantas + 2);
+      const im = new THREE.InstancedMesh(geometriaMotero(modelo.color, undefined, modelo.escala), new THREE.MeshLambertMaterial({ vertexColors: true }), cuantas + 2);
       im.count = 0;
       im.castShadow = true;
       im.frustumCulled = false;

@@ -80,6 +80,16 @@ En los saltos, mueve el joystick a los lados para girar en el aire: cada 360 son
 bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones. Si rompes la terraza de un bar, el camarero
 sale con la escoba y te persigue a pie (si te pilla parado, escobazo y 20 €); y el motero al que le quitas la moto te corre detrás: si te
 pilla, se la lleva de vuelta. Y el dueño del coche que robas también sale detrás: si te pilla parado, te saca.</p>
+<p class="peque"><strong>Pilla-pilla.</strong> Pita (H / PIII) junto a un cani en moto y te reta: "¡A que no me pillas!". Sale disparado por calles y
+pasajes durante 35 s; alcánzalo y pégate a él un segundo (o tíralo) y son 50 €. Sale en el minimapa.</p>
+<p class="peque"><strong>La minimoto.</strong> La pocket bike naranja aparcada por el barrio (y algún cani la lleva por los pasajes): diminuta,
+sale disparada, gira como una peonza y no agarra nada. Entra en el garaje y en el taller como las demás.</p>
+<p class="peque"><strong>La procesión.</strong> Una tarde de cada tres (la primera, sí), de siete a once y media, la cofradía sale de la parroquia
+del barrio: la cruz de guía, los nazarenos, el paso con sus cirios y la banda detrás, despacio por los pasajes (se oye desde lejos). Colarte
+por medio con la moto calienta a la Local y escandaliza al barrio; párate junto al paso unos segundos y Wifly se quita la gorra: 25 €. A pie
+junto a un nazareno, te da un caramelo. El tráfico se para a su paso.</p>
+<p class="peque"><strong>La lluvia.</strong> De vez en cuando se nubla y llueve unas horas: menos agarre (los derrapes se alargan y se frena
+peor), charcos en las calles que salpican al pisarlos a velocidad (si mojas a un vecino, 4 €) y el barrio con paraguas.</p>
 <p class="peque"><strong>Las palomas.</strong> Picotean en las plazas y delante del Mercado; al pasar cerca despegan todas (3 € la bandada), dan
 una vuelta y se vuelven a posar.</p>
 <p class="peque"><strong>El altavoz.</strong> Q (o el 🔊) enciende el reggaetón de la moto. En Pino Montano, los canis que pasan se te ponen detrás

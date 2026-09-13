@@ -99,6 +99,11 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] El grafo se recorta a la caja (nadie nace ni vaga fuera de plano) y los pregones del Mercado.
 - [x] Progreso numérico en los logros pendientes; silbato de la Local a pie; frases del botellón.
 - [x] Pique de semáforo: ganarle la salida al coche de al lado cuando se pone en verde.
+- [x] El altavoz de la moto (Q / 🔊): reggaetón y la comitiva de canis detrás; quejas fuera del barrio; ruido de noche.
+- [x] Las palomas de las plazas y del Mercado (despegan al pasar y se posan; 3 € la bandada).
+- [x] La lluvia: días de lluvia con menos agarre, charcos que salpican, paraguas y cielo gris (`?lluvia=1`).
+- [x] La procesión de la parroquia las tardes de salida (nazarenos, paso y banda por los pasajes; colarse calienta, pararse paga).
+- [x] La minimoto (pocket bike) aparcada y en los pasajes, robable, en el garaje y el taller.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

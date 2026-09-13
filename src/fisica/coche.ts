@@ -303,6 +303,8 @@ export class Coche {
   private intermitentes: THREE.Group | null = null;
   /** 100 = nueva; por debajo de 30 echa humo; a 0 revienta y ya no arranca. */
   salud = 100;
+  /** Suelo mojado (0 seco, 1 lloviendo): menos agarre y menos frenada. */
+  mojado = 0;
   get rota(): boolean {
     return this.salud <= 0;
   }
@@ -375,11 +377,11 @@ export class Coche {
       this.rumbo += Math.sign(dif) * paso;
       const alineado = Math.cos(dif);
       acelerador = alineado > 0.1 ? magnitud * Math.max(0.3, alineado) : 0;
-      if (alineado < -0.3 && rapidez > 1.5) vf -= Math.sign(vf) * a.frenado * 0.6 * dt;
+      if (alineado < -0.3 && rapidez > 1.5) vf -= Math.sign(vf) * a.frenado * (1 - 0.3 * this.mojado) * 0.6 * dt;
     }
     this.giroActual += (giroObjetivo - this.giroActual) * Math.min(1, dt * 8);
     if (entrada.freno) {
-      if (rapidez > 0.6) vf -= Math.sign(vf) * Math.min(rapidez, a.frenado * dt);
+      if (rapidez > 0.6) vf -= Math.sign(vf) * Math.min(rapidez, a.frenado * (1 - 0.3 * this.mojado) * dt);
       else if (quiereIr) vf = Math.max(-a.velocidadMarchaAtras, vf - a.aceleracion * 0.5 * dt);
       else vf = 0;
       acelerador = 0;
@@ -393,7 +395,7 @@ export class Coche {
       if (Math.abs(vf) < 0.05) vf = 0;
     }
     const derrapando = (entrada.freno && rapidez > 4 && Math.abs(this.giroActual) > 0.3) || Math.abs(vl) > 3;
-    const agarre = derrapando ? a.agarreDerrape : a.agarre;
+    const agarre = (derrapando ? a.agarreDerrape : a.agarre) * (1 - 0.45 * this.mojado);
     vl -= vl * Math.min(1, agarre * dt);
     if (rapidez > 5 && Math.abs(this.giroActual) > 0.2) vl -= this.giroActual * rapidez * (derrapando ? 1.1 : 0.35) * dt;
     const nfx = Math.sin(this.rumbo), nfz = -Math.cos(this.rumbo);

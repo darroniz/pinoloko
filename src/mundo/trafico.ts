@@ -192,6 +192,9 @@ export class Trafico {
     this.lista.splice(this.lista.indexOf(c), 1);
   }
 
+  /** Cosas paradas en la calle ante las que el tráfico se para (la procesión). */
+  obstaculos: { x: number; z: number }[] = [];
+
   actualizar(jugador: { x: number; z: number }, dt: number): void {
     for (const c of this.lista) {
       const [ax, az] = this.grafo.nodos[c.origen]!;
@@ -224,6 +227,7 @@ export class Trafico {
       const luz = this.semaforos?.luzDelante(c.x, c.z, c.rumbo, 7);
       if (luz && luz.distancia > 1.5 && (luz.luz === 'rojo' || (luz.luz === 'ambar' && luz.distancia > 4))) objetivo = 0;
       for (const o of this.lista) if (o !== c && bloqueado(o.x, o.z, 9)) { objetivo = 0; break; }
+      for (const o of this.obstaculos) if (bloqueado(o.x, o.z, 8)) { objetivo = 0; c.parado = 0; break; }
       const enSemaforo = !!luz && luz.luz !== 'verde' && luz.distancia > 1.5;
       if (objetivo === 0 && c.enParada <= 0 && !enSemaforo) c.parado += dt; else c.parado = 0;
       // Si lleva mucho parado (atasco con otro coche), arranca despacio para deshacerlo.

@@ -289,6 +289,129 @@ export class AudioJuego {
   }
 
   /** Ladrido: dos golpes cortos de onda cuadrada que bajan de tono. */
+  private marchaGanancia: GainNode | null = null;
+  private marchaCompas = 0;
+  private marchaVuelta = 0;
+
+  /** La banda de la procesión: tambores (bombo y caja con redoble) y una frase de cornetas cada dos compases, a 96 por minuto. */
+  actualizarMarcha(cercania: number): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    if (!this.marchaGanancia) {
+      this.marchaGanancia = ctx.createGain();
+      this.marchaGanancia.gain.value = 0;
+      this.marchaGanancia.connect(this.maestro);
+      this.marchaCompas = ctx.currentTime;
+    }
+    const g = this.marchaGanancia;
+    g.gain.setTargetAtTime(cercania > 0 ? 0.13 * cercania : 0, ctx.currentTime, 0.4);
+    if (cercania <= 0) { this.marchaCompas = Math.max(this.marchaCompas, ctx.currentTime); return; }
+    const negra = 60 / 96;
+    const caja = (t: number, vol: number): void => {
+      const largo = Math.floor(ctx.sampleRate * 0.07);
+      const buffer = ctx.createBuffer(1, largo, ctx.sampleRate);
+      const datos = buffer.getChannelData(0);
+      for (let k = 0; k < largo; k++) datos[k] = (Math.random() * 2 - 1) * (1 - k / largo) ** 2;
+      const fuente = ctx.createBufferSource();
+      fuente.buffer = buffer;
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = 'bandpass';
+      filtro.frequency.value = 2400;
+      filtro.Q.value = 0.7;
+      const e = ctx.createGain();
+      e.gain.value = vol;
+      fuente.connect(filtro).connect(e).connect(g);
+      fuente.start(t);
+    };
+    const bombo = (t: number): void => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(110, t);
+      osc.frequency.exponentialRampToValueAtTime(40, t + 0.2);
+      const e = ctx.createGain();
+      e.gain.setValueAtTime(0.9, t);
+      e.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+      osc.connect(e).connect(g);
+      osc.start(t); osc.stop(t + 0.32);
+    };
+    const corneta = (t: number, semitonos: number, dur: number): void => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.value = 440 * Math.pow(2, semitonos / 12);
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = 'lowpass';
+      filtro.frequency.value = 1800;
+      const e = ctx.createGain();
+      e.gain.setValueAtTime(0.001, t);
+      e.gain.exponentialRampToValueAtTime(0.28, t + 0.04);
+      e.gain.setValueAtTime(0.28, t + dur - 0.06);
+      e.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.connect(filtro).connect(e).connect(g);
+      osc.start(t); osc.stop(t + dur + 0.02);
+    };
+    // Frase de cornetas en menor (dos compases), de las que suenan en cualquier marcha de palio.
+    const FRASE: [number, number][] = [[0, 1], [3, 0.5], [5, 0.5], [7, 1], [5, 0.5], [3, 0.5], [2, 1], [0, 1], [-2, 1.5], [0, 0.5], [3, 2]];
+    while (this.marchaCompas < ctx.currentTime + negra * 4) {
+      const t0 = this.marchaCompas;
+      bombo(t0); bombo(t0 + negra * 2);
+      for (let i = 0; i < 4; i++) caja(t0 + i * negra, i === 0 ? 0.8 : 0.45);
+      for (let k = 1; k <= 3; k++) caja(t0 + negra * 3 + (k * negra) / 4, 0.3); // el redoble
+      if (this.marchaVuelta % 2 === 0) {
+        let t = t0;
+        for (const [semi, dur] of FRASE) { corneta(t, semi, dur * negra); t += dur * negra; }
+      }
+      this.marchaVuelta++;
+      this.marchaCompas += negra * 4;
+    }
+  }
+
+  private lluviaGanancia: GainNode | null = null;
+
+  /** El ruido de la lluvia: ruido blanco en bucle por un paso bajo, con la ganancia según la intensidad. */
+  actualizarLluvia(intensidad: number): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    if (!this.lluviaGanancia) {
+      if (intensidad <= 0) return;
+      const largo = ctx.sampleRate * 2;
+      const buffer = ctx.createBuffer(1, largo, ctx.sampleRate);
+      const datos = buffer.getChannelData(0);
+      let b0 = 0;
+      for (let k = 0; k < largo; k++) { const w = Math.random() * 2 - 1; b0 = 0.96 * b0 + 0.04 * w; datos[k] = (w * 0.5 + b0 * 3) * 0.4; }
+      const fuente = ctx.createBufferSource();
+      fuente.buffer = buffer;
+      fuente.loop = true;
+      const filtro = ctx.createBiquadFilter();
+      filtro.type = 'lowpass';
+      filtro.frequency.value = 2600;
+      this.lluviaGanancia = ctx.createGain();
+      this.lluviaGanancia.gain.value = 0;
+      fuente.connect(filtro).connect(this.lluviaGanancia).connect(this.maestro);
+      fuente.start();
+    }
+    this.lluviaGanancia.gain.setTargetAtTime(0.11 * intensidad, ctx.currentTime, 0.5);
+  }
+
+  /** Un charco a velocidad: chof corto de ruido grave. */
+  salpicon(volumen = 0.14): void {
+    if (!this.ctx || !this.maestro) return;
+    const ctx = this.ctx;
+    const largo = Math.floor(ctx.sampleRate * 0.16);
+    const buffer = ctx.createBuffer(1, largo, ctx.sampleRate);
+    const datos = buffer.getChannelData(0);
+    for (let k = 0; k < largo; k++) datos[k] = (Math.random() * 2 - 1) * (1 - k / largo) ** 1.5;
+    const fuente = ctx.createBufferSource();
+    fuente.buffer = buffer;
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = 'lowpass';
+    filtro.frequency.setValueAtTime(1800, ctx.currentTime);
+    filtro.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.15);
+    const g = ctx.createGain();
+    g.gain.value = volumen;
+    fuente.connect(filtro).connect(g).connect(this.maestro);
+    fuente.start();
+  }
+
   /** Aleteo de una bandada: ráfagas cortas de ruido con paso banda, cada vez más flojas. */
   aleteo(volumen = 0.09): void {
     if (!this.ctx || !this.maestro) return;

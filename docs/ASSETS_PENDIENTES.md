@@ -267,3 +267,37 @@ Formato:
 - Descripción para generarlo: bici de alquiler Sevici (cuadro gris verdoso, cesta delantera con
   el anillo rojo, guardabarros), low-poly, 1,8 m, con hueco para el piloto.
 - Formato y tamaño deseados: GLB, Y arriba, -Z delante.
+
+## Las palomas
+- Dónde se usa: bandadas en las plazas y delante del Mercado (`src/mundo/palomas.ts`).
+- Placeholder actual: cuerpo ovalado, cabeza, alas planas y cola, en cuatro grises, a escala 1,6.
+- Descripción para generarlo: paloma urbana low-poly (gris azulado, cuello tornasolado) en dos
+  poses: posada y con las alas abiertas; y un aleteo corto de bandada (1 s) más un arrullo.
+- Formato y tamaño deseados: GLB de 0,5 m de envergadura; WAV 22 kHz mono.
+
+## La cofradía
+- Dónde se usa: la procesión de las tardes de salida (`src/mundo/procesion.ts`).
+- Placeholder actual: nazarenos (cápsula morada con cono de capirote y cirio), músicos de azul
+  marino con gorra de plato y tambor, cruz de guía de madera y un paso de palio de cajas (canastilla
+  caoba, respiradero dorado, ocho cirios, imagen, varales y techo verde con bambalinas).
+- Descripción para generarlo: nazareno de Sevilla low-poly (túnica y antifaz morado, cirio),
+  músico de banda de cornetas y tambores, y un paso de palio (canastilla dorada, candelería,
+  palio verde con bambalinas) de 2,2 × 4,5 m visto desde arriba. Y una marcha de palio de 20 s
+  (cornetas y tambores) libre de derechos.
+- Formato y tamaño deseados: GLB, Y arriba, -Z delante; WAV 22 kHz mono.
+
+## La lluvia
+- Dónde se usa: los días de lluvia (`src/efectos/lluvia.ts`, `src/mundo/charcos.ts`).
+- Placeholder actual: rayitas claras que caen, charcos como elipses gris azulado, paraguas cónico
+  azul, ruido de lluvia filtrado y un "chof" de ruido grave.
+- Descripción para generarlo: loop de lluvia sobre asfalto de 8 s, un salpicón de charco, y un
+  paraguas low-poly de 1,1 m (dos o tres colores).
+- Formato y tamaño deseados: WAV 22 kHz mono; GLB.
+
+## La minimoto
+- Dónde se usa: la pocket bike de cani (`Minimoto` en `MODELOS`, `src/fisica/scooter.ts`).
+- Placeholder actual: la scooter de cajas a escala 0,62 con Wifly encima a tamaño normal.
+- Descripción para generarlo: minimoto de los 2000 (pocket bike de 49 cc, carenado naranja y
+  negro, ruedas minúsculas), low-poly, 0,9 m de larga, con hueco para un piloto que le sobra por
+  todos lados.
+- Formato y tamaño deseados: GLB, Y arriba, -Z delante.

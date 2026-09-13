@@ -27,6 +27,10 @@ export interface ModeloScooter {
   ajustes: AjustesScooter;
   /** Una bici (el Sevici): sin motor, sin caballito, lenta y silenciosa. No entra en el garaje. */
   bici?: boolean;
+  /** Escala visual de la moto (no del piloto): la minimoto es diminuta y Wifly va con las rodillas en las orejas. */
+  escala?: number;
+  /** Tono del motor (1 = scooter; la minimoto chilla más). */
+  tono?: number;
 }
 
 export const JOG_RR: AjustesScooter = {
@@ -50,6 +54,8 @@ export const MODELOS: ModeloScooter[] = [
   { nombre: 'Gilera Runner', color: '#7b2cbf', ajustes: { ...JOG_RR, aceleracion: 12.5, velocidadMaxima: 18, giroMaximo: 2.9, agarre: 10 } },
   // La de los pijos: Los Remedios y Nervión van llenos. Suave, cómoda y sin nervio.
   { nombre: 'Vespa Primavera', color: '#f5efe0', ajustes: { ...JOG_RR, aceleracion: 9, velocidadMaxima: 15, giroMaximo: 3.3, agarre: 13, agarreDerrape: 3 } },
+  // La pocket bike de cani: diminuta, sale disparada, gira como una peonza y no agarra nada. Va detrás de la Vespa para no mover los índices guardados.
+  { nombre: 'Minimoto', color: '#ff7b00', escala: 0.62, tono: 1.6, ajustes: { ...JOG_RR, aceleracion: 15, velocidadMaxima: 13.5, giroParado: 3, giroMaximo: 4.8, agarre: 9, agarreDerrape: 1.5, frenado: 18, inclinacionMaxima: 0.75 } },
 ];
 
 /** El Sevici: se coge a pie de un ciclista (sin tarjeta) y se pedalea. Lento, silencioso y cabe en todas partes. */
@@ -59,7 +65,9 @@ export const SEVICI: ModeloScooter = {
 };
 
 /** Índice de la Vespa en MODELOS: la moto de los barrios pijos. */
-export const VESPA = MODELOS.length - 1;
+export const VESPA = MODELOS.findIndex((m) => m.nombre.startsWith('Vespa'));
+/** Índice de la minimoto. */
+export const MINIMOTO = MODELOS.findIndex((m) => m.nombre === 'Minimoto');
 
 export interface EstadoScooter {
   x: number;
@@ -102,6 +110,8 @@ export class Scooter {
   conducida = false;
   /** 100 = nueva; por debajo de 30 echa humo; a 0 revienta y ya no arranca. */
   salud = 100;
+  /** Suelo mojado (0 seco, 1 lloviendo): menos agarre y menos frenada. */
+  mojado = 0;
   /** Giro extra de la malla en el aire (trucos): radianes acumulados en el salto. */
   truco = 0;
   get rota(): boolean {
@@ -171,6 +181,7 @@ export class Scooter {
     faro.position.set(0, -0.12, -0.1);
     this.manillar.add(barra, faro);
     this.chasis.add(this.ruedaTrasera, this.ruedaDelantera, this.manillar);
+    if (modelo.escala && modelo.escala !== 1) for (const o of this.chasis.children) { o.scale.multiplyScalar(modelo.escala); o.position.multiplyScalar(modelo.escala); }
 
     this.piloto = crearWifly(true).grupo;
     this.piloto.visible = false;
@@ -253,13 +264,13 @@ export class Scooter {
       const alineado = Math.cos(dif);
       // Si el stick apunta casi al revés, la moto frena y gira sobre sí misma en vez de acelerar.
       acelerador = alineado > 0.15 ? magnitud * Math.max(0.35, alineado) : 0;
-      if (alineado < -0.3 && rapidez > 1.5) vf -= Math.sign(vf) * a.frenado * 0.7 * dt;
+      if (alineado < -0.3 && rapidez > 1.5) vf -= Math.sign(vf) * a.frenado * (1 - 0.3 * this.mojado) * 0.7 * dt;
     }
     this.giroActual += (giroObjetivo - this.giroActual) * Math.min(1, dt * 10);
 
     // Freno y marcha atrás.
     if (entrada.freno) {
-      if (rapidez > 0.6) vf -= Math.sign(vf) * Math.min(rapidez, a.frenado * dt);
+      if (rapidez > 0.6) vf -= Math.sign(vf) * Math.min(rapidez, a.frenado * (1 - 0.3 * this.mojado) * dt);
       else if (quiereIr) vf = Math.max(-a.velocidadMarchaAtras, vf - a.aceleracion * 0.5 * dt);
       else vf = 0;
       acelerador = 0;
@@ -276,7 +287,7 @@ export class Scooter {
 
     // Agarre lateral: normal en recta, menos cuando frenas girando (derrape del trasero).
     const derrapando = (entrada.freno && rapidez > 3 && Math.abs(this.giroActual) > 0.3) || Math.abs(vl) > 2.6;
-    const agarre = derrapando ? a.agarreDerrape : a.agarre;
+    const agarre = (derrapando ? a.agarreDerrape : a.agarre) * (1 - 0.45 * this.mojado);
     vl -= vl * Math.min(1, agarre * dt);
     // Girar a velocidad tira del trasero hacia fuera: eso es lo que luego se ve como derrape.
     if (rapidez > 4 && Math.abs(this.giroActual) > 0.2) vl -= this.giroActual * rapidez * (derrapando ? 0.9 : 0.25) * dt;

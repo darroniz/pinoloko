@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { CamaraAlta } from './camara';
 import { Controles } from './control/entrada';
 import { PASO_FISICA } from './fisica/mundo';
-import { MODELOS, SEVICI, Scooter, VESPA } from './fisica/scooter';
+import { MINIMOTO, MODELOS, SEVICI, Scooter, VESPA } from './fisica/scooter';
 import { Peaton } from './fisica/peaton';
 import { ANCHO as COCHE_ANCHO, BUS, CAMION, CAMION_ANCHO, CAMION_LARGO, Coche, LARGO as COCHE_LARGO, UTILITARIO, geometriaButano, geometriaCamion, geometriaChatarrero, geometriaFurgoneta, geometriaTaxi } from './fisica/coche';
 import { BUS_ANCHO, BUS_ESCALA, BUS_LARGO, type CocheTrafico } from './mundo/trafico';
@@ -19,6 +19,9 @@ import { FRASES, ROMPIBLES } from './mundo/trastos';
 import { esSiesta } from './mundo/peatones';
 import { Altavoz, PREMIO_POR_CANI } from './mundo/altavoz';
 import { PREMIO_BANDADA } from './mundo/palomas';
+import { PREMIO_RESPETO } from './mundo/procesion';
+import { PILLA_PREMIO, PILLA_SEGUNDOS, type Motero } from './mundo/motosCalle';
+import { NOMBRES_RIVALES } from './piques';
 import { Trozos } from './efectos/trozos';
 import { MarcasNeumatico } from './efectos/marcas';
 import { Particulas } from './efectos/particulas';
@@ -26,7 +29,9 @@ import { DineroFlotante } from './efectos/dinero';
 import { MarcadorJugador } from './efectos/marcador';
 import { NivelBusqueda } from './policia/busqueda';
 import { Helicoptero } from './policia/helicoptero';
-import { Cielo } from './mundo/cielo';
+import { Cielo, DURACION_DIA } from './mundo/cielo';
+import { Tiempo } from './mundo/tiempo';
+import { Lluvia } from './efectos/lluvia';
 import { TOTAL_MECHEROS } from './mundo/mecheros';
 import { Barrio } from './mundo/barrio';
 import { PENDIENTE } from './mundo/rampas';
@@ -62,7 +67,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number; altavoz: () => unknown; encenderAltavoz: () => boolean; palomas: () => unknown; vecinos: () => { x: number; z: number; estado: string }[] };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number; altavoz: () => unknown; encenderAltavoz: () => boolean; palomas: () => unknown; lluvia: () => unknown; llover: () => void; stats: () => Record<string, number>; procesion: () => unknown; sacarProcesion: () => boolean; pilla: () => unknown; retarPilla: () => boolean; charcos: () => [number, number][]; vecinos: () => { x: number; z: number; estado: string }[] };
   }
 }
 
@@ -202,6 +207,9 @@ export class Juego {
   private sinMinimapa = new URLSearchParams(location.search).get('minimapa') === '0';
   /** `?estilo=0` apaga el estilo de conducción (para medir su coste en la sonda). */
   private sinEstilo = new URLSearchParams(location.search).get('estilo') === '0';
+  /** El tiempo: `?lluvia=1` fuerza la lluvia, `?lluvia=0` la quita (para medir). */
+  private tiempo = new Tiempo(new URLSearchParams(location.search).get('lluvia') === '1' ? 'si' : new URLSearchParams(location.search).get('lluvia') === '0' ? 'no' : null);
+  private lluvia = new Lluvia();
   private pausado = false;
   /** Copia de `renderer.info.render` justo tras la pasada principal (la del minimapa la pisa). */
   private infoRender = { calls: 0, triangles: 0 };
@@ -252,6 +260,11 @@ export class Juego {
   private piqueSemaforo: { armado: number; verde: number } = { armado: 0, verde: -1 };
   private cercaniaAficion = 0;
   private altavoz = new Altavoz();
+  private cercaniaMarcha = 0;
+  /** Pilla-pilla: el cani en moto que huye de ti, cuánto queda y cuánto llevas pegado a él. */
+  private pilla: { motero: Motero; nombre: string; tiempo: number; contacto: number } | null = null;
+  private claxonPrevio = false;
+  private tiempoPublico = 0;
   private botonAltavoz = document.getElementById('boton-altavoz')!;
   private enfriamientoEscalera = 0;
   /** La calle de sentido único sobre la que vas (se mira cada 0,3 s, no por frame). */
@@ -333,7 +346,7 @@ export class Juego {
   }
 
   async cargar(): Promise<void> {
-    this.escena.add(this.marcas.malla, this.particulas.puntos, this.trozos.malla, this.dineroFlotante.grupo, this.marcador.grupo, this.cine.bus, this.helicoptero.grupo);
+    this.escena.add(this.lluvia.lineas, this.marcas.malla, this.particulas.puntos, this.trozos.malla, this.dineroFlotante.grupo, this.marcador.grupo, this.cine.bus, this.helicoptero.grupo);
 
     // Luz: hemisferio cálido y un sol con sombras suaves que sigue al jugador.
     const ambiente = new THREE.HemisphereLight('#ffffff', '#c9b69a', 0.85);
@@ -425,6 +438,14 @@ export class Juego {
         return this.subirse() && !this.aPie && !this.coche && this.scooter.modelo === SEVICI;
       },
       botellon: () => ({ sitio: this.barrio.botellon.sitio, activo: this.barrio.botellon.activo, cuantos: this.barrio.botellon.cuantos, disuelto: this.barrio.botellon.disuelto, estados: this.barrio.botellon.estados, litronas: this.barrio.trastos.lista.filter((t) => t.tipo === 'litrona').length }),
+      lluvia: () => ({ intensidad: Math.round(this.tiempo.intensidad * 100) / 100, lloviendo: this.tiempo.lloviendo, mojado: Math.round(this.tiempo.mojado * 100) / 100, charcos: this.barrio.charcos.malla.visible, agarre: this.vehiculo.mojado }),
+      llover: () => this.tiempo.empezar(),
+      stats: () => ({ ...this.contador.datos }),
+      procesion: () => { const pr = this.barrio.procesion; return { hay: !!pr.parroquia, activa: pr.activa, paso: pr.activa ? { x: Math.round(pr.paso.x), z: Math.round(pr.paso.z) } : null, miembros: pr.miembros.length }; },
+      pilla: () => this.pilla ? { nombre: this.pilla.nombre, tiempo: Math.round(this.pilla.tiempo), x: Math.round(this.pilla.motero.x), z: Math.round(this.pilla.motero.z), d: Math.round(Math.hypot(this.pilla.motero.x - this.vehiculo.estado.x, this.pilla.motero.z - this.vehiculo.estado.z)) } : null,
+      retarPilla: () => { const m = this.barrio.motosCalle.lista.find((x) => x.estado === 'rodar'); if (!m) return false; this.scooter.teletransportar(m.x - 3, m.z, m.rumbo); this.camara.colocar(m.x, m.z); return this.empezarPilla(m); },
+      sacarProcesion: () => { this.barrio.procesion.salir(); return this.barrio.procesion.activa; },
+      charcos: () => this.barrio.charcos.lista.map((c) => [Math.round(c.x * 10) / 10, Math.round(c.z * 10) / 10]),
       vecinos: () => this.barrio.vecinos.lista.filter((v) => v.estado === 'pasear' && v.parada < 0 && !v.objetivo).slice(0, 30).map((v) => ({ x: Math.round(v.x), z: Math.round(v.z), estado: v.estado })),
       palomas: () => this.barrio.palomas.lista.map((b) => ({ x: Math.round(b.casa.x), z: Math.round(b.casa.z), estado: b.estado, y: Math.round(Math.max(...b.palomas.map((p) => p.y)) * 10) / 10 })),
       altavoz: () => ({ encendido: this.altavoz.encendido, cuantos: this.altavoz.cuantos, estados: this.altavoz.comitiva.map((v) => v.estado) }),
@@ -710,6 +731,7 @@ export class Juego {
         this.contador.sumar('motosRobadas');
         const nueva = this.garaje.desbloquear(MODELOS.indexOf(mejorMoto.modelo));
         if (mejorMoto.modelo === MODELOS[VESPA]) this.contador.sumar('vespas');
+        if (mejorMoto.modelo === MODELOS[MINIMOTO]) this.contador.sumar('minimotos');
         this.hud.avisar(nueva ? `${mejorMoto.modelo.nombre}: ¡mía! Nueva en el garaje` : `${mejorMoto.modelo.nombre}: ¡mía!`, 1.8);
       }
       this.scooter = mejorMoto;
@@ -1147,6 +1169,17 @@ export class Juego {
   }
 
   /** Arranca un pique callejero desde donde estás: ruta corta de anillos y el Kevin de rival. */
+  /** Un cani en moto te reta al pilla-pilla: sale disparado y tienes PILLA_SEGUNDOS para pegarte a él. */
+  private empezarPilla(m: Motero): boolean {
+    if (this.pilla || this.aPie || this.coche) return false;
+    const nombre = NOMBRES_RIVALES[Math.floor(Math.random() * NOMBRES_RIVALES.length)]!;
+    m.huye = PILLA_SEGUNDOS;
+    this.pilla = { motero: m, nombre, tiempo: PILLA_SEGUNDOS, contacto: 0 };
+    this.hud.avisar(`${nombre.charAt(0).toUpperCase() + nombre.slice(1)}: "¡A que no me pillas!"`, 2.4);
+    this.pista('pilla', 'Pilla-pilla: pégate a él un segundo (o tíralo) antes de que se acabe el tiempo y son 50 €. Sale en el minimapa');
+    return true;
+  }
+
   private retar(): boolean {
     const b = this.barrio;
     if (this.carrera.estado !== 'fuera') return false;
@@ -1661,7 +1694,7 @@ export class Juego {
   private aplicarTaller(moto: Scooter): void {
     const indice = MODELOS.indexOf(moto.modelo);
     moto.ajustes = aplicarMejoras(moto.modelo.ajustes, this.taller.niveles(indice));
-    this.audio.tono = 1 + 0.1 * this.taller.nivel(indice, 'escape');
+    this.audio.tono = (moto.modelo.tono ?? 1) * (1 + 0.1 * this.taller.nivel(indice, 'escape'));
   }
 
   /** Cambia la moto de Wifly por otra del garaje, en el mismo sitio y en el mismo estado. */
@@ -2008,6 +2041,70 @@ export class Juego {
         this.ganar(PREMIO_BANDADA * palomas.despegues, { x: jugadorPos.x, y: 0, z: jugadorPos.z });
         this.pista('palomas', 'Las palomas de las plazas salen volando al pasar; cada bandada espantada son 3 €');
       }
+      // Pilla-pilla: el cani huye; pegarte a él un segundo (o tirarlo) es pillarlo.
+      if (this.pilla) {
+        const pl = this.pilla;
+        pl.tiempo -= dt;
+        const d = Math.hypot(pl.motero.x - jugadorPos.x, pl.motero.z - jugadorPos.z);
+        pl.contacto = d < 2.8 ? pl.contacto + dt : 0;
+        if (this.aPie || this.coche || !b.motosCalle.lista.includes(pl.motero)) { this.pilla = null; pl.motero.huye = 0; }
+        else if (pl.contacto > 0.8 || pl.motero.estado === 'caido') {
+          this.pilla = null;
+          pl.motero.huye = 0;
+          this.ganar(PILLA_PREMIO, { x: pl.motero.x, y: 0, z: pl.motero.z });
+          this.contador.sumar('pillados');
+          this.audio.fanfarria();
+          this.hud.avisar(`¡Pillado! ${pl.nombre}: "Vale, vale, que me has pillado" +${PILLA_PREMIO} €`, 3);
+        } else if (pl.tiempo <= 0) {
+          this.pilla = null;
+          pl.motero.huye = 0;
+          this.hud.avisar(`Se te ha escapado ${pl.nombre}: "¡Manco!"`, 2.4);
+        }
+      }
+      b.trafico.obstaculos = b.procesion.activa ? b.procesion.miembros : [];
+      // La procesión: sale de la parroquia las tardes de salida; colarse calienta, pararse a verla paga.
+      const pr = b.procesion.actualizar(this.cielo.hora, { x: jugadorPos.x, z: jugadorPos.z, rapidez, enVehiculo: !this.aPie }, dt);
+      b.procesionVista.actualizar();
+      this.cercaniaMarcha = pr.cercania;
+      if (pr.sale && b.procesion.parroquia && Math.hypot(b.procesion.parroquia.x - jugadorPos.x, b.procesion.parroquia.z - jugadorPos.z) < 220) { this.hud.avisar('Tarde de salida: la cofradía sale de la parroquia', 2.6); this.pista('procesion', 'La procesión va despacio por los pasajes. Colarte por medio con la moto calienta a la Local y escandaliza al barrio; pararte a verla pasar junto al paso, paga'); }
+      if (pr.seRecoge && pr.cercania > 0.3) this.hud.avisar('La cofradía se recoge', 2);
+      if (b.procesion.activa) {
+        this.tiempoPublico -= dt;
+        if (this.tiempoPublico <= 0) { this.tiempoPublico = 7; const ps = b.procesion.paso; b.vecinos.congregar(ps.x, ps.z, 40, 3); }
+      }
+      if (pr.cruzada) {
+        this.busqueda.fechoria('atropello', 1.5);
+        this.contador.sumar('cruzadas');
+        this.camara.sacudir(0.3);
+        this.hud.avisar(['¡Por medio de la cofradía! "¡Con la Virgen delante, illo!"', '¡Entre los nazarenos! "¡Eso se lo digo yo a tu madre!"', '¡Por medio del paso! "¡Ni un respeto, ni un respeto!"'][Math.floor(Math.random() * 3)]!, 2.6);
+      }
+      if (pr.caramelo) {
+        this.contador.sumar('caramelos');
+        this.audio.pitido(1320, 0.06, 0.08);
+        if (!this.hud.avisoReciente(1)) this.hud.avisar(['Un nazareno te da un caramelo', 'El nazareno, sin decir nada, te pone un caramelo en la mano', 'Caramelo de nazareno (de los de siempre)'][Math.floor(Math.random() * 3)]!, 1.8);
+      }
+      if (pr.respeto) {
+        const ps = b.procesion.paso;
+        this.ganar(PREMIO_RESPETO, { x: ps.x, y: 0, z: ps.z });
+        this.contador.sumar('respetos');
+        this.audio.campanas(2, 0.12);
+        this.hud.avisar(`Wifly se quita la gorra al paso. "Mi niño, qué bien te veo" +${PREMIO_RESPETO} €`, 3);
+      }
+      // Charcos: pisar uno a velocidad salpica; si hay un vecino al lado, lo pones perdido (4 €).
+      const charco = b.charcos.actualizar(this.tiempo.mojado, { x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
+      if (charco) {
+        this.particulas.emitir(jugadorPos.x, 0.2, jugadorPos.z, 16, this.colorAgua, 4.5);
+        this.audio.salpicon();
+        this.contador.sumar('charcos');
+        const mojados = b.vecinos.lista.filter((v) => v.estado !== 'caido' && v.estado !== 'huir' && (v.x - charco.x) ** 2 + (v.z - charco.z) ** 2 < 3.4 * 3.4);
+        if (mojados.length) {
+          b.vecinos.asustar(charco.x, charco.z, 3.4);
+          for (const v of mojados) if (v.estado === 'mirando' || v.estado === 'esperando') { v.estado = 'huir'; v.tiempo = 1.5; v.objetivo = null; v.parada = -1; v.sequito = false; }
+          this.contador.sumar('salpicados', mojados.length);
+          this.ganar(4 * mojados.length, { x: charco.x, y: 0, z: charco.z });
+          if (!this.hud.avisoReciente(1)) this.hud.avisar(['¡Chof! "¡Me has puesto perdida, niño!"', '¡Charcazo! "¡El abrigo de la boda!"', '¡Chof! "¡Ozú, que me has calado!"'][Math.floor(Math.random() * 3)]! + ` +${4 * mojados.length} €`, 2.2);
+        }
+      }
       // El tráfico pita si le cortas el paso más de dos segundos.
       this.tiempoPitidoTrafico -= dt;
       if (b.trafico.pitidos > 0) {
@@ -2042,6 +2139,11 @@ export class Juego {
       }
       // Claxon: asusta a los vecinos de alrededor.
       this.tiempoClaxon -= dt;
+      if (this.controles.claxon && !this.claxonPrevio && !this.aPie && !this.coche && !this.pilla) {
+        const m = b.motosCalle.cercano(jugadorPos.x, jugadorPos.z, 9);
+        if (m && m.estado === 'rodar') this.empezarPilla(m);
+      }
+      this.claxonPrevio = this.controles.claxon;
       if (this.controles.claxon && this.tiempoClaxon <= 0 && !this.aPie) {
         // Claxon musical del taller en la moto; en el 13 y el camión, bocina grave.
         const musical = !this.coche ? this.taller.nivel(MODELOS.indexOf(this.scooter.modelo), 'claxon') : 0;
@@ -2134,19 +2236,28 @@ export class Juego {
     const v = this.aPie ? this.peaton.cuerpo.linvel() : this.vehiculo.cuerpo.linvel();
     // Recorrido: se acumula lo andado o rodado, sin contar teletransportes (parada, trincao).
     const tramo = Math.hypot(pos.x - this.ultimaPos.x, pos.z - this.ultimaPos.z);
-    if (this.jugando && !this.pausado && tramo < 30) this.contador.sumar('metros', tramo);
+    if (this.jugando && !this.pausado && tramo < 30) { this.contador.sumar('metros', tramo); if (this.tiempo.intensidad > 0.5) this.contador.sumar('metrosLluvia', tramo); }
     this.ultimaPos.set(pos.x, 0, pos.z);
     this.camara.distanciaObjetivo = this.aPie ? 50 : this.coche ? (this.coche.apariencia && this.coche.apariencia.largo > 6 ? 84 : 72) : 66;
     this.camara.seguir(pos, new THREE.Vector3(v.x, 0, v.z), dt);
     if (this.repeticion.activa) this.repeticion.actualizar(dt, this.camara.camara);
     this.marcador.actualizar(pos.x, pos.z, this.aPie ? 2.6 : this.coche ? 2.2 : 2.6, dt);
-    if (this.jugando) this.cielo.actualizar(dt);
+    if (this.jugando) {
+      // El tiempo: se nubla, llueve unas horas y escampa; el suelo se queda mojado un rato.
+      const ev = this.pausado ? null : this.tiempo.actualizar(this.cielo.hora, dt, 24 / DURACION_DIA);
+      if (ev === 'empieza') { this.hud.avisar('Se está nublando: va a caer una buena', 2.6); this.pista('lluvia', 'Llueve: menos agarre (los derrapes se alargan y se frena peor) y charcos que salpican al pisarlos a velocidad. Si mojas a un vecino, 4 €'); }
+      else if (ev === 'escampa') this.hud.avisar('Escampa. Ya huele a tierra mojada', 2.2);
+      this.cielo.actualizar(dt, this.tiempo.intensidad);
+      this.vehiculo.mojado = this.tiempo.mojado;
+      b.vecinos.lluvia = this.tiempo.intensidad > 0.3;
+    }
     this.cielo.colocarSol(pos.x, pos.z);
-    this.hud.ponerHora(this.cielo.textoHora);
+    this.lluvia.actualizar(this.tiempo.intensidad, pos.x, pos.z, dt);
+    this.hud.ponerHora(this.cielo.textoHora + (this.tiempo.lloviendo ? ' · lluvia' : ''));
     if (this.jugando && !this.sinMinimapa) {
       const rumbo = this.aPie ? Math.atan2(v.x, -v.z) : this.vehiculo.estado.rumbo;
       const destinoRecado: [number, number] | undefined = this.recadero.estado === 'en_curso' && this.recadero.destino ? [this.recadero.destino.x, this.recadero.destino.z] : this.taxista.destino ? [this.taxista.destino.x, this.taxista.destino.z] : undefined;
-      const motoLejos: [number, number] | undefined = this.motoLevantada ? [this.motoLevantada.x, this.motoLevantada.z] : undefined;
+      const motoLejos: [number, number] | undefined = this.motoLevantada ? [this.motoLevantada.x, this.motoLevantada.z] : this.pilla ? [this.pilla.motero.x, this.pilla.motero.z] : undefined;
       const siguiente = this.carrera.estado === 'en_curso' ? b.grafo.nodos[this.carrera.siguiente] : destinoRecado ?? motoLejos;
       this.minimapa.actualizar(dt, {
         jugador: { x: pos.x, z: pos.z, rumbo: this.aPie && Math.hypot(v.x, v.z) < 0.5 ? this.scooter.estado.rumbo : rumbo },
@@ -2276,6 +2387,8 @@ export class Juego {
     this.audio.actualizar(this.aPie ? 0 : this.vehiculo.estado.velocidad, acelerando, !this.aPie && this.vehiculo.estado.derrapando, dt, !!this.coche);
     this.audio.silenciarMotor(this.aPie || (!this.coche && !!this.scooter.modelo.bici));
     this.audio.actualizarReggaeton(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaBotellon : 0);
+    this.audio.actualizarLluvia(this.jugando && !this.pausado ? this.tiempo.intensidad : 0);
+    this.audio.actualizarMarcha(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaMarcha : 0);
     this.audio.actualizarAficion(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaAficion : 0, dt);
     this.tiempoGuardado += dt;
     if (this.tiempoGuardado > 5) { this.tiempoGuardado = 0; this.guardar(); }

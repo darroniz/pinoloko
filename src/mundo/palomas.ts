@@ -186,11 +186,13 @@ export class Palomas {
   }
 
   /** Mueve las bandadas y las dibuja. Devuelve cuántas han despegado este frame. */
-  actualizar(jugador: { x: number; z: number; rapidez: number }, dt: number): { despegues: number } {
+  /** `asustadores`: los perros; uno a menos de 4 m de la bandada la espanta igual que la moto. */
+  actualizar(jugador: { x: number; z: number; rapidez: number }, dt: number, asustadores: { x: number; z: number }[] = []): { despegues: number } {
     let despegues = 0;
     const cuentas = this.mallas.map(() => 0);
     for (const b of this.lista) {
-      if (pasoBandada(b, jugador, dt, this.rnd)) despegues++;
+      const perro = b.estado === 'suelo' ? asustadores.find((a) => (a.x - b.casa.x) ** 2 + (a.z - b.casa.z) ** 2 < 16) : undefined;
+      if (pasoBandada(b, perro ? { x: perro.x, z: perro.z, rapidez: 5 } : jugador, dt, this.rnd)) despegues++;
       if ((b.casa.x - jugador.x) ** 2 + (b.casa.z - jugador.z) ** 2 > 120 * 120) continue;
       for (const p of b.palomas) {
         this.p.set(p.x, p.y, p.z);

@@ -76,6 +76,7 @@ export const LOGROS: Logro[] = [
   { id: 'aficion', nombre: 'Día de partido', descripcion: 'Dispersa a la afición a la puerta del estadio', cumple: (e) => e.aficiones >= 1, medida: (e) => e.aficiones, objetivo: 1 },
   { id: 'sevici_sin_tarjeta', nombre: 'Sin tarjeta', descripcion: 'Quítale el Sevici a un ciclista y pedalea', cumple: (e) => e.sevicis >= 1, medida: (e) => e.sevicis, objetivo: 1 },
   { id: 'sacado', nombre: 'Que lo estoy pagando', descripcion: 'Que el dueño te saque de su coche', cumple: (e) => e.sacados >= 1, medida: (e) => e.sacados, objetivo: 1 },
+  { id: 'calor', nombre: 'Qué calor, mi arma', descripcion: 'Un chapuzón con la moto en plena ola de calor', cumple: (e) => e.chapuzonesCalor >= 1, medida: (e) => e.chapuzonesCalor, objetivo: 1 },
   { id: 'stoppie', nombre: 'Stoppie', descripcion: 'Diez stoppies (frenazo recto con el trasero en el aire)', cumple: (e) => e.stoppies >= 10, medida: (e) => e.stoppies, objetivo: 10 },
   { id: 'bolsas', nombre: 'Lipasam te odia', descripcion: 'Revienta 30 bolsas de basura', cumple: (e) => e.bolsas >= 30, medida: (e) => e.bolsas, objetivo: 30 },
   { id: 'paquete', nombre: 'De paquete', descripcion: 'Lleva a cinco colegas de paquete a donde te digan', cumple: (e) => e.paquetes >= 5, medida: (e) => e.paquetes, objetivo: 5 },

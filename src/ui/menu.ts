@@ -50,6 +50,10 @@ const AYUDA = `
 <div class="fila"><span>Subir, bajar, coger el 13</span><strong>E · SUBIR / BAJAR / EL 13</strong></div>
 <div class="fila"><span>Claxon (asusta a la gente)</span><strong>H · PIII</strong></div>
 <div class="fila"><span>Volver a la parada</span><strong>R</strong></div>
+<div class="fila"><span>El altavoz de la moto</span><strong>Q · 🔊</strong></div>
+<p class="peque"><strong>Nuevo (14 de septiembre):</strong> el altavoz y la comitiva, las palomas, la lluvia, la procesión (una tarde de cada tres,
+la primera sí, desde las siete), la minimoto, el pilla-pilla con el claxon, el colega de paquete, el stoppie y las bolsas de basura. Todo
+explicado abajo.</p>
 <div class="fila"><span>Menú y pausa</span><strong>ESC · ☰</strong></div>
 <div class="fila"><span>Plegar el minimapa</span><strong>M · tocarlo</strong></div>
 <div class="fila"><span>Foto para compartir</span><strong>P · 📷</strong></div>
@@ -92,6 +96,8 @@ por medio con la moto calienta a la Local y escandaliza al barrio; párate junto
 junto a un nazareno, te da un caramelo. El tráfico se para a su paso.</p>
 <p class="peque"><strong>La lluvia.</strong> De vez en cuando se nubla y llueve unas horas: menos agarre (los derrapes se alargan y se frena
 peor), charcos en las calles que salpican al pisarlos a velocidad (si mojas a un vecino, 4 €) y el barrio con paraguas.</p>
+<p class="peque"><strong>La calor.</strong> Un día de cada dos (el primero, sí), de dos a seis y media de la tarde, ola de calor: calima, medio
+barrio con abanico, y el chapuzón en piscinas y fuentes vale el doble. Con la comitiva detrás (tres o más), los trucos de estilo valen la mitad más.</p>
 <p class="peque"><strong>Las palomas.</strong> Picotean en las plazas y delante del Mercado; al pasar cerca despegan todas (3 € la bandada), dan
 una vuelta y se vuelven a posar.</p>
 <p class="peque"><strong>El altavoz.</strong> Q (o el 🔊) enciende el reggaetón de la moto. En Pino Montano, los canis que pasan se te ponen detrás

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { DURACION_LLUVIA, PROBABILIDAD_POR_HORA, RAMPA, Tiempo } from '../src/mundo/tiempo';
+import { DURACION_LLUVIA, HORA_CALOR, PROBABILIDAD_POR_HORA, RAMPA, Tiempo } from '../src/mundo/tiempo';
 import { CHARCOS_POR_BARRIO, colocarCharcos } from '../src/mundo/charcos';
 import { GrafoBarrio } from '../src/mundo/grafo';
 import type { Nivel } from '../src/mundo/tipos';
@@ -45,6 +45,27 @@ describe('el tiempo', () => {
 
   it('la probabilidad sale a un día de lluvia cada dos o tres', () => {
     expect(PROBABILIDAD_POR_HORA * 24).toBeCloseTo(0.4, 5);
+  });
+
+  it('la calor: el primer día sí, de dos a seis y media, y no con lluvia', () => {
+    const t = new Tiempo(null, () => 0.99); // no llueve nunca
+    for (let i = 0; i < RAMPA * 10 + 2; i++) t.actualizar(12, 0.1, HORAS_POR_SEGUNDO);
+    expect(t.calor).toBe(0);
+    for (let i = 0; i < RAMPA * 10 + 2; i++) t.actualizar(HORA_CALOR.desde + 0.5, 0.1, HORAS_POR_SEGUNDO);
+    expect(t.haceCalor).toBe(true);
+    for (let i = 0; i < RAMPA * 10 + 2; i++) t.actualizar(HORA_CALOR.hasta + 0.1, 0.1, HORAS_POR_SEGUNDO);
+    expect(t.calor).toBe(0);
+    // Al día siguiente el dado alto dice que no hace calor.
+    t.actualizar(23.9, 0.1, HORAS_POR_SEGUNDO);
+    t.actualizar(0.1, 0.1, HORAS_POR_SEGUNDO);
+    expect(t.diaCaluroso).toBe(false);
+    // Forzada, aunque llueva no: la lluvia manda.
+    const forzada = new Tiempo('si', Math.random, 'si');
+    for (let i = 0; i < RAMPA * 10 + 2; i++) forzada.actualizar(15, 0.1, HORAS_POR_SEGUNDO);
+    expect(forzada.haceCalor).toBe(true); // forzada del todo, la sonda lo pide así
+    const quitada = new Tiempo('no', Math.random, 'no');
+    for (let i = 0; i < 50; i++) quitada.actualizar(15, 0.1, HORAS_POR_SEGUNDO);
+    expect(quitada.calor).toBe(0);
   });
 
   it('los charcos van en las calles rodadas, separados entre sí', () => {

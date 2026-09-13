@@ -1139,3 +1139,14 @@ mínimo para cobrar es 0,35 s (8 € + 20 €/s). Es excluyente con la derrapada
 con el caballito. Las bolsas de basura: trasto `bolsa` (2 €, ligera, rompible en trozos) que
 `poblar` pone de una en una o de dos en dos junto a cada contenedor. Siempre están: en Sevilla
 el contenedor nunca está solo.
+
+## 2026-09-14 — La calor y el público de la comitiva
+
+`Tiempo` decide cada día si es caluroso (uno de cada dos; el día 0 sí, para que se vea) y de dos
+a seis y media, si no llueve, sube `calor` con la misma rampa que la lluvia: calima (cielo
+blanquecino y sol un 12 % más duro en `Cielo`), abanicos rojos que se agitan en un tercio de
+los vecinos (los del `color % 3 === 1`, los que no llevan paraguas), "· calor" en la hora, el
+suelo mojado se seca al doble y el chapuzón vale el doble (30/40 → 60/80 €). `?calor=1` la fuerza
+y `?calor=0` la quita. Con tres o más canis de comitiva, los trucos de estilo (derrapada,
+caballito, stoppie, contramano) valen ×1,5: el altavoz tiene una razón de juego y no solo de
+ambiente. Y al colarte por medio de la cofradía la banda se calla dos segundos y medio.

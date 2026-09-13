@@ -259,6 +259,10 @@ export class Vecinos {
   /** Con lluvia, los que andan sacan el paraguas. */
   lluvia = false;
   private paraguas: THREE.InstancedMesh;
+  /** Con la calor, un tercio se abanica. */
+  calor = false;
+  private abanicos: THREE.InstancedMesh;
+  private tiempoAbanico = 0;
 
   constructor(private readonly grafo: GrafoBarrio, cuantos: number, asientos: { x: number; z: number; rumbo: number }[] = [], tribu: Tribu = 'canis', paradas: { x: number; z: number }[] = []) {
     this.paradas = paradas.map((p) => ({ x: p.x, z: p.z, nodo: grafo.masCercano(p.x, p.z, 'peatonal') }));
@@ -299,6 +303,12 @@ export class Vecinos {
     this.paraguas.count = 0;
     this.paraguas.frustumCulled = false;
     this.grupo.add(this.paraguas);
+    // El abanico: medio círculo plano en la mano, a la altura de la cara, que se agita.
+    const geoAbanico = new THREE.CircleGeometry(0.3, 8, 0, Math.PI).rotateY(Math.PI / 2).translate(0.38, 1.3, -0.2);
+    this.abanicos = new THREE.InstancedMesh(geoAbanico, new THREE.MeshLambertMaterial({ color: '#d7263d', side: THREE.DoubleSide }), cuantos);
+    this.abanicos.count = 0;
+    this.abanicos.frustumCulled = false;
+    this.grupo.add(this.abanicos);
     this.carritos = new THREE.InstancedMesh(geoCarrito, new THREE.MeshLambertMaterial({ color: '#b03a48' }), cuantos);
     this.carritos.count = 0;
     this.carritos.frustumCulled = false;
@@ -488,7 +498,8 @@ export class Vecinos {
 
   private dibujar(cx: number, cz: number): void {
     const cuentas = this.cuerpos.map(() => 0);
-    let nCabezas = 0, nGorros = 0, nCarritos = 0, nParaguas = 0;
+    let nCabezas = 0, nGorros = 0, nCarritos = 0, nParaguas = 0, nAbanicos = 0;
+    this.tiempoAbanico += 0.016;
     for (const v of this.lista) {
       if (this.siesta && enCasa(v)) continue;
       if ((v.x - cx) ** 2 + (v.z - cz) ** 2 > 130 * 130) continue;
@@ -515,12 +526,21 @@ export class Vecinos {
       if (this.gorros && v.color % 3 !== 2) this.gorros.setMatrixAt(nGorros++, this.m);
       if (v.color % 5 === 1 && (v.estado === 'pasear' || v.estado === 'huir')) this.carritos.setMatrixAt(nCarritos++, this.m);
       if (this.lluvia && v.estado !== 'caido' && v.estado !== 'sentado' && v.color % 3 !== 1) this.paraguas.setMatrixAt(nParaguas++, this.m);
+      if (this.calor && !this.lluvia && v.estado !== 'caido' && v.estado !== 'huir' && v.color % 3 === 1) {
+        // Se agita: el abanico gira un poco sobre el vecino.
+        this.q2.setFromAxisAngle(this.eje, Math.sin(this.tiempoAbanico * 14 + v.fase) * 0.35);
+        this.q.multiply(this.q2);
+        this.m.compose(this.p, this.q, this.s);
+        this.abanicos.setMatrixAt(nAbanicos++, this.m);
+      }
     }
     if (this.gorros) { this.gorros.count = nGorros; this.gorros.instanceMatrix.needsUpdate = true; }
     this.carritos.count = nCarritos;
     this.carritos.instanceMatrix.needsUpdate = true;
     this.paraguas.count = nParaguas;
     this.paraguas.instanceMatrix.needsUpdate = true;
+    this.abanicos.count = nAbanicos;
+    this.abanicos.instanceMatrix.needsUpdate = true;
     this.cuerpos.forEach((im, i) => { im.count = cuentas[i]!; im.instanceMatrix.needsUpdate = true; });
     this.cabezas.count = nCabezas;
     this.cabezas.instanceMatrix.needsUpdate = true;

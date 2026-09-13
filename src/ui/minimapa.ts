@@ -17,9 +17,11 @@ export interface PuntosMinimapa {
   mecheros: { x: number; z: number }[];
   objetivo: { x: number; z: number } | null;
   rampas: { x: number; z: number }[];
+  /** El paso de la procesión, si está en la calle. */
+  procesion?: { x: number; z: number } | null;
 }
 
-const COLOR = { parada: new THREE.Color('#d7263d'), patrulla: new THREE.Color('#1f4fd8'), mechero: new THREE.Color('#ffd23f'), rampa: new THREE.Color('#f2c14e') };
+const COLOR = { parada: new THREE.Color('#d7263d'), patrulla: new THREE.Color('#1f4fd8'), mechero: new THREE.Color('#ffd23f'), rampa: new THREE.Color('#f2c14e'), procesion: new THREE.Color('#7b2cbf') };
 
 export class Minimapa {
   readonly escena = new THREE.Scene();
@@ -194,6 +196,7 @@ export class Minimapa {
     for (const m of puntos.mecheros) poner(m.x, m.z, COLOR.mechero, 3);
     for (const p of puntos.paradas) poner(p.x, p.z, COLOR.parada, 5);
     for (const p of puntos.patrullas) poner(p.x, p.z, COLOR.patrulla, 5);
+    if (puntos.procesion) poner(puntos.procesion.x, puntos.procesion.z, COLOR.procesion, 6);
     this.puntos.count = n;
     this.puntos.instanceMatrix.needsUpdate = true;
     if (this.puntos.instanceColor) this.puntos.instanceColor.needsUpdate = true;

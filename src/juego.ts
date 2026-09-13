@@ -208,7 +208,9 @@ export class Juego {
   /** `?estilo=0` apaga el estilo de conducción (para medir su coste en la sonda). */
   private sinEstilo = new URLSearchParams(location.search).get('estilo') === '0';
   /** El tiempo: `?lluvia=1` fuerza la lluvia, `?lluvia=0` la quita (para medir). */
-  private tiempo = new Tiempo(new URLSearchParams(location.search).get('lluvia') === '1' ? 'si' : new URLSearchParams(location.search).get('lluvia') === '0' ? 'no' : null);
+  private tiempo = new Tiempo(new URLSearchParams(location.search).get('lluvia') === '1' ? 'si' : new URLSearchParams(location.search).get('lluvia') === '0' ? 'no' : null, Math.random, new URLSearchParams(location.search).get('calor') === '1' ? 'si' : new URLSearchParams(location.search).get('calor') === '0' ? 'no' : null);
+  private silencioMarcha = 0;
+  private avisadoCalor = false;
   private lluvia = new Lluvia();
   private pausado = false;
   /** Copia de `renderer.info.render` justo tras la pasada principal (la del minimapa la pisa). */
@@ -1268,35 +1270,39 @@ export class Juego {
       contramano = this.enContramano();
     } else if (enMoto && rapidez > 3) contramano = this.enContramano();
     const eventos = this.estilo.actualizar({ enMoto, rapidez, derrapando: enMoto && this.scooter.estado.derrapando, caballito: enMoto ? this.scooter.anguloCaballito : 0, stoppie: enMoto ? this.scooter.anguloStoppie : 0, cerca, golpe: enMoto && this.scooter.estado.golpe > 0, contramano }, dt);
+    // Con comitiva (tres o más detrás), los trucos valen la mitad más: tienes público.
+    const publico = this.altavoz.cuantos >= 3 ? 1.5 : 1;
     for (const ev of eventos) {
-      this.ganar(ev.euros);
+      const euros = Math.round(ev.euros * publico);
+      this.ganar(euros);
+      if (publico > 1 && ev.tipo !== 'pelos' && !this.hud.avisoReciente(0.5)) this.hud.avisar(`La comitiva: "¡Olé, Wifly!" (con público, ×1,5) +${euros} €`, 1.8);
       if (ev.tipo === 'derrapada') {
         this.contador.sumar('derrapadas');
         this.contador.maximo('derrapeMaximo', ev.segundos);
-        this.hud.avisar(`${ev.segundos > 2.5 ? '¡Derrapadón' : '¡Derrapada'} de ${ev.segundos.toFixed(1)} s! +${ev.euros} €`, 1.6);
+        this.hud.avisar(`${ev.segundos > 2.5 ? '¡Derrapadón' : '¡Derrapada'} de ${ev.segundos.toFixed(1)} s! +${euros} €`, 1.6);
         this.audio.pitido(700, 0.12, 0.12);
         this.pista('derrapada', 'Frenar girando derrapa el trasero: cuanto más larga la derrapada, más euros');
       } else if (ev.tipo === 'caballito') {
         this.contador.sumar('caballitos');
         this.contador.maximo('caballitoMaximo', ev.segundos);
-        this.hud.avisar(`¡Caballito de ${ev.segundos.toFixed(1)} s! +${ev.euros} €`, 1.6);
+        this.hud.avisar(`¡Caballito de ${ev.segundos.toFixed(1)} s! +${euros} €`, 1.6);
         this.audio.pitido(900, 0.12, 0.12);
         this.pista('caballito', 'A fondo desde parado el morro sube: aguanta el caballito y son euros');
       } else if (ev.tipo === 'stoppie') {
         this.contador.sumar('stoppies');
         this.contador.maximo('stoppieMaximo', ev.segundos);
-        this.hud.avisar(`¡Stoppie de ${ev.segundos.toFixed(1)} s! +${ev.euros} €`, 1.6);
+        this.hud.avisar(`¡Stoppie de ${ev.segundos.toFixed(1)} s! +${euros} €`, 1.6);
         this.audio.pitido(1100, 0.12, 0.12);
         this.pista('stoppie', 'Frenazo recto a velocidad: el trasero se levanta (stoppie) y paga, pero mientras dura frenas peor');
       } else if (ev.tipo === 'pelos') {
         this.contador.sumar('porLosPelos');
-        if (!this.hud.avisoReciente(2.5)) this.hud.avisar(`${['¡Por los pelos!', '¡Uy, por un pelo!', '¡Ni te ha rozado!', '¡Casi, casi!'][Math.floor(Math.random() * 4)]!} +${ev.euros} €`, 1.1);
+        if (!this.hud.avisoReciente(2.5)) this.hud.avisar(`${['¡Por los pelos!', '¡Uy, por un pelo!', '¡Ni te ha rozado!', '¡Casi, casi!'][Math.floor(Math.random() * 4)]!} +${euros} €`, 1.1);
         this.audio.pitido(1400, 0.05, 0.1);
         this.pista('pelos', 'Pasar rozando coches y vecinos a toda pastilla, sin tocarlos, son euros: por los pelos');
       } else {
         this.contador.sumar('contramanos');
         this.busqueda.fechoria('trasto');
-        this.hud.avisar(`¡Contramano! ${Math.round(ev.segundos)} s en dirección prohibida +${ev.euros} €`, 1.6);
+        this.hud.avisar(`¡Contramano! ${Math.round(ev.segundos)} s en dirección prohibida +${euros} €`, 1.6);
         if (ev.segundos <= 3) this.audio.claxon(0.7);
         this.pista('contramano', 'Las calles de sentido único pagan si vas al revés: cada tres segundos más, y el tráfico te pita');
       }
@@ -1392,9 +1398,11 @@ export class Juego {
     if (this.enfriamientoPiscina > 0) return;
     this.enfriamientoPiscina = 20;
     const pijos = b.ficha.tribu === 'pijos';
-    const euros = pijos ? 40 : 30;
+    const calor = this.tiempo.haceCalor;
+    const euros = (pijos ? 40 : 30) * (calor ? 2 : 1);
     this.ganar(euros, { x: pos.x, y: 0, z: pos.z });
     this.contador.sumar('piscinas');
+    if (calor) this.contador.sumar('chapuzonesCalor');
     this.busqueda.fechoria('trasto', 3);
     this.vigilante(pos.x, pos.z);
     this.corro(pos.x, pos.z, 4);
@@ -1960,6 +1968,7 @@ export class Juego {
       const jugadorPos = this.aPie ? this.peaton.posicion : this.vehiculo.posicion;
       const rapidez = this.aPie ? this.peaton.velocidad : Math.abs(e.velocidad);
       performance.mark('u2');
+      performance.measure('u-pre', 'u1', 'u2');
       const siesta = esSiesta(this.cielo.hora);
       if (siesta && !this.siestaAvisada) { this.siestaAvisada = true; this.hud.avisar(this.cielo.hora < 15.2 ? 'Hora de la siesta: ni un alma por la calle' : 'Siesta: medio barrio en casa', 2.2); } else if (!siesta) this.siestaAvisada = false;
       const eventos = b.vecinos.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt, siesta);
@@ -2030,6 +2039,7 @@ export class Juego {
       this.actualizarPiqueSemaforo(jugadorPos, rapidez, dt);
       this.actualizarRecados(jugadorPos, dt);
       performance.mark('u4b');
+      performance.measure('u-oficios', 'u4', 'u4b');
       this.actualizarTaxi(jugadorPos, rapidez, dt);
       this.actualizarPaquete(jugadorPos, rapidez, dt);
       this.actualizarPasajeros(jugadorPos, rapidez, dt);
@@ -2087,7 +2097,7 @@ export class Juego {
       const perros = b.perros.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
       if (perros.ladridos > 0) this.audio.ladrido();
       // Palomas: al pasar cerca despegan todas, dan una vuelta y se vuelven a posar.
-      const palomas = b.palomas.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt);
+      const palomas = b.palomas.actualizar({ x: jugadorPos.x, z: jugadorPos.z, rapidez }, dt, b.perros.lista);
       if (palomas.despegues > 0) {
         this.audio.aleteo();
         this.contador.sumar('palomas', palomas.despegues);
@@ -2126,6 +2136,7 @@ export class Juego {
         if (this.tiempoPublico <= 0) { this.tiempoPublico = 7; const ps = b.procesion.paso; b.vecinos.congregar(ps.x, ps.z, 40, 3); }
       }
       if (pr.cruzada) {
+        this.silencioMarcha = 2.5; // la banda se corta del susto
         this.busqueda.fechoria('atropello', 1.5);
         this.contador.sumar('cruzadas');
         this.camara.sacudir(0.3);
@@ -2219,6 +2230,7 @@ export class Juego {
 
       // Trastos derribados: dinero, racha y frase de barrio.
       performance.mark('u5');
+      performance.measure('u-mundo', 'u4c', 'u5');
       const derribados = b.trastos.actualizar(jugadorPos.x, jugadorPos.z);
       performance.mark('u6');
       performance.measure('u-trastos', 'u5', 'u6');
@@ -2284,6 +2296,8 @@ export class Juego {
         const nuevos = this.logros.comprobar(this.contador.datos);
         if (nuevos.length && !this.hud.avisoReciente(1)) { this.hud.avisar(`Logro: ${nuevos.map((l) => l.nombre).join(' · ')}`, 3); this.audio.fanfarria(); }
       }
+      performance.mark('u6b');
+      performance.measure('u-tarde', 'u6', 'u6b');
     }
 
     performance.mark('u7');
@@ -2302,13 +2316,16 @@ export class Juego {
       const ev = this.pausado ? null : this.tiempo.actualizar(this.cielo.hora, dt, 24 / DURACION_DIA);
       if (ev === 'empieza') { this.hud.avisar('Se está nublando: va a caer una buena', 2.6); this.pista('lluvia', 'Llueve: menos agarre (los derrapes se alargan y se frena peor) y charcos que salpican al pisarlos a velocidad. Si mojas a un vecino, 4 €'); }
       else if (ev === 'escampa') this.hud.avisar('Escampa. Ya huele a tierra mojada', 2.2);
-      this.cielo.actualizar(dt, this.tiempo.intensidad);
+      this.cielo.actualizar(dt, this.tiempo.intensidad, this.tiempo.calor);
       this.vehiculo.mojado = this.tiempo.mojado;
       b.vecinos.lluvia = this.tiempo.intensidad > 0.3;
+      b.vecinos.calor = this.tiempo.haceCalor;
+      if (this.tiempo.haceCalor && !this.avisadoCalor) { this.avisadoCalor = true; this.hud.avisar('Ola de calor: 41 grados a la sombra, y no hay sombra', 2.6); this.pista('calor', 'Con la calor medio barrio se abanica y el chapuzón en piscinas y fuentes vale el doble'); }
+      else if (!this.tiempo.haceCalor) this.avisadoCalor = false;
     }
     this.cielo.colocarSol(pos.x, pos.z);
     this.lluvia.actualizar(this.tiempo.intensidad, pos.x, pos.z, dt);
-    this.hud.ponerHora(this.cielo.textoHora + (this.tiempo.lloviendo ? ' · lluvia' : ''));
+    this.hud.ponerHora(this.cielo.textoHora + (this.tiempo.lloviendo ? ' · lluvia' : this.tiempo.haceCalor ? ' · calor' : ''));
     if (this.jugando && !this.sinMinimapa) {
       const rumbo = this.aPie ? Math.atan2(v.x, -v.z) : this.vehiculo.estado.rumbo;
       const destinoRecado: [number, number] | undefined = this.recadero.estado === 'en_curso' && this.recadero.destino ? [this.recadero.destino.x, this.recadero.destino.z] : this.taxista.destino ? [this.taxista.destino.x, this.taxista.destino.z] : undefined;
@@ -2321,6 +2338,7 @@ export class Juego {
         mecheros: b.mecheros.posiciones.filter((_, i) => !b.mecheros.recogidos.has(i)).map(([x, z]) => ({ x, z })),
         objetivo: siguiente ? { x: siguiente[0], z: siguiente[1] } : null,
         rampas: b.rampas.posiciones.map(([x, z]) => ({ x, z })),
+        procesion: b.procesion.activa ? { x: b.procesion.paso.x, z: b.procesion.paso.z } : null,
       });
     }
 
@@ -2443,7 +2461,8 @@ export class Juego {
     this.audio.silenciarMotor(this.aPie || (!this.coche && !!this.scooter.modelo.bici));
     this.audio.actualizarReggaeton(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaBotellon : 0);
     this.audio.actualizarLluvia(this.jugando && !this.pausado ? this.tiempo.intensidad : 0);
-    this.audio.actualizarMarcha(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaMarcha : 0);
+    this.silencioMarcha = Math.max(0, this.silencioMarcha - dt);
+    this.audio.actualizarMarcha(this.jugando && !this.pausado && !this.cine.activa && this.silencioMarcha <= 0 ? this.cercaniaMarcha : 0);
     this.audio.actualizarAficion(this.jugando && !this.pausado && !this.cine.activa ? this.cercaniaAficion : 0, dt);
     this.tiempoGuardado += dt;
     if (this.tiempoGuardado > 5) { this.tiempoGuardado = 0; this.guardar(); }

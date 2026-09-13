@@ -20,7 +20,7 @@ await p.evaluate(() => performance.clearMeasures());
 await p.keyboard.down('w'); await new Promise((r) => setTimeout(r, 8000)); await p.keyboard.up('w');
 const med = await p.evaluate(() => {
   const out = {};
-  for (const n of ['update', 'render', 'u-fisica', 'u-vecinos', 'u-policia', 'u-trastos', 'u-nuevo', 'u-resto']) {
+  for (const n of ['update', 'render', 'u-fisica', 'u-pre', 'u-vecinos', 'u-policia', 'u-oficios', 'u-nuevo', 'u-mundo', 'u-trastos', 'u-tarde', 'u-resto']) {
     const m = performance.getEntriesByName(n).map((e) => e.duration).sort((a, c) => a - c);
     out[n] = m.length ? +m[Math.floor(m.length / 2)].toFixed(2) : -1;
   }

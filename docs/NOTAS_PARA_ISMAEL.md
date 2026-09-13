@@ -27,7 +27,54 @@ también) y la procesión de la parroquia. Todo freestyle, nada de misiones.
       escandaliza al barrio; parar a verla pasar paga (hasta Wifly respeta al paso). Gate y push.
 - [x] **Bloque 5 (hecho a las 00:50; previsto 03:20-03:55)** — **La minimoto**: la pocket bike de cani, minúscula y
       nerviosa, aparcada por el barrio y robable; entra en el garaje y el taller. Gate y push.
+- [x] **Bloque 6 (hecho a la 01:05)** — **De paquete**: en scooter, un colega levanta la mano, se sube detrás y te dice un bar (80 % del taxi).
+- [x] **Bloque 7 (hecho a la 01:00, con el 4)** — **Pilla-pilla** con el claxon junto a un cani en moto (35 s, 50 €), **caramelos** de los
+      nazarenos a pie y el tráfico que se para ante la procesión.
+- [x] **Bloque 8 (hecho a la 01:11)** — **Stoppie** (frenazo recto: el trasero en el aire, paga y frena peor) y **bolsas de basura** junto a los contenedores.
+- [x] **Bloque 9 (hecho a la 01:15)** — El paso en el minimapa, los perros espantan palomas, "Nuevo" en AYUDA, test del pilla-pilla.
 - [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
+
+## Noche del 2026-09-14 — resumen para leer en el móvil
+
+**Qué hay nuevo** (todo en https://pinoloko.com/): el barrio hace cosas solo y Wifly tiene banda
+sonora. **El altavoz** (Q o el botón 🔊 bajo el minimapa): reggaetón desde la moto; en Pino
+Montano los canis que pasan se te ponen detrás bailando (**la comitiva**, 5 € cada uno, hasta
+cinco; ve despacio o se pierde), en los demás barrios protestan y de noche pegado a los bloques
+despierta a la vecina y calienta a la Local. **Las palomas** de las plazas y del Mercado: al
+pasar despegan todas, dan una vuelta y se posan (3 € la bandada; los perros también las espantan).
+**La lluvia**: un día de cada dos o tres se nubla y llueve un rato: cielo gris, cortina, ruido,
+paraguas, menos agarre (derrapes más largos, se frena peor) y charcos que salpican (mojar a un
+vecino, 4 €); `?lluvia=1` la fuerza. **La procesión**: la primera tarde (y luego una de cada
+tres), a las siete sale de la parroquia la cofradía: cruz de guía, nazarenos con capirote, el
+paso de palio meciéndose y la banda de cornetas y tambores, despacio por los pasajes (se oye
+desde lejos y sale en el minimapa en morado). Colarte por medio con la moto calienta y escandaliza;
+párate junto al paso unos segundos y Wifly se quita la gorra (25 €); a pie junto a un nazareno,
+caramelo; el tráfico se para a su paso. **La minimoto** (pocket bike naranja) aparcada por el
+barrio y algún cani la lleva: diminuta, nerviosa, Wifly le sobra por todos lados; entra en garaje
+y taller. **Pilla-pilla**: pita junto a un cani en moto y sale disparado: 35 s para pegarte a
+él (o tirarlo), 50 €. **De paquete**: en scooter, de vez en cuando un colega levanta la mano en
+la acera; para, se sube detrás y te dice un bar. **Stoppie**: frenazo recto a velocidad, el
+trasero en el aire (paga, pero frenas peor). **Bolsas de basura** junto a cada contenedor,
+que revientan. Trece logros nuevos y AYUDA con un párrafo de "Nuevo".
+
+**Qué probar primero en el móvil:** 1) nada más empezar (17:30), pulsa 🔊 y ve despacio por
+el pasaje: en un minuto llevas comitiva; 2) espera a las 19:00 de juego (minuto y medio) y busca
+el punto morado en el minimapa: la procesión; párate al lado del paso; 3) pita junto a un cani en
+moto y persíguelo; 4) a fondo en la avenida y frenazo recto; 5) abre el juego con
+`https://pinoloko.com/?lluvia=1` y derrapa; 6) pasa por medio de las palomas de la puerta del Mercado.
+
+**El gate de la Pi esta noche:** la Pi ha estado a 66-77 °C toda la noche y ni la build publicada
+anoche llega a 120 frames: el A/B (publicado [37,87]/[41,88] frente a nuevo [62,93]/[40,80]) da
+distribuciones solapadas, así que he publicado con A/B, como anoche. Los viajes por los seis
+barrios y la ausencia de errores de consola sí se comprueban en cada gate.
+
+**Dudas que he resuelto solo** (en `docs/DECISIONES.md`): la cofradía no lleva nombre real ni
+tiene cuerpo físico (colarse no la tira: el tono es que el barrio respeta al paso y el que se cuela
+es Wifly); la lluvia no se guarda en la partida; la minimoto va la última en la lista para no mover
+los índices guardados del garaje; el pilla-pilla se reta con el claxon y no con E, que ya hace
+demasiadas cosas a pie.
+
+**Pendiente de ti:** lo de siempre, el FPS real en tu móvil y si moverse ya es divertido.
 
 ## Noche del 2026-09-13 — resumen para leer en el móvil (escrito la noche siguiente)
 

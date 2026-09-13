@@ -1119,3 +1119,13 @@ nombres de los rivales (el Kevin, el Jonathan, la Vanessa) sin que sean los mism
 carreras. Los caramelos: a pie a menos de 1,7 m de un nazareno, uno cada 2,5 s, sin dinero (son
 caramelos) pero con estadística y logro. Y el tráfico se para ante la procesión: `Trafico` tiene
 ahora una lista de `obstaculos` (los miembros de la cofradía) que se tratan como un coche delante.
+
+## 2026-09-14 — De paquete
+
+Es el taxista con otros números: `Taxista` acepta opciones (`maximo` de clientes y el intervalo
+entre ellos) y el juego lleva una segunda instancia (`paquete`: un cliente cada 18-32 s, a 30-110
+m) que solo vive en scooter (ni coche, ni Sevici, ni moto rota). El colega es otra figura de
+Wifly sentada detrás (`Scooter.llevarPaquete`), paga el 80 % del taxi (mínimo 5 €) y encadena
+igual. Los clientes de los dos oficios se dibujan con las mismas dos figuras de `Clientes`: como
+no se puede ir en taxi y en scooter a la vez, no chocan. Los nombres del colega son los de los
+rivales (el Kevin, el Jonathan, la Vanessa), que ya son los colegas del barrio.

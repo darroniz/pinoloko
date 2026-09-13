@@ -80,6 +80,8 @@ En los saltos, mueve el joystick a los lados para girar en el aire: cada 360 son
 bomberos, y si tiras a tres vecinos seguidos, el 061; y siempre se forma el corro de mirones. Si rompes la terraza de un bar, el camarero
 sale con la escoba y te persigue a pie (si te pilla parado, escobazo y 20 €); y el motero al que le quitas la moto te corre detrás: si te
 pilla, se la lleva de vuelta. Y el dueño del coche que robas también sale detrás: si te pilla parado, te saca.</p>
+<p class="peque"><strong>De paquete.</strong> En scooter, de vez en cuando un colega levanta la mano en la acera: para a su lado, se sube detrás y te dice
+un bar; llévalo antes de que se acabe el reloj. Paga menos que el taxi (es un colega), pero encadena igual.</p>
 <p class="peque"><strong>Pilla-pilla.</strong> Pita (H / PIII) junto a un cani en moto y te reta: "¡A que no me pillas!". Sale disparado por calles y
 pasajes durante 35 s; alcánzalo y pégate a él un segundo (o tíralo) y son 50 €. Sale en el minimapa.</p>
 <p class="peque"><strong>La minimoto.</strong> La pocket bike naranja aparcada por el barrio (y algún cani la lleva por los pasajes): diminuta,

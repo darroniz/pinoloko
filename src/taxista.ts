@@ -28,7 +28,16 @@ export function premioTaxi(distancia: number, restante: number, total: number, c
   return Math.round((10 + distancia / 6) * (0.6 + 0.6 * rapidez) * (1 + 0.15 * Math.min(6, cadena)));
 }
 
+export interface OpcionesTaxista {
+  /** Clientes esperando a la vez. */
+  maximo: number;
+  /** Segundos entre cliente y cliente (mínimo y máximo). */
+  nuevo: [number, number];
+}
+
 export class Taxista {
+  /** El colega de paquete usa la misma lógica con un cliente cada mucho. */
+  constructor(private readonly opciones: OpcionesTaxista = { maximo: MAXIMO_CLIENTES, nuevo: [4, 8] }) {}
   /** `fuera`: no llevas taxi. `libre`: buscando clientes. `ocupado`: con uno dentro. */
   estado: 'fuera' | 'libre' | 'ocupado' = 'fuera';
   readonly clientes: Cliente[] = [];
@@ -44,6 +53,9 @@ export class Taxista {
   empezar(): void {
     if (this.estado === 'fuera') { this.estado = 'libre'; this.tiempoNuevo = 1.5; }
   }
+
+  /** Que salga un cliente ya (la sonda). */
+  ahora(): void { this.tiempoNuevo = 0; }
 
   /** Te bajas, te trincan o el taxi revienta: todo fuera y los clientes se esfuman. */
   abandonar(): void {
@@ -67,8 +79,8 @@ export class Taxista {
     }
     if (this.estado === 'libre') {
       this.tiempoNuevo -= dt;
-      if (this.clientes.length < MAXIMO_CLIENTES && this.tiempoNuevo <= 0) {
-        this.tiempoNuevo = 4 + rnd() * 4;
+      if (this.clientes.length < this.opciones.maximo && this.tiempoNuevo <= 0) {
+        this.tiempoNuevo = this.opciones.nuevo[0] + rnd() * (this.opciones.nuevo[1] - this.opciones.nuevo[0]);
         const sitio = nuevoCliente();
         if (sitio) this.clientes.push({ ...sitio, espera: 0 });
       }

@@ -106,6 +106,8 @@ export class Scooter {
   private readonly manillar: THREE.Group;
   private giroActual = 0;
   private readonly piloto: THREE.Group;
+  /** El colega de paquete, detrás de Wifly. */
+  private readonly paquete: THREE.Group;
   readonly modelo: ModeloScooter;
   conducida = false;
   /** 100 = nueva; por debajo de 30 echa humo; a 0 revienta y ya no arranca. */
@@ -186,6 +188,11 @@ export class Scooter {
     this.piloto = crearWifly(true).grupo;
     this.piloto.visible = false;
     this.chasis.add(this.piloto);
+    this.paquete = crearWifly(true).grupo;
+    this.paquete.position.set(0, -0.02, 0.42);
+    this.paquete.scale.setScalar(0.96);
+    this.paquete.visible = false;
+    this.chasis.add(this.paquete);
     // Aparcada: dormida y apoyada en el suelo hasta que alguien la toque o se suba.
     this.cuerpo.sleep();
 
@@ -207,6 +214,11 @@ export class Scooter {
     this.conducida = si;
     this.piloto.visible = si;
     if (si) this.cuerpo.wakeUp();
+  }
+
+  /** El colega se sube o se baja de paquete. */
+  llevarPaquete(si: boolean): void {
+    this.paquete.visible = si;
   }
 
   /** Paso sin conductor: solo sincroniza la malla (la física sigue por si la empujan). */

@@ -38,7 +38,7 @@ también) y la procesión de la parroquia. Todo freestyle, nada de misiones.
 - [x] **Bloque 13 (hecho a la 01:50)** — **Los gatos** en los techos de los coches aparcados y en los bancos (saltan, huyen y vuelven); la traca del gordo.
 - [x] **Bloque 14 (hecho a las 02:00)** — **La churrería** al final del mercadillo (se rompe en churros) con su cola de mañana (deshacerla, 20 €).
 - [x] **Bloque 15 (hecho a las 02:08)** — **La saeta**: con un bloque a mano el paso se para, la banda calla y cantan desde el balcón.
-- [ ] **Cierre (02:15-02:40)** — roadmap, decisiones, notas, A/B final y push (la noche se acaba antes: quince bloques y la cuota, mejor guardada).
+- [x] **Cierre (hecho a las 02:50)** — roadmap, decisiones, notas, seis A/B (el coste de la noche, con números, en el resumen) y push. La noche acaba antes de hora: quince bloques publicados y la cuota, mejor guardada.
 
 ## Noche del 2026-09-14 — resumen para leer en el móvil
 

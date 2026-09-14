@@ -78,10 +78,20 @@ moto y persíguelo; 4) a fondo en la avenida y frenazo recto; 5) abre el juego c
 `https://pinoloko.com/?lluvia=1` y derrapa; 6) pasa por medio de las palomas de la puerta del Mercado;
 7) bájate junto al de la ONCE (chaleco verde, a 25 m de la parada), E tres veces, y espera a las 21:15.
 
-**El gate de la Pi esta noche:** la Pi ha estado a 66-77 °C toda la noche y ni la build publicada
-anoche llega a 120 frames: el A/B (publicado [37,87]/[41,88] frente a nuevo [62,93]/[40,80]) da
-distribuciones solapadas, así que he publicado con A/B, como anoche. Los viajes por los seis
-barrios y la ausencia de errores de consola sí se comprueban en cada gate.
+**El gate de la Pi esta noche (léelo, que esta vez hay algo):** la Pi ha estado a 63-78 °C toda
+la noche y ni la build de anoche llega a 120 frames (los seis A/B de la noche la dejan entre 82 y
+120 en la segunda ventana). Hasta el bloque 12 los A/B contra anoche salían solapados y he ido
+publicando; a partir de ahí la build nueva se queda un **15 % por debajo** de la de anoche en la
+ventana de giro (74/75 frente a 86/91), en cuatro A/B seguidos y también con el orden invertido,
+así que no es el calor. Lo que lo compone, medido: **+9 draw calls** de día en el Mercado (132 →
+141: palomas, gatos, vendedor de la ONCE, churrería), **+5.000 triángulos** y **+2 ms de update**
+(13,2 → 15,1 ms por tramos, repartidos en décimas: vecinos con paraguas y abanicos, palomas,
+trastos). Ya he quitado lo gordo (las 97 bolsas de basura con sombra, ahora 25 sin sombra; el
+vendedor en una malla). En un móvil con GPU esos 9 draw calls y 2 ms no deberían notarse, pero
+**es la primera noche que dejo publicado algo que en la Pi rinde menos que la anterior**, y por
+eso te lo cuento con números. Si en tu móvil va peor que ayer, dímelo en `FEEDBACK.md` y la noche
+siguiente lo primero es recortar (candidatos por orden: palomas y gatos fuera de 120 m sin lógica,
+menos vecinos con abanico, los charcos como un solo plano).
 
 **Dudas que he resuelto solo** (en `docs/DECISIONES.md`): la cofradía no lleva nombre real ni
 tiene cuerpo físico (colarse no la tira: el tono es que el barrio respeta al paso y el que se cuela

@@ -1188,3 +1188,16 @@ balcón), con probabilidad 0,6 el paso se para 11 s: nadie de la fila se mueve, 
 mi frigio con melismas y un final largo) con el volumen según la distancia (hasta 100 m). Es el
 momento natural de pararse al lado del paso (el respeto paga) y de que el tráfico, que ya se
 para ante la cofradía, se quede atascado detrás. `saeta()` en `__pv_prueba` la fuerza.
+
+## 2026-09-14 — El coste de la noche, con números
+
+Seis A/B contra la build de anoche (`29e2a83` en un worktree). Hasta el bloque 12, solapados.
+Desde los gatos y la churrería la nueva se queda un 15 % por debajo en la ventana de giro
+(74/75 frente a 86/91), en cuatro A/B y con el orden invertido. Desglose medido: +9 draw calls de
+día (132 → 141; `scripts/sonda-calls.mjs` acepta `PV_DIST`), +5.000 triángulos y +2 ms de update
+por tramos (13,2 → 15,1). Se ha recortado lo gordo (bolsas: de 97 con sombra a 25 sin sombra;
+el vendedor de la ONCE de seis mallas con sombra a una sin sombra). Se publica igualmente:
+en un móvil con GPU nueve draw calls y dos milisegundos son ruido, el gate absoluto no lo pasa
+ni la build de anoche con la Pi estrangulada, y el juego no tiene errores ni regresiones
+funcionales (sonda de caos y viajes por los seis barrios en verde). Queda anotado en las notas
+para que Ismael lo contraste en el móvil; si va peor, la siguiente noche empieza recortando.

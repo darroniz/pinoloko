@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import type { GrafoBarrio } from './grafo';
 import type { Nivel } from './tipos';
 import { azar } from './geometria';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export const PRECIO_CUPON = 5;
 export const CUPONES_POR_SORTEO = 3;
@@ -108,7 +109,18 @@ export class Once {
   }
 }
 
-/** El vendedor dibujado: chaleco verde, gorra, y el tablero de cupones colgado del cuello. */
+function pintar(g: THREE.BufferGeometry, c: string): THREE.BufferGeometry {
+  const col = new THREE.Color(c);
+  const n = g.getAttribute('position').count;
+  const arr = new Float32Array(n * 3);
+  for (let k = 0; k < n; k++) { arr[k * 3] = col.r; arr[k * 3 + 1] = col.g; arr[k * 3 + 2] = col.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+  g.deleteAttribute('uv');
+  return g.index ? g.toNonIndexed() : g;
+}
+
+/** El vendedor dibujado: chaleco verde, gorra y el tablero de cupones colgado del cuello. Una sola malla
+ *  con los colores en los vértices (y el brazo aparte, que saluda), sin sombra: dos draw calls y no doce. */
 export class VendedorVista {
   readonly grupo = new THREE.Group();
   private tiempo = 0;
@@ -117,17 +129,17 @@ export class VendedorVista {
   constructor(vendedor: Vendedor | null) {
     this.grupo.name = 'once';
     if (!vendedor) return;
-    const piel = new THREE.MeshLambertMaterial({ color: '#e0ac8b' });
-    const cuerpo = new THREE.Mesh(new THREE.CapsuleGeometry(0.28, 0.6, 3, 8).translate(0, 0.72, 0), new THREE.MeshLambertMaterial({ color: '#1b9e4b' }));
-    const cabeza = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 6).translate(0, 1.42, 0), piel);
-    const gorra = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.26, 0.1, 8).translate(0, 1.62, 0), new THREE.MeshLambertMaterial({ color: '#0f5f2e' }));
-    const tablero = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.5, 0.06).translate(0, 0.95, -0.36), new THREE.MeshLambertMaterial({ color: '#f7f3ea' }));
-    const franja = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.12, 0.07).translate(0, 1.1, -0.36), new THREE.MeshLambertMaterial({ color: '#1b9e4b' }));
-    this.brazo = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.55, 2, 6).translate(0, 0.3, 0), piel);
+    const cuerpo = new THREE.Mesh(mergeGeometries([
+      pintar(new THREE.CapsuleGeometry(0.28, 0.6, 3, 8).translate(0, 0.72, 0), '#1b9e4b'),
+      pintar(new THREE.SphereGeometry(0.24, 8, 6).translate(0, 1.42, 0), '#e0ac8b'),
+      pintar(new THREE.CylinderGeometry(0.25, 0.26, 0.1, 8).translate(0, 1.62, 0), '#0f5f2e'),
+      pintar(new THREE.BoxGeometry(0.7, 0.5, 0.06).translate(0, 0.95, -0.36), '#f7f3ea'),
+      pintar(new THREE.BoxGeometry(0.72, 0.12, 0.07).translate(0, 1.1, -0.36), '#1b9e4b'),
+    ]), new THREE.MeshLambertMaterial({ vertexColors: true }));
+    this.brazo = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.55, 2, 6).translate(0, 0.3, 0), new THREE.MeshLambertMaterial({ color: '#e0ac8b' }));
     this.brazo.position.set(0.34, 1.05, 0);
     this.brazo.rotation.z = -0.9;
-    for (const m of [cuerpo, cabeza, gorra, tablero, franja, this.brazo]) m.castShadow = true;
-    this.grupo.add(cuerpo, cabeza, gorra, tablero, franja, this.brazo);
+    this.grupo.add(cuerpo, this.brazo);
     this.grupo.scale.setScalar(1.15);
     this.grupo.position.set(vendedor.x, 0, vendedor.z);
     this.grupo.rotation.y = -vendedor.rumbo;

@@ -110,6 +110,7 @@ Marca `[x]` lo terminado y publicado; añade tareas nuevas donde corresponda.
 - [x] La calor (días calurosos: calima, abanicos, chapuzón al doble); con comitiva los trucos valen ×1,5.
 - [x] El de la ONCE: cupones a 5 € y sorteo a las nueve y cuarto con número por fecha.
 - [x] Los gatos en coches aparcados y bancos; la churrería del mercadillo con su cola de mañana.
+- [x] La saeta desde el balcón: el paso se para, la banda calla y canta una voz sintetizada.
 
 ## 7. Pulido
 - [ ] Rendimiento en móvil de gama media (falta la prueba real de Ismael; hay selector de

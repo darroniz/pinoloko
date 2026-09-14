@@ -37,7 +37,8 @@ también) y la procesión de la parroquia. Todo freestyle, nada de misiones.
 - [x] **Bloque 12 (hecho a la 01:45)** — El colega de paquete opina y sale volando con un golpe fuerte; la comitiva no se asusta de tu claxon (y te jalea); comentarios de la lluvia.
 - [x] **Bloque 13 (hecho a la 01:50)** — **Los gatos** en los techos de los coches aparcados y en los bancos (saltan, huyen y vuelven); la traca del gordo.
 - [x] **Bloque 14 (hecho a las 02:00)** — **La churrería** al final del mercadillo (se rompe en churros) con su cola de mañana (deshacerla, 20 €).
-- [ ] **Cierre (04:20-04:45)** — roadmap, decisiones, notas, verificación final y push.
+- [x] **Bloque 15 (hecho a las 02:08)** — **La saeta**: con un bloque a mano el paso se para, la banda calla y cantan desde el balcón.
+- [ ] **Cierre (02:15-02:40)** — roadmap, decisiones, notas, A/B final y push (la noche se acaba antes: quince bloques y la cuota, mejor guardada).
 
 ## Noche del 2026-09-14 — resumen para leer en el móvil
 
@@ -54,7 +55,8 @@ tres), a las siete sale de la parroquia la cofradía: cruz de guía, nazarenos c
 paso de palio meciéndose y la banda de cornetas y tambores, despacio por los pasajes (se oye
 desde lejos y sale en el minimapa en morado). Colarte por medio con la moto calienta y escandaliza;
 párate junto al paso unos segundos y Wifly se quita la gorra (25 €); a pie junto a un nazareno,
-caramelo; el tráfico se para a su paso. **La minimoto** (pocket bike naranja) aparcada por el
+caramelo; el tráfico se para a su paso; y de vez en cuando, con un bloque a mano, **cantan una
+saeta** desde el balcón: el paso se para once segundos y la banda calla. **La minimoto** (pocket bike naranja) aparcada por el
 barrio y algún cani la lleva: diminuta, nerviosa, Wifly le sobra por todos lados; entra en garaje
 y taller. **Pilla-pilla**: pita junto a un cani en moto y sale disparado: 35 s para pegarte a
 él (o tirarlo), 50 €. **De paquete**: en scooter, de vez en cuando un colega levanta la mano en
@@ -66,8 +68,8 @@ medio barrio con abanico y el chapuzón al doble; con la comitiva detrás, los t
 sorteo) y a las nueve y cuarto el sorteo (una cifra final 10 €, dos 40, tres 200, las cinco 3.000).
 **Los gatos** duermen en los techos de los coches aparcados y en los bancos: al acercarte saltan y
 huyen (y vuelven). **La churrería** al final del mercadillo, con cola de siete y media a once de la
-mañana (deshacerla, 20 €; el remolque se rompe en churros). Dieciocho logros nuevos y AYUDA con un
-párrafo de "Nuevo".
+mañana (deshacerla, 20 €; el remolque se rompe en churros). Diecinueve logros nuevos y AYUDA con un
+párrafo de "Nuevo". En total, quince bloques y nueve commits publicados.
 
 **Qué probar primero en el móvil:** 1) nada más empezar (17:30), pulsa 🔊 y ve despacio por
 el pasaje: en un minuto llevas comitiva; 2) espera a las 19:00 de juego (minuto y medio) y busca

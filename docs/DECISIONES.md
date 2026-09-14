@@ -1178,3 +1178,12 @@ hay mercado (el Mercado de Pino Montano). La cola es otro `Botellon` con `OPCION
 (cinco vecinos de siete y media a once de la mañana, 20 € por deshacerla): la misma lógica
 que el botellón y la afición, con la ventanilla como sitio. Sin comprar churros: la cadena de
 E a pie ya hace demasiadas cosas.
+
+## 2026-09-14 — La saeta
+
+Cada 38 m de recorrido de la cabeza, si hay un vértice de edificio a menos de 16 m del paso (un
+balcón), con probabilidad 0,6 el paso se para 11 s: nadie de la fila se mueve, la banda calla
+(silencio de 12 s) y suena la saeta sintetizada (sierra con vibrato por un paso bajo, frase en
+mi frigio con melismas y un final largo) con el volumen según la distancia (hasta 100 m). Es el
+momento natural de pararse al lado del paso (el respeto paga) y de que el tráfico, que ya se
+para ante la cofradía, se quede atascado detrás. `saeta()` en `__pv_prueba` la fuerza.

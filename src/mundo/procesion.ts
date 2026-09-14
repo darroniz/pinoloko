@@ -18,6 +18,10 @@ export const RADIO_MUSICA = 90;
 export const RADIO_RESPETO = 13;
 export const RESPETO_SEGUNDOS = 3.5;
 export const PREMIO_RESPETO = 25;
+/** La saeta: cada tantos metros de recorrido, si hay un bloque a mano, el paso se para y alguien canta desde el balcón. */
+export const SAETA_CADA_METROS = 38;
+export const SAETA_SEGUNDOS = 11;
+export const SAETA_PROBABILIDAD = 0.6;
 /** Largo de la fila (metros de rastro que hace falta guardar). */
 const LARGO_FILA = 40;
 
@@ -61,6 +65,8 @@ export interface EventosProcesion {
   cercania: number;
   /** A pie junto a un nazareno: te da un caramelo. */
   caramelo: boolean;
+  /** Empieza una saeta desde un balcón junto al paso (el paso se para). */
+  saeta: { x: number; z: number } | null;
 }
 export const CARAMELO_SEGUNDOS = 2.5;
 
@@ -78,10 +84,33 @@ export class Procesion {
   private enfriamientoCruce = 0;
   private forzada = false;
   private enfriamientoCaramelo = 0;
+  /** Segundos que le quedan al paso parado por la saeta. */
+  parada = 0;
+  private metrosDesdeSaeta = 0;
+  private edificios: [number, number][][] = [];
   /** Fase de la mecida del paso. */
   fase = 0;
 
-  constructor(readonly parroquia: { x: number; z: number; nodo: number } | null, private readonly grafo: GrafoBarrio, private readonly rnd: () => number = azar(1521)) {}
+  constructor(readonly parroquia: { x: number; z: number; nodo: number } | null, private readonly grafo: GrafoBarrio, private readonly rnd: () => number = azar(1521), edificios: { poligono: [number, number][] }[] = []) {
+    this.edificios = edificios.map((e) => e.poligono);
+  }
+
+  /** ¿Hay un bloque (un balcón) a menos de `radio` m del punto? Devuelve el vértice más cercano o null. */
+  private balcon(x: number, z: number, radio: number): { x: number; z: number } | null {
+    let mejor: { x: number; z: number } | null = null, mejorD = radio * radio;
+    for (const p of this.edificios) for (const [px, pz] of p) { const d = (px - x) ** 2 + (pz - z) ** 2; if (d < mejorD) { mejorD = d; mejor = { x: px, z: pz }; } }
+    return mejor;
+  }
+
+  /** Una saeta ahora mismo (la sonda y las pruebas). */
+  saetaAhora(): { x: number; z: number } | null {
+    if (!this.activa) return null;
+    const p = this.paso;
+    const b = this.balcon(p.x, p.z, 16) ?? { x: p.x, z: p.z };
+    this.parada = SAETA_SEGUNDOS;
+    this.metrosDesdeSaeta = 0;
+    return b;
+  }
 
   get paso(): Miembro { return this.miembros.find((m) => m.tipo === 'paso')!; }
 
@@ -114,7 +143,7 @@ export class Procesion {
   }
 
   actualizar(hora: number, jugador: { x: number; z: number; rapidez: number; enVehiculo: boolean }, dt: number): EventosProcesion {
-    const r: EventosProcesion = { sale: false, seRecoge: false, cruzada: false, respeto: false, cercania: 0, caramelo: false };
+    const r: EventosProcesion = { sale: false, seRecoge: false, cruzada: false, respeto: false, cercania: 0, caramelo: false, saeta: null };
     if (!this.parroquia) return r;
     if (this.horaPrevia >= 0 && hora < this.horaPrevia - 12) this.dia++;
     this.horaPrevia = hora;
@@ -124,6 +153,13 @@ export class Procesion {
     if (!this.activa) return r;
     if (this.forzada && hora >= HORA_SALIDA.hasta && hora < HORA_SALIDA.hasta + 0.2) { this.recoger(); r.seRecoge = true; return r; }
 
+    // La saeta: el paso se para a escuchar; mientras, nadie se mueve.
+    if (this.parada > 0) {
+      this.parada = Math.max(0, this.parada - dt);
+      this.fase += dt * 1.6;
+      this.colocar();
+      return this.jugadorYPaso(jugador, dt, r);
+    }
     // La cabeza anda por el grafo peatonal, despacio y sin volver atrás.
     const c = this.cabeza;
     const [tx, tz] = this.grafo.nodos[c.destino] ?? [c.x, c.z];
@@ -136,6 +172,13 @@ export class Procesion {
     } else {
       const paso = Math.min(dist, PASO_PROCESION * dt);
       c.x += (ex / dist) * paso; c.z += (ez / dist) * paso;
+      this.metrosDesdeSaeta += paso;
+    }
+    if (this.metrosDesdeSaeta >= SAETA_CADA_METROS) {
+      this.metrosDesdeSaeta = 0;
+      const p = this.paso;
+      const b = this.balcon(p.x, p.z, 16);
+      if (b && this.rnd() < SAETA_PROBABILIDAD) { this.parada = SAETA_SEGUNDOS; r.saeta = b; }
     }
     const n = this.rastro.length;
     if (n < 2 || Math.hypot(c.x - this.rastro[n - 2]!, c.z - this.rastro[n - 1]!) >= 0.5) {
@@ -144,8 +187,11 @@ export class Procesion {
     }
     this.fase += dt * 1.6;
     this.colocar();
+    return this.jugadorYPaso(jugador, dt, r);
+  }
 
-    // El jugador: colarse por medio a velocidad, o pararse a ver pasar el paso.
+  /** Lo que pasa entre el jugador y la cofradía: colarse, caramelos y el respeto. */
+  private jugadorYPaso(jugador: { x: number; z: number; rapidez: number; enVehiculo: boolean }, dt: number, r: EventosProcesion): EventosProcesion {
     this.enfriamientoCruce = Math.max(0, this.enfriamientoCruce - dt);
     const paso = this.paso;
     const dPaso = Math.hypot(jugador.x - paso.x, jugador.z - paso.z);

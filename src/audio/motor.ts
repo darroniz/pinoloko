@@ -412,6 +412,44 @@ export class AudioJuego {
     fuente.start();
   }
 
+  /** Una saeta desde el balcón: voz de sierra por paso bajo con vibrato, melismas en modo frigio y un final largo. */
+  saeta(volumen = 0.12): number {
+    if (!this.ctx || !this.maestro) return 0;
+    const ctx = this.ctx;
+    const t0 = ctx.currentTime + 0.3;
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    const vib = ctx.createOscillator();
+    vib.type = 'sine';
+    vib.frequency.value = 5.5;
+    const vibG = ctx.createGain();
+    vibG.gain.value = 9;
+    vib.connect(vibG).connect(osc.frequency);
+    const filtro = ctx.createBiquadFilter();
+    filtro.type = 'lowpass';
+    filtro.frequency.value = 1500;
+    filtro.Q.value = 2;
+    const g = ctx.createGain();
+    g.gain.value = 0.001;
+    osc.connect(filtro).connect(g).connect(this.maestro);
+    // Mi frigio sobre La3: [semitonos desde La3, duración]; los negativos son glisandos hacia abajo.
+    const FRASE: [number, number][] = [[7, 0.5], [8, 0.4], [7, 0.5], [5, 0.3], [3, 0.7], [5, 0.3], [7, 1.2], [8, 0.4], [7, 0.4], [5, 0.4], [3, 0.5], [2, 0.5], [0, 1.6], [3, 0.4], [2, 0.4], [0, 2.2]];
+    let t = t0;
+    osc.frequency.setValueAtTime(220 * Math.pow(2, FRASE[0]![0] / 12), t0);
+    g.gain.setValueAtTime(0.001, t0);
+    g.gain.exponentialRampToValueAtTime(volumen, t0 + 0.4);
+    for (const [semi, dur] of FRASE) {
+      osc.frequency.linearRampToValueAtTime(220 * Math.pow(2, semi / 12), t + 0.12);
+      g.gain.setValueAtTime(volumen * (0.75 + 0.25 * Math.random()), t + 0.05);
+      t += dur;
+    }
+    g.gain.setValueAtTime(volumen, t - 0.8);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+    osc.start(t0); vib.start(t0);
+    osc.stop(t + 0.35); vib.stop(t + 0.35);
+    return t + 0.35 - ctx.currentTime;
+  }
+
   /** Maullido: dos tonos que suben y bajan, con vibrato, por un paso banda. */
   maullido(volumen = 0.09): void {
     if (!this.ctx || !this.maestro) return;

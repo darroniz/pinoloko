@@ -85,6 +85,7 @@ export const LOGROS: Logro[] = [
   { id: 'pilla', nombre: '¡A que no me pillas!', descripcion: 'Gana tres pilla-pillas a los canis en moto', cumple: (e) => e.pillados >= 3, medida: (e) => e.pillados, objetivo: 3 },
   { id: 'caramelos', nombre: 'Bolsillo de caramelos', descripcion: 'Que los nazarenos te den 20 caramelos', cumple: (e) => e.caramelos >= 20, medida: (e) => e.caramelos, objetivo: 20 },
   { id: 'minimoto', nombre: 'Pocket bike', descripcion: 'Roba una minimoto', cumple: (e) => e.minimotos >= 1, medida: (e) => e.minimotos, objetivo: 1 },
+  { id: 'saeta', nombre: 'Silencio, que cantan', descripcion: 'Oír tres saetas desde el balcón', cumple: (e) => e.saetas >= 3, medida: (e) => e.saetas, objetivo: 3 },
   { id: 'cofrade', nombre: 'Cofrade de Pino Montano', descripcion: 'Párate a ver pasar el paso', cumple: (e) => e.respetos >= 1, medida: (e) => e.respetos, objetivo: 1 },
   { id: 'sinrespeto', nombre: 'Ni un respeto', descripcion: 'Cuélate tres veces por medio de la cofradía', cumple: (e) => e.cruzadas >= 3, medida: (e) => e.cruzadas, objetivo: 3 },
   { id: 'lluvia', nombre: 'En Sevilla también llueve', descripcion: 'Recorre 1.000 m bajo la lluvia', cumple: (e) => e.metrosLluvia >= 1000, medida: (e) => Math.round(e.metrosLluvia), objetivo: 1000 },

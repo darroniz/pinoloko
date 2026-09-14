@@ -36,4 +36,10 @@ for (let i = 0; i < 10 && !stats.cruzadas; i++) { await dormir(500); stats = awa
 await p.evaluate(() => window.__pv_prueba.forzarEje(0, 0));
 console.log('cruzadas:', stats.cruzadas, '· aviso:', await p.evaluate(() => document.querySelector('#aviso').textContent));
 await p.screenshot({ path: 'logs/captura-procesion-2.png' });
+// La saeta: el paso se para.
+const sa = await p.evaluate(() => window.__pv_prueba.saeta());
+const antes = await p.evaluate(() => window.__pv_prueba.procesion());
+await dormir(3000);
+const despues = await p.evaluate(() => window.__pv_prueba.procesion());
+console.log('saeta:', JSON.stringify(sa), '· paso antes/después:', JSON.stringify(antes.paso), JSON.stringify(despues.paso), '· aviso:', await p.evaluate(() => document.querySelector('#aviso').textContent));
 await b.close(); srv.close();

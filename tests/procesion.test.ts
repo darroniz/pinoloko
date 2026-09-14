@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { GrafoBarrio } from '../src/mundo/grafo';
-import { HORA_SALIDA, Procesion, RESPETO_SEGUNDOS, elegirParroquia, esTardeDeSalida, formarCofradia } from '../src/mundo/procesion';
+import { HORA_SALIDA, Procesion, RESPETO_SEGUNDOS, SAETA_SEGUNDOS, elegirParroquia, esTardeDeSalida, formarCofradia } from '../src/mundo/procesion';
 import type { Nivel } from '../src/mundo/tipos';
 import { azar } from '../src/mundo/geometria';
 
@@ -75,6 +75,20 @@ describe('la procesión', () => {
     respeto = false;
     for (let t = 0; t < RESPETO_SEGUNDOS + 1; t += 0.1) respeto = respeto || pr2.actualizar(20, { x: pr2.paso.x + 5, z: pr2.paso.z, rapidez: 0, enVehiculo: true }, 0.1).respeto;
     expect(respeto).toBe(false);
+  });
+
+  it('con la saeta el paso se para el rato que dura y luego sigue', () => {
+    const pr = new Procesion(elegirParroquia(nivel, grafo), grafo, azar(4), nivel.edificios);
+    pr.salir();
+    const lejos = { x: 9999, z: 9999, rapidez: 0, enVehiculo: false };
+    for (let i = 0; i < 20; i++) pr.actualizar(20, lejos, 0.1);
+    expect(pr.saetaAhora()).not.toBeNull();
+    const x0 = pr.miembros[0]!.x, z0 = pr.miembros[0]!.z;
+    for (let t = 0; t < SAETA_SEGUNDOS - 0.5; t += 0.1) pr.actualizar(20, lejos, 0.1);
+    expect(pr.miembros[0]!.x).toBe(x0);
+    expect(pr.miembros[0]!.z).toBe(z0);
+    for (let t = 0; t < 3; t += 0.1) pr.actualizar(20, lejos, 0.1);
+    expect(Math.hypot(pr.miembros[0]!.x - x0, pr.miembros[0]!.z - z0)).toBeGreaterThan(1);
   });
 
   it('donde no hay parroquia no hay procesión', () => {

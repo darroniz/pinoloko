@@ -69,7 +69,7 @@ declare global {
     __pv_info: () => unknown;
     __pv_escena: THREE.Scene;
     __pv_barrios: Record<string, unknown>;
-    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number; altavoz: () => unknown; encenderAltavoz: () => boolean; palomas: () => unknown; lluvia: () => unknown; llover: () => void; stats: () => Record<string, number>; procesion: () => unknown; sacarProcesion: () => boolean; pilla: () => unknown; retarPilla: () => boolean; paquete: () => unknown; colegaYa: () => void; churros: () => unknown; gatos: () => unknown; once: () => unknown; comprarCupon: () => number | null; sortear: () => unknown; charcos: () => [number, number][]; vecinos: () => { x: number; z: number; estado: string }[] };
+    __pv_prueba: { robarMotero: () => boolean; robarCoche: () => boolean; calor: (n: number) => void; hora: (h: number) => void; viajar: (destino?: string) => Promise<string>; barrio: () => string; irA: (x: number, z: number, rumbo?: number) => void; carreras: () => [number, number][][]; moteros: () => unknown; perros: () => unknown; dinero: (n: number) => void; ajustes: () => unknown; helicoptero: () => unknown; sevici: () => unknown; pachangas: () => unknown; recado: () => unknown; semaforos: () => unknown; rampas: () => { x: number; z: number; rumbo: number }[]; carrera: () => unknown; rivales: () => unknown; pintadas: () => unknown; radares: () => unknown; agentes: () => unknown; aparcados: () => [number, number, number][]; trastos: (tipo: string) => [number, number][]; robarBus: () => boolean; robarCamion: () => boolean; robarTaxi: () => boolean; taxi: () => unknown; sitioTaxi: () => unknown; vecina: () => boolean; vecinaFase: () => string; emergencias: () => unknown; llamar: (tipo: 'bomberos' | 'ambulancia') => boolean; retar: () => boolean; levantar: () => boolean; chapa: () => unknown; irCoche: (x: number, z: number) => boolean; paradaLlegada: () => { x: number; z: number }; empujar: (vx: number, vz: number) => void; forzarEje: (x: number, y: number) => void; estilo: () => unknown; perseguir: (tipo: 'camarero' | 'motero' | 'dueno') => boolean; perseguidores: () => unknown; botellon: () => unknown; robarSevici: () => boolean; aficion: () => unknown; ambulantes: () => unknown; robarAmbulante: (v: 'butano' | 'chatarrero') => boolean; probarButano: () => number; altavoz: () => unknown; encenderAltavoz: () => boolean; palomas: () => unknown; lluvia: () => unknown; llover: () => void; stats: () => Record<string, number>; procesion: () => unknown; sacarProcesion: () => boolean; saeta: () => unknown; pilla: () => unknown; retarPilla: () => boolean; paquete: () => unknown; colegaYa: () => void; churros: () => unknown; gatos: () => unknown; once: () => unknown; comprarCupon: () => number | null; sortear: () => unknown; charcos: () => [number, number][]; vecinos: () => { x: number; z: number; estado: string }[] };
   }
 }
 
@@ -459,6 +459,7 @@ export class Juego {
       sortear: () => { const s = this.barrio.once.sortear(claveDia()); this.resolverSorteo(s); return s; },
       pilla: () => this.pilla ? { nombre: this.pilla.nombre, tiempo: Math.round(this.pilla.tiempo), x: Math.round(this.pilla.motero.x), z: Math.round(this.pilla.motero.z), d: Math.round(Math.hypot(this.pilla.motero.x - this.vehiculo.estado.x, this.pilla.motero.z - this.vehiculo.estado.z)) } : null,
       retarPilla: () => { const m = this.barrio.motosCalle.lista.find((x) => x.estado === 'rodar'); if (!m) return false; this.scooter.teletransportar(m.x - 3, m.z, m.rumbo); this.camara.colocar(m.x, m.z); return this.empezarPilla(m); },
+      saeta: () => { const s = this.barrio.procesion.saetaAhora(); if (s) { this.audio.saeta(0.14); this.silencioMarcha = 12; } return s; },
       sacarProcesion: () => { this.barrio.procesion.salir(); return this.barrio.procesion.activa; },
       charcos: () => this.barrio.charcos.lista.map((c) => [Math.round(c.x * 10) / 10, Math.round(c.z * 10) / 10]),
       vecinos: () => this.barrio.vecinos.lista.filter((v) => v.estado === 'pasear' && v.parada < 0 && !v.objetivo).slice(0, 30).map((v) => ({ x: Math.round(v.x), z: Math.round(v.z), estado: v.estado })),
@@ -2213,6 +2214,16 @@ export class Juego {
         this.contador.sumar('cruzadas');
         this.camara.sacudir(0.3);
         this.hud.avisar(['¡Por medio de la cofradía! "¡Con la Virgen delante, illo!"', '¡Entre los nazarenos! "¡Eso se lo digo yo a tu madre!"', '¡Por medio del paso! "¡Ni un respeto, ni un respeto!"'][Math.floor(Math.random() * 3)]!, 2.6);
+      }
+      if (pr.saeta) {
+        const d = Math.hypot(pr.saeta.x - jugadorPos.x, pr.saeta.z - jugadorPos.z);
+        if (d < 100) {
+          this.audio.saeta(0.14 * Math.max(0.15, 1 - d / 100));
+          this.silencioMarcha = 12; // la banda calla mientras cantan
+          this.hud.avisar('Una saeta desde el balcón: el paso se para a escucharla', 2.8);
+          this.contador.sumar('saetas');
+          this.pista('saeta', 'Cuando cantan una saeta el paso se para; es el momento de pararte a su lado (el respeto paga) o de ir a lo tuyo');
+        }
       }
       if (pr.caramelo) {
         this.contador.sumar('caramelos');

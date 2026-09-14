@@ -301,3 +301,22 @@ Formato:
   negro, ruedas minúsculas), low-poly, 0,9 m de larga, con hueco para un piloto que le sobra por
   todos lados.
 - Formato y tamaño deseados: GLB, Y arriba, -Z delante.
+
+## Los gatos
+- Dónde se usa: techos de coches aparcados y bancos (`src/mundo/gatos.ts`).
+- Placeholder actual: caja con cabeza, orejas y cola, en tres pelajes, a escala 1,4; maullido sintetizado.
+- Descripción para generarlo: gato callejero low-poly en dos poses (sentado y corriendo), tres pelajes (negro, naranja, blanco), y un maullido corto.
+- Formato y tamaño deseados: GLB de 0,5 m; WAV 22 kHz mono.
+
+## El de la ONCE y la churrería
+- Dónde se usa: el vendedor cerca de la parada (`src/mundo/once.ts`) y el remolque de churros al final del mercadillo (`churreria` en `src/mundo/trastos.ts`).
+- Placeholder actual: vecino con chaleco verde, gorra y tablero; remolque blanco de cajas con toldo rojo y bandeja amarilla.
+- Descripción para generarlo: vendedor de la ONCE (chaleco verde, tablero de cupones colgado) y un
+  pregón "¡Para hoy, para hoy!"; remolque de churrería sevillana (blanco, toldo rojo, ventanilla con churros y chocolate), 2,6 m.
+- Formato y tamaño deseados: GLB, Y arriba, -Z delante; WAV 22 kHz mono.
+
+## La saeta
+- Dónde se usa: cuando el paso se para junto a un bloque (`saeta` en `src/audio/motor.ts`).
+- Placeholder actual: voz de onda de sierra con vibrato haciendo una frase en modo frigio (unos 11 s).
+- Descripción para generarlo: una saeta grabada de 10-12 s, a capela, libre de derechos.
+- Formato y tamaño deseados: WAV 22 kHz mono.

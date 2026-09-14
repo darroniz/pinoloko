@@ -187,7 +187,7 @@ export class Barrio {
     this.grupo.add(this.palomas.grupo);
     this.charcos = new Charcos(this.grafo);
     this.grupo.add(this.charcos.malla);
-    this.procesion = new Procesion(elegirParroquia(nivel, this.grafo), this.grafo);
+    this.procesion = new Procesion(elegirParroquia(nivel, this.grafo), this.grafo, undefined, nivel.edificios);
     this.procesionVista = new ProcesionVista(this.procesion);
     this.grupo.add(this.procesionVista.grupo);
     this.motosCalle = new MotosCalle(this.grafo, ficha.poblacion.motosCalle, ficha.tribu === 'pijos' ? VESPA : undefined);

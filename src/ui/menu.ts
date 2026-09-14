@@ -93,7 +93,8 @@ sale disparada, gira como una peonza y no agarra nada. Entra en el garaje y en e
 <p class="peque"><strong>La procesión.</strong> Una tarde de cada tres (la primera, sí), de siete a once y media, la cofradía sale de la parroquia
 del barrio: la cruz de guía, los nazarenos, el paso con sus cirios y la banda detrás, despacio por los pasajes (se oye desde lejos). Colarte
 por medio con la moto calienta a la Local y escandaliza al barrio; párate junto al paso unos segundos y Wifly se quita la gorra: 25 €. A pie
-junto a un nazareno, te da un caramelo. El tráfico se para a su paso.</p>
+junto a un nazareno, te da un caramelo. El tráfico se para a su paso. Y de vez en cuando, con un bloque a mano, cantan una saeta desde el
+balcón: el paso se para a escucharla y la banda calla.</p>
 <p class="peque"><strong>La lluvia.</strong> De vez en cuando se nubla y llueve unas horas: menos agarre (los derrapes se alargan y se frena
 peor), charcos en las calles que salpican al pisarlos a velocidad (si mojas a un vecino, 4 €) y el barrio con paraguas.</p>
 <p class="peque"><strong>El de la ONCE.</strong> A la vuelta de la parada, con el chaleco verde: a pie y con E, un cupón son 5 € (tres por sorteo). A las

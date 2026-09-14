@@ -97,7 +97,7 @@ export class Gatos {
     for (const c of COLORES_GATO) {
       const im = new THREE.InstancedMesh(geo, new THREE.MeshLambertMaterial({ color: c }), this.lista.length);
       im.count = 0;
-      im.castShadow = true;
+      im.castShadow = false; // desde arriba la sombra de un gato no se ve, y el mapa de sombras cuesta
       im.frustumCulled = false;
       this.mallas.push(im);
       this.grupo.add(im);

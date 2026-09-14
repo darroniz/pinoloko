@@ -340,7 +340,7 @@ export class Trastos {
   poner(tipo: TipoTrasto, x: number, z: number, giro = 0): Trasto {
     const def = DEFINICIONES[tipo];
     const m = new THREE.Mesh(this.geometria(tipo), MATERIAL_TRASTOS);
-    m.castShadow = true;
+    m.castShadow = tipo !== 'bolsa' && tipo !== 'litrona'; // un bulto oscuro en el suelo no necesita sombra (y cada sombra es otro draw call)
     m.position.set(x, def.alturaMedia, z);
     m.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), giro);
     this.grupo.add(m);
@@ -446,8 +446,8 @@ export class Trastos {
           const r = rnd();
           if (r < 0.45) {
             colocar('contenedor', m.x + m.nx * lado, m.z + m.nz * lado, -Math.atan2(m.tz, m.tx), 1.8);
-            // Y una o dos bolsas de basura al lado, que en Sevilla el contenedor nunca está solo.
-            for (let k = 0; k < 1 + Math.floor(rnd() * 2); k++) colocar('bolsa', m.x + m.nx * lado * 0.95 + m.tx * (1.6 + k * 0.7), m.z + m.nz * lado * 0.95 + m.tz * (1.6 + k * 0.7), rnd() * Math.PI, 0.5);
+            // Y una bolsa de basura al lado de uno de cada tres (cada trasto es un draw call: con medida).
+            if (rnd() < 0.35) colocar('bolsa', m.x + m.nx * lado * 0.95 + m.tx * 1.6, m.z + m.nz * lado * 0.95 + m.tz * 1.6, rnd() * Math.PI, 0.5);
           }
           else if (r < 0.75) {
             for (let k = 0; k < 3; k++) colocar('cono', m.x + m.tx * k * 1.4 + m.nx * lado * 0.6, m.z + m.tz * k * 1.4 + m.nz * lado * 0.6, 0, 0.8);

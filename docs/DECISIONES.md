@@ -1137,8 +1137,9 @@ se levanta (hasta 0,3 rad, según la velocidad) y mientras dura la frenada baja 
 riesgo es que te comes lo que tengas delante. Como el frenazo se acaba solo en medio segundo, el
 mínimo para cobrar es 0,35 s (8 € + 20 €/s). Es excluyente con la derrapada (que pide girar) y
 con el caballito. Las bolsas de basura: trasto `bolsa` (2 €, ligera, rompible en trozos) que
-`poblar` pone de una en una o de dos en dos junto a cada contenedor. Siempre están: en Sevilla
-el contenedor nunca está solo.
+`poblar` pone junto a uno de cada tres contenedores, sin sombra. Empezaron siendo una o dos por
+contenedor (97 en el Mercado) y el A/B cayó un 15-20 %: cada trasto es una malla y un draw call,
+dos con la sombra. Con ~25 y sin sombra, el coste desaparece.
 
 ## 2026-09-14 — La calor y el público de la comitiva
 
